@@ -91,7 +91,10 @@ function _createBranchSpreadsheet(branchName, branchCode) {
 
   // ── 2. ADMINS sheet ──────────────────────────────────────────
   const adminsSheet = ss.insertSheet('Admins');
-  const adminHeaders = ['admin_id', 'username', 'password', 'created_at'];
+  const adminHeaders = [
+    'admin_id', 'full_name', 'username', 'password_hash',
+    'branch_id', 'branch_name', 'status', 'created_at', 'updated_at'
+  ];
   adminsSheet.appendRow(adminHeaders);
   adminsSheet.getRange(1, 1, 1, adminHeaders.length)
     .setFontWeight('bold')
@@ -100,9 +103,14 @@ function _createBranchSpreadsheet(branchName, branchCode) {
     .setHorizontalAlignment('center');
   adminsSheet.setFrozenRows(1);
   adminsSheet.setColumnWidth(1, 160); // admin_id
-  adminsSheet.setColumnWidth(2, 180); // username
-  adminsSheet.setColumnWidth(3, 220); // password
-  adminsSheet.setColumnWidth(4, 180); // created_at
+  adminsSheet.setColumnWidth(2, 180); // full_name
+  adminsSheet.setColumnWidth(3, 160); // username
+  adminsSheet.setColumnWidth(4, 240); // password_hash
+  adminsSheet.setColumnWidth(5, 140); // branch_id
+  adminsSheet.setColumnWidth(6, 160); // branch_name
+  adminsSheet.setColumnWidth(7, 90);  // status
+  adminsSheet.setColumnWidth(8, 180); // created_at
+  adminsSheet.setColumnWidth(9, 180); // updated_at
 
   // ── 3. Bring Departments to front ────────────────────────────
   ss.setActiveSheet(deptSheet);
