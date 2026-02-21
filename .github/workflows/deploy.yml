@@ -45,19 +45,7 @@ jobs:
 
       - name: Deploy Web App
         run: |
-          # Get existing Web App deployment ID dynamically
-          DEPLOY_ID=$(clasp deployments | grep -v "@HEAD" | awk 'NR==2 {print $2}')
-          echo "Deployment ID found: $DEPLOY_ID"
-
-          if [ -z "$DEPLOY_ID" ] || [ "$DEPLOY_ID" = "-" ]; then
-            echo "No existing deployment found. Creating new deployment..."
-            clasp deploy \
-              --versionNumber ${{ steps.version.outputs.version }} \
-              --description "Auto deploy from ${{ github.ref_name }} by ${{ github.actor }}"
-          else
-            echo "Updating existing deployment: $DEPLOY_ID"
-            clasp deploy \
-              --deploymentId $DEPLOY_ID \
-              --versionNumber ${{ steps.version.outputs.version }} \
-              --description "Auto deploy from ${{ github.ref_name }} by ${{ github.actor }}"
-          fi
+          clasp deploy \
+            --deploymentId ${{ secrets.DEPLOYMENT_ID }} \
+            --versionNumber ${{ steps.version.outputs.version }} \
+            --description "Auto deploy from ${{ github.ref_name }} by ${{ github.actor }}"
