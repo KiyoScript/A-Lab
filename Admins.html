@@ -219,16 +219,44 @@
 
   function loadData() {
     showLoading(true);
+    // Load branches first, then chain branch admins → super admins sequentially
+    // to ensure allBranchAdmins is fully populated before rendering
     google.script.run
-      .withSuccessHandler(res => { if (res.success) { allBranches = res.data || []; populateBranchDropdown(); } })
+      .withSuccessHandler(res => {
+        if (res.success) { allBranches = res.data || []; populateBranchDropdown(); }
+        // Chain: fetch branch admins after branches are loaded
+        google.script.run
+          .withSuccessHandler(res => {
+            allBranchAdmins = res.success ? (res.data || []) : [];
+            // Chain: fetch super admins last, then render
+            google.script.run
+              .withSuccessHandler(res => {
+                allSuperAdmins = res.success ? (res.data || []) : [];
+                showLoading(false);
+                renderCurrentTab();
+                updateStats();
+              })
+              .withFailureHandler(err => { showLoading(false); showToast('Error: ' + err.message, 'error'); })
+              .handleAdminRequest('GET_SUPER_ADMINS', {});
+          })
+          .withFailureHandler(() => {
+            allBranchAdmins = [];
+            google.script.run
+              .withSuccessHandler(res => {
+                allSuperAdmins = res.success ? (res.data || []) : [];
+                showLoading(false); renderCurrentTab(); updateStats();
+              })
+              .withFailureHandler(err => { showLoading(false); })
+              .handleAdminRequest('GET_SUPER_ADMINS', {});
+          })
+          .handleAdminRequest('GET_BRANCH_ADMINS', {});
+      })
+      .withFailureHandler(() => { showLoading(false); })
       .handleBranchRequest('GET_BRANCHES', {});
-    google.script.run
-      .withSuccessHandler(res => { if (res.success) allBranchAdmins = res.data || []; loadSuperAdmins(); })
-      .withFailureHandler(() => loadSuperAdmins())
-      .handleAdminRequest('GET_BRANCH_ADMINS', {});
   }
 
   function loadSuperAdmins() {
+    // Kept for compatibility but no longer called directly
     google.script.run
       .withSuccessHandler(res => {
         showLoading(false);
