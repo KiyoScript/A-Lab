@@ -89,22 +89,20 @@ function _createBranchSpreadsheet(branchName, branchCode) {
   deptSheet.setColumnWidth(5, 90);  // status
   deptSheet.setColumnWidth(6, 180); // created_at
 
-  // ── 2. SUMMARY sheet ─────────────────────────────────────────
-  const summarySheet = ss.insertSheet('Summary');
-  summarySheet.appendRow(['Metric', 'Value']);
-  summarySheet.appendRow(['Branch', branchName]);
-  summarySheet.appendRow(['Branch Code', branchCode]);
-  summarySheet.appendRow(['Total Departments', "=COUNTA(Departments!A2:A)"]);
-  summarySheet.appendRow(['Active Departments', "=COUNTIF(Departments!E2:E,\"Active\")"]);
-  summarySheet.appendRow(['Inactive Departments', "=COUNTIF(Departments!E2:E,\"Inactive\")"]);
-
-  summarySheet.getRange(1, 1, 1, 2)
+  // ── 2. ADMINS sheet ──────────────────────────────────────────
+  const adminsSheet = ss.insertSheet('Admins');
+  const adminHeaders = ['admin_id', 'username', 'password', 'created_at'];
+  adminsSheet.appendRow(adminHeaders);
+  adminsSheet.getRange(1, 1, 1, adminHeaders.length)
     .setFontWeight('bold')
     .setBackground('#1e293b')
-    .setFontColor('#ffffff');
-  summarySheet.setFrozenRows(1);
-  summarySheet.setColumnWidth(1, 180);
-  summarySheet.setColumnWidth(2, 200);
+    .setFontColor('#ffffff')
+    .setHorizontalAlignment('center');
+  adminsSheet.setFrozenRows(1);
+  adminsSheet.setColumnWidth(1, 160); // admin_id
+  adminsSheet.setColumnWidth(2, 180); // username
+  adminsSheet.setColumnWidth(3, 220); // password
+  adminsSheet.setColumnWidth(4, 180); // created_at
 
   // ── 3. Bring Departments to front ────────────────────────────
   ss.setActiveSheet(deptSheet);
