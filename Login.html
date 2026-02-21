@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -7,49 +7,10 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <style>
-    * { font-family: 'DM Sans', sans-serif; transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease; }
-
-    /* ── LIGHT MODE (default) ── */
-    :root {
-      --bg:          #f1f5f9;
-      --bg-dots:     #f1f5f9;
-      --dot-color:   rgba(47,118,245,0.12);
-      --card-bg:     #ffffff;
-      --card-border: #e2e8f0;
-      --title:       #0f172a;
-      --subtitle:    #64748b;
-      --label:       #475569;
-      --input-bg:    #f8fafc;
-      --input-border:#e2e8f0;
-      --input-text:  #0f172a;
-      --placeholder: #94a3b8;
-      --footer:      #94a3b8;
-      --toggle-bg:   #e2e8f0;
-      --toggle-icon: #64748b;
-    }
-
-    /* ── DARK MODE ── */
-    [data-theme="dark"] {
-      --bg:          #0f172a;
-      --bg-dots:     #0f172a;
-      --dot-color:   rgba(47,118,245,0.15);
-      --card-bg:     rgba(30,41,59,0.85);
-      --card-border: #334155;
-      --title:       #f1f5f9;
-      --subtitle:    #94a3b8;
-      --label:       #94a3b8;
-      --input-bg:    rgba(15,23,42,0.6);
-      --input-border:#475569;
-      --input-text:  #e2e8f0;
-      --placeholder: #64748b;
-      --footer:      #475569;
-      --toggle-bg:   #1e293b;
-      --toggle-icon: #94a3b8;
-    }
-
+    * { font-family: 'DM Sans', sans-serif; }
     body {
-      background-color: var(--bg);
-      background-image: radial-gradient(var(--dot-color) 1px, transparent 1px);
+      background-color: #0f172a;
+      background-image: radial-gradient(rgba(47,118,245,0.15) 1px, transparent 1px);
       background-size: 28px 28px;
       min-height: 100vh;
       display: flex;
@@ -57,22 +18,10 @@
       justify-content: center;
       padding: 1rem;
     }
-
-    .card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      backdrop-filter: blur(8px);
-    }
-
-    .title   { color: var(--title); }
-    .subtitle { color: var(--subtitle); }
-    .lbl     { color: var(--label); }
-    .footer-text { color: var(--footer); }
-
     .form-input {
-      background: var(--input-bg);
-      border: 1px solid var(--input-border);
-      color: var(--input-text);
+      background: rgba(15,23,42,0.6);
+      border: 1px solid #475569;
+      color: #e2e8f0;
       width: 100%;
       border-radius: 0.75rem;
       padding: 0.75rem 1rem;
@@ -80,222 +29,124 @@
       outline: none;
       transition: box-shadow 0.15s, border-color 0.15s;
     }
-    .form-input::placeholder { color: var(--placeholder); }
-    .form-input:focus {
-      box-shadow: 0 0 0 2px rgba(47,118,245,0.3);
-      border-color: #2f76f5;
-    }
+    .form-input::placeholder { color: #64748b; }
+    .form-input:focus { box-shadow: 0 0 0 2px rgba(47,118,245,0.35); border-color: #2f76f5; }
     .form-input.pr { padding-right: 2.75rem; }
-
-    .toggle-btn {
-      background: var(--toggle-bg);
-      color: var(--toggle-icon);
-      border-radius: 0.625rem;
-      padding: 0.375rem;
-      border: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.15s;
-    }
-    .toggle-btn:hover { background: #cbd5e1; }
-    [data-theme="dark"] .toggle-btn:hover { background: #334155; }
-
     .eye-btn {
-      position: absolute;
-      right: 0.75rem;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--placeholder);
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 0;
-      transition: color 0.15s;
+      position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%);
+      color: #64748b; background: none; border: none; cursor: pointer;
+      padding: 0; transition: color 0.15s;
     }
-    .eye-btn:hover { color: var(--label); }
-
-    @keyframes fadeUp {
-      from { opacity:0; transform:translateY(14px); }
-      to   { opacity:1; transform:translateY(0); }
+    .eye-btn:hover { color: #94a3b8; }
+    input:-webkit-autofill {
+      -webkit-box-shadow: 0 0 0px 1000px #1e293b inset;
+      -webkit-text-fill-color: #e2e8f0;
     }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
     .fade-up { animation: fadeUp 0.35s ease both; }
-
     .spinner {
       width:18px; height:18px;
-      border:2px solid rgba(255,255,255,0.4);
-      border-top-color:#fff;
-      border-radius:50%;
-      animation: spin 0.7s linear infinite;
-      display:inline-block;
+      border:2px solid rgba(255,255,255,0.4); border-top-color:#fff;
+      border-radius:50%; animation: spin 0.7s linear infinite; display:inline-block;
     }
     @keyframes spin { to { transform:rotate(360deg); } }
-
-    input:-webkit-autofill {
-      -webkit-box-shadow: 0 0 0px 1000px var(--input-bg) inset !important;
-      -webkit-text-fill-color: var(--input-text) !important;
-    }
   </style>
 </head>
 <body>
-
   <div class="w-full max-w-sm fade-up">
 
-    <!-- Top bar: Logo + Theme toggle -->
-    <div class="flex items-center justify-between mb-8">
-      <div class="flex flex-col items-start">
-        <div class="flex items-center gap-3 mb-1">
-          <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow" style="background: linear-gradient(135deg,#2f76f5,#1540d8)">
-            <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v8.5L4.5 18A2 2 0 006.4 21h11.2a2 2 0 001.9-2.5L15 11.5V3"/>
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 3h6M8 15h8"/>
-            </svg>
-          </div>
-          <div>
-            <p class="title text-base font-bold leading-none">A-Lab</p>
-            <p class="subtitle text-[10px] tracking-widest uppercase mt-0.5" style="font-family:'DM Mono',monospace">Automation Hub</p>
-          </div>
-        </div>
+    <!-- Logo -->
+    <div class="flex flex-col items-center mb-8">
+      <div class="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg mb-4"
+           style="background:linear-gradient(135deg,#2f76f5,#1540d8)">
+        <svg class="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v8.5L4.5 18A2 2 0 006.4 21h11.2a2 2 0 001.9-2.5L15 11.5V3"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 3h6M8 15h8"/>
+        </svg>
       </div>
-
-      <!-- Theme toggle -->
-      <button class="toggle-btn" onclick="toggleTheme()" id="theme-btn" title="Toggle theme">
-        <!-- Sun icon (shown in dark mode) -->
-        <svg id="icon-sun" class="w-4 h-4 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="5"/>
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-        </svg>
-        <!-- Moon icon (shown in light mode) -->
-        <svg id="icon-moon" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
-        </svg>
-      </button>
+      <h1 class="text-2xl font-bold text-white">A-Lab</h1>
+      <p class="text-slate-400 text-xs tracking-widest uppercase mt-1" style="font-family:'DM Mono',monospace">Automation Hub</p>
     </div>
 
     <!-- Card -->
-    <div class="card rounded-2xl p-7 shadow-lg">
-      <h2 class="title text-base font-bold mb-1">Sign in</h2>
-      <p class="subtitle text-xs mb-6">Enter your credentials to continue.</p>
+    <div class="rounded-2xl p-7 shadow-2xl" style="background:rgba(30,41,59,0.85);border:1px solid #334155;backdrop-filter:blur(8px)">
+      <h2 class="text-base font-bold text-white mb-1">Sign in</h2>
+      <p class="text-slate-400 text-xs mb-6">Enter your credentials to continue.</p>
 
       <!-- Error alert -->
       <div id="error-alert" class="hidden mb-4 items-center gap-2.5 rounded-xl px-4 py-3"
-           style="background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.25)">
-        <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="color:#ef4444">
+           style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25)">
+        <svg class="w-4 h-4 shrink-0 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
         </svg>
-        <p id="error-msg" class="text-xs font-medium" style="color:#ef4444"></p>
+        <p id="error-msg" class="text-red-400 text-xs font-medium"></p>
       </div>
 
-      <div style="display:flex; flex-direction:column; gap:1rem;">
+      <div style="display:flex;flex-direction:column;gap:1rem">
         <div>
-          <label class="lbl" style="display:block; font-size:11px; font-weight:600; margin-bottom:6px;">Username</label>
+          <label class="block text-xs font-semibold text-slate-400 mb-1.5">Username</label>
           <input id="username" type="text" placeholder="Enter username" autocomplete="username" class="form-input"/>
         </div>
         <div>
-          <label class="lbl" style="display:block; font-size:11px; font-weight:600; margin-bottom:6px;">Password</label>
+          <label class="block text-xs font-semibold text-slate-400 mb-1.5">Password</label>
           <div style="position:relative">
             <input id="password" type="password" placeholder="Enter password" autocomplete="current-password" class="form-input pr"/>
             <button type="button" class="eye-btn" onclick="togglePassword()">
-              <svg id="eye-icon" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
               </svg>
             </button>
           </div>
         </div>
-
         <button id="login-btn" onclick="doLogin()"
-          style="width:100%; background:#2f76f5; color:#fff; font-weight:600; padding:0.75rem; border-radius:0.75rem; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; margin-top:4px; transition:background 0.15s;"
+          style="width:100%;background:#2f76f5;color:#fff;font-weight:600;padding:0.75rem;border-radius:0.75rem;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:4px;transition:background 0.15s;"
           onmouseover="this.style.background='#1a56eb'" onmouseout="this.style.background='#2f76f5'">
           <span id="login-label">Sign In</span>
         </button>
       </div>
     </div>
 
-    <p class="footer-text text-center text-xs mt-5">A-Lab © 2024 · Automation Hub</p>
+    <p class="text-center text-slate-600 text-xs mt-5">A-Lab © 2024 · Automation Hub</p>
   </div>
 
   <script>
-    // ── Theme ──────────────────────────────────────────────────
-    const savedTheme = localStorage.getItem('alab-theme') || 'light';
-    applyTheme(savedTheme);
+    document.addEventListener('keydown', function(e) { if (e.key === 'Enter') doLogin(); });
 
-    function applyTheme(theme) {
-      document.documentElement.setAttribute('data-theme', theme);
-      document.getElementById('icon-sun').classList.toggle('hidden', theme === 'light');
-      document.getElementById('icon-moon').classList.toggle('hidden', theme === 'dark');
-      localStorage.setItem('alab-theme', theme);
-    }
-
-    function toggleTheme() {
-      const current = document.documentElement.getAttribute('data-theme');
-      applyTheme(current === 'light' ? 'dark' : 'light');
-    }
-
-    // ── Password toggle ────────────────────────────────────────
     function togglePassword() {
       const input = document.getElementById('password');
       input.type = input.type === 'password' ? 'text' : 'password';
     }
 
-    // ── Enter key ──────────────────────────────────────────────
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') doLogin();
-    });
-
-    // ── Login ──────────────────────────────────────────────────
     function doLogin() {
       const username = document.getElementById('username').value.trim();
       const password = document.getElementById('password').value;
-
-      if (!username || !password) {
-        showError('Please enter both username and password.');
-        return;
-      }
-
-      setLoading(true);
-      hideError();
-
+      if (!username || !password) { showError('Please enter both username and password.'); return; }
+      setLoading(true); hideError();
       google.script.run
         .withSuccessHandler(function(res) {
           setLoading(false);
           if (res.success) {
-            google.script.run
-              .withSuccessHandler(function(url) {
-                window.top.location.href = url;
-              })
-              .getScriptUrl();
-          } else {
-            showError(res.error || 'Login failed.');
-          }
+            google.script.run.withSuccessHandler(function(url) { window.top.location.href = url; }).getScriptUrl();
+          } else { showError(res.error || 'Login failed.'); }
         })
-        .withFailureHandler(function(err) {
-          setLoading(false);
-          showError('Error: ' + err.message);
-        })
-        .handleAdminRequest('LOGIN', { username: username, password: password });
+        .withFailureHandler(function(err) { setLoading(false); showError('Error: ' + err.message); })
+        .handleAdminRequest('LOGIN', { username, password });
     }
 
     function setLoading(v) {
       const btn = document.getElementById('login-btn');
       btn.disabled = v;
-      btn.innerHTML = v
-        ? '<span class="spinner"></span>'
-        : '<span id="login-label">Sign In</span>';
+      btn.innerHTML = v ? '<span class="spinner"></span>' : '<span id="login-label">Sign In</span>';
     }
-
     function showError(msg) {
       const el = document.getElementById('error-alert');
       document.getElementById('error-msg').textContent = msg;
-      el.classList.remove('hidden');
-      el.classList.add('flex');
+      el.classList.remove('hidden'); el.classList.add('flex');
     }
-
     function hideError() {
       const el = document.getElementById('error-alert');
-      el.classList.add('hidden');
-      el.classList.remove('flex');
+      el.classList.add('hidden'); el.classList.remove('flex');
     }
   </script>
 </body>

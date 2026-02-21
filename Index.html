@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -9,64 +9,12 @@
   <style>
     * { font-family: 'DM Sans', sans-serif; }
 
-    :root {
-      --bg:           #f1f5f9;
-      --sidebar-bg:   #ffffff;
-      --sidebar-border:#e2e8f0;
-      --header-bg:    #ffffff;
-      --header-border:#e2e8f0;
-      --text-primary: #0f172a;
-      --text-muted:   #94a3b8;
-      --text-nav:     #475569;
-      --nav-active-bg:rgba(47,118,245,0.12);
-      --nav-hover-bg: rgba(47,118,245,0.08);
-      --toggle-bg:    #f1f5f9;
-      --toggle-border:#e2e8f0;
-      --toggle-color: #64748b;
-      --avatar-ring:  #2f76f5;
-      --placeholder-bg:#eef6ff;
-      --placeholder-icon:#5599ff;
-      --placeholder-text:#475569;
-      --placeholder-sub:#94a3b8;
-      --loading-bg:   #f1f5f9;
-    }
+    body { background: #f1f5f9; display: flex; height: 100vh; overflow: hidden; }
 
-    [data-theme="dark"] {
-      --bg:           #0f172a;
-      --sidebar-bg:   #1e293b;
-      --sidebar-border:#334155;
-      --header-bg:    #1e293b;
-      --header-border:#334155;
-      --text-primary: #f1f5f9;
-      --text-muted:   #64748b;
-      --text-nav:     #94a3b8;
-      --nav-active-bg:rgba(47,118,245,0.15);
-      --nav-hover-bg: rgba(47,118,245,0.08);
-      --toggle-bg:    #263044;
-      --toggle-border:#334155;
-      --toggle-color: #94a3b8;
-      --avatar-ring:  #2f76f5;
-      --placeholder-bg:#1e293b;
-      --placeholder-icon:#5599ff;
-      --placeholder-text:#94a3b8;
-      --placeholder-sub:#64748b;
-      --loading-bg:   #0f172a;
-    }
-
-    body {
-      background: var(--bg);
-      color: var(--text-primary);
-      display: flex;
-      height: 100vh;
-      overflow: hidden;
-      transition: background 0.2s;
-    }
-
-    /* Sidebar */
     #sidebar {
-      background: var(--sidebar-bg);
-      border-right: 1px solid var(--sidebar-border);
-      transition: width 0.25s cubic-bezier(.4,0,.2,1), background 0.2s, border-color 0.2s;
+      background: #ffffff;
+      border-right: 1px solid #e2e8f0;
+      transition: width 0.25s cubic-bezier(.4,0,.2,1);
     }
     #sidebar.collapsed { width: 64px; }
     #sidebar.collapsed .nav-label,
@@ -75,62 +23,26 @@
     #sidebar.collapsed .nav-link { justify-content: center; padding-left: 0; padding-right: 0; }
     #sidebar.collapsed .logo-wrap { justify-content: center; }
 
-    /* Nav links */
-    .nav-link {
-      position: relative;
-      transition: all 0.18s ease;
-      color: var(--text-nav);
-    }
-    .nav-link:hover { background: var(--nav-hover-bg); color: #2f76f5; }
-    .nav-link.active { background: var(--nav-active-bg); color: #2f76f5; font-weight: 600; }
+    .nav-link { position: relative; transition: all 0.18s ease; color: #475569; }
+    .nav-link:hover { background: rgba(47,118,245,0.08); color: #2f76f5; }
+    .nav-link.active { background: rgba(47,118,245,0.12); color: #2f76f5; font-weight: 600; }
     .nav-link.active::before {
       content: ''; position: absolute; left:0; top:0; bottom:0;
       width: 3px; background: #2f76f5; border-radius: 0 2px 2px 0;
     }
 
-    /* Header */
-    header {
-      background: var(--header-bg);
-      border-bottom: 1px solid var(--header-border);
-      transition: background 0.2s, border-color 0.2s;
-    }
+    .nav-section-label { color: #94a3b8; }
+    .sidebar-user { border-top: 1px solid #e2e8f0; }
+    .avatar-ring { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #2f76f5; }
 
-    /* Theme toggle button */
-    .theme-toggle {
-      background: var(--toggle-bg);
-      border: 1px solid var(--toggle-border);
-      color: var(--toggle-color);
-      border-radius: 0.625rem;
-      padding: 0.375rem;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: background 0.15s, border-color 0.2s;
-    }
-    .theme-toggle:hover { opacity: 0.75; }
-
-    /* Avatar */
-    .avatar-ring { box-shadow: 0 0 0 2px var(--header-bg), 0 0 0 4px var(--avatar-ring); }
-
-    /* Nav section label */
-    .nav-section-label { color: var(--text-muted); }
-
-    /* Sidebar bottom user area */
-    .sidebar-user { border-top: 1px solid var(--sidebar-border); }
-
-    /* Scrollbar */
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
 
-    /* Iframe fade-in */
     iframe { border: none; animation: fadeIn 0.3s ease; }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(6px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-
-    /* Placeholder */
-    #placeholder { background: var(--bg); }
-    #init-loading { background: var(--loading-bg); }
   </style>
 </head>
 <body>
@@ -140,7 +52,7 @@
   <!-- SIDEBAR -->
   <aside id="sidebar" class="fixed md:relative w-60 flex flex-col shrink-0 h-screen z-30 shadow-sm -translate-x-full md:translate-x-0 transition-transform duration-250">
 
-    <div class="logo-wrap flex items-center gap-3 px-5 py-5" style="border-bottom:1px solid var(--sidebar-border)">
+    <div class="logo-wrap flex items-center gap-3 px-5 py-5 border-b border-slate-100">
       <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shrink-0 shadow">
         <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v8.5L4.5 18A2 2 0 006.4 21h11.2a2 2 0 001.9-2.5L15 11.5V3"/>
@@ -148,8 +60,8 @@
         </svg>
       </div>
       <div class="brand-name">
-        <p class="text-base font-bold leading-none" style="color:var(--text-primary)">A-Lab</p>
-        <p class="text-[10px] tracking-widest uppercase mt-0.5" style="color:var(--text-muted);font-family:'DM Mono',monospace">Automation Hub</p>
+        <p class="text-base font-bold text-slate-800 leading-none">A-Lab</p>
+        <p class="text-[10px] text-slate-400 tracking-widest uppercase mt-0.5" style="font-family:'DM Mono',monospace">Automation Hub</p>
       </div>
     </div>
 
@@ -253,11 +165,10 @@
       <img src="https://ui-avatars.com/api/?name=Admin+User&background=2f76f5&color=fff&size=64&font-size=0.4"
            class="w-8 h-8 rounded-full avatar-ring shrink-0" alt="User"/>
       <div class="nav-label flex-1 min-w-0">
-        <p class="text-xs font-semibold truncate" style="color:var(--text-primary)">Admin User</p>
-        <p class="text-[10px] truncate" style="color:var(--text-muted)">admin@alab.com</p>
+        <p class="text-xs font-semibold text-slate-700 truncate">Admin User</p>
+        <p class="text-[10px] text-slate-400 truncate">admin@alab.com</p>
       </div>
-      <button class="nav-label transition-colors" style="color:var(--text-muted)" title="Logout"
-        onmouseover="this.style.color='#e03131'" onmouseout="this.style.color='var(--text-muted)'">
+      <button class="nav-label text-slate-400 hover:text-red-500 transition-colors" title="Logout">
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1"/>
         </svg>
@@ -265,59 +176,41 @@
     </div>
   </aside>
 
-  <!-- MAIN AREA -->
+  <!-- MAIN -->
   <div id="main-wrapper" class="flex-1 flex flex-col overflow-hidden">
 
-    <header class="h-14 flex items-center px-5 gap-4 shrink-0 shadow-sm z-20">
-      <!-- Sidebar toggle -->
-      <button onclick="toggleSidebar()" class="transition-colors p-1 rounded-lg" style="color:var(--text-muted)"
-        onmouseover="this.style.color='#2f76f5'" onmouseout="this.style.color='var(--text-muted)'">
+    <header class="h-14 bg-white border-b border-slate-100 flex items-center px-5 gap-4 shrink-0 shadow-sm z-20">
+      <button onclick="toggleSidebar()" class="text-slate-400 hover:text-blue-500 transition-colors p-1 rounded-lg hover:bg-slate-50">
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
         </svg>
       </button>
-
-      <!-- Breadcrumb -->
       <div class="flex items-center gap-2 text-sm">
-        <span style="color:var(--text-muted)">A-Lab</span>
-        <span style="color:var(--text-muted)">/</span>
-        <span id="page-title" class="font-semibold" style="color:var(--text-primary)">Dashboard</span>
+        <span class="text-slate-400">A-Lab</span>
+        <span class="text-slate-300">/</span>
+        <span id="page-title" class="text-slate-700 font-semibold">Dashboard</span>
       </div>
-
       <div class="flex-1"></div>
-
-      <!-- Theme toggle (navbar) -->
-      <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
-        <svg id="icon-sun" class="w-4 h-4 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="5"/>
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-        </svg>
-        <svg id="icon-moon" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
-        </svg>
-      </button>
-
-      <!-- Avatar -->
       <img src="https://ui-avatars.com/api/?name=Admin+User&background=2f76f5&color=fff&size=64&font-size=0.4"
            class="w-8 h-8 rounded-full avatar-ring" alt="User"/>
     </header>
 
-    <main class="flex-1 overflow-hidden relative" style="background:var(--bg)">
-      <div id="init-loading" class="absolute inset-0 flex flex-col items-center justify-center gap-3 z-10">
-        <div class="w-8 h-8 border-2 border-t-blue-500 rounded-full animate-spin" style="border-color:rgba(47,118,245,0.2);border-top-color:#2f76f5"></div>
-        <p class="text-xs" style="color:var(--text-muted)">Loading…</p>
+    <main class="flex-1 overflow-hidden bg-slate-50 relative">
+      <div id="init-loading" class="absolute inset-0 bg-slate-50 flex flex-col items-center justify-center gap-3 z-10">
+        <div class="w-8 h-8 rounded-full animate-spin" style="border:2px solid #bbd8ff;border-top-color:#2f76f5"></div>
+        <p class="text-xs text-slate-400">Loading…</p>
       </div>
 
       <iframe id="content-frame" name="content-frame" src="" class="w-full h-full hidden"></iframe>
 
       <div id="placeholder" class="hidden w-full h-full flex-col items-center justify-center gap-4">
-        <div class="w-16 h-16 rounded-2xl flex items-center justify-center" style="background:var(--placeholder-bg)">
-          <svg class="w-8 h-8" style="color:var(--placeholder-icon)" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <div class="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center">
+          <svg class="w-8 h-8 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2a4 4 0 014-4h0a4 4 0 014 4v2M12 11a4 4 0 100-8 4 4 0 000 8z"/>
           </svg>
         </div>
-        <p class="text-sm font-medium" style="color:var(--placeholder-text)" id="placeholder-label">Page coming soon</p>
-        <p class="text-xs" style="color:var(--placeholder-sub)">This module will be available in a future sprint.</p>
+        <p class="text-slate-500 text-sm font-medium" id="placeholder-label">Page coming soon</p>
+        <p class="text-slate-400 text-xs">This module will be available in a future sprint.</p>
       </div>
     </main>
   </div>
@@ -325,28 +218,6 @@
   <script>
     let baseUrl = '';
 
-    // ── Theme (runs immediately before anything else) ──────────────
-    const savedTheme = localStorage.getItem('alab-theme') || 'light';
-    applyTheme(savedTheme);
-
-    function applyTheme(theme) {
-      document.documentElement.setAttribute('data-theme', theme);
-      localStorage.setItem('alab-theme', theme);
-      document.getElementById('icon-sun').classList.toggle('hidden', theme === 'light');
-      document.getElementById('icon-moon').classList.toggle('hidden', theme === 'dark');
-      // Push theme into the iframe so it syncs immediately
-      const frame = document.getElementById('content-frame');
-      if (frame && frame.contentWindow) {
-        try { frame.contentWindow.postMessage({ type: 'ALAB_THEME', theme }, '*'); } catch(_) {}
-      }
-    }
-
-    function toggleTheme() {
-      const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-      applyTheme(next);
-    }
-
-    // ── Apps Script init ───────────────────────────────────────────
     google.script.run
       .withSuccessHandler(function(url) {
         baseUrl = url;
@@ -355,11 +226,10 @@
       })
       .withFailureHandler(function(err) {
         document.getElementById('init-loading').innerHTML =
-          '<p class="text-sm" style="color:#ef4444">Failed to initialize: ' + err.message + '</p>';
+          '<p class="text-red-500 text-sm">Failed to initialize: ' + err.message + '</p>';
       })
       .getScriptUrl();
 
-    // ── Navigation ─────────────────────────────────────────────────
     function loadPage(pageName) {
       if (!baseUrl) return;
       const frame = document.getElementById('content-frame');
@@ -368,11 +238,6 @@
       frame.classList.remove('hidden');
       placeholder.classList.add('hidden');
       placeholder.classList.remove('flex');
-      // Push current theme into new iframe once it loads
-      frame.onload = function() {
-        const theme = document.documentElement.getAttribute('data-theme');
-        try { frame.contentWindow.postMessage({ type: 'ALAB_THEME', theme }, '*'); } catch(_) {}
-      };
     }
 
     function loadPlaceholder(name) {
