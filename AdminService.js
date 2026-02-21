@@ -321,30 +321,76 @@ function updateBranchAdmin(payload) {
     const branchSh   = _getRegistrySheet();
     const branchData = branchSh.getDataRange().getValues();
 
+    // ── Find which branch spreadsheet currently holds this admin ──
+    var foundSsId    = null;
+    var foundAdminSh = null;
+    var foundIdx     = -1;
+    var existingRow  = null;
+
     for (var b = 1; b < branchData.length; b++) {
       const ssId = String(branchData[b][7] || '');
       if (!ssId) continue;
-
       try {
         const adminSh   = _getBranchAdminSheet(ssId);
         const adminData = adminSh.getDataRange().getValues();
         const idx       = adminData.findIndex((r, i) => i > 0 && String(r[0]) === String(payload.admin_id));
-        if (idx === -1) continue;
-
-        const now = new Date().toISOString();
-        const row = idx + 1;
-        adminSh.getRange(row, 2).setValue(payload.full_name.trim());
-        adminSh.getRange(row, 3).setValue(payload.username.trim().toLowerCase());
-        if (payload.password && payload.password.trim() !== '')
-          adminSh.getRange(row, 4).setValue(_hashPassword(payload.password.trim()));
-        adminSh.getRange(row, 7).setValue(payload.status || 'Active');
-        adminSh.getRange(row, 9).setValue(now);
-
-        return { success: true };
+        if (idx !== -1) {
+          foundSsId    = ssId;
+          foundAdminSh = adminSh;
+          foundIdx     = idx;
+          existingRow  = adminData[idx];
+          break;
+        }
       } catch(_) {}
     }
 
-    return { success: false, error: 'Admin not found.' };
+    if (foundIdx === -1) return { success: false, error: 'Admin not found.' };
+
+    const now             = new Date().toISOString();
+    const currentBranchId = String(existingRow[4] || '');
+    const newBranchId     = String(payload.branch_id || '').trim();
+
+    // ── Same branch — just update in place ────────────────────────
+    if (!newBranchId || newBranchId === currentBranchId) {
+      const row = foundIdx + 1;
+      foundAdminSh.getRange(row, 2).setValue(payload.full_name.trim());
+      foundAdminSh.getRange(row, 3).setValue(payload.username.trim().toLowerCase());
+      if (payload.password && payload.password.trim() !== '')
+        foundAdminSh.getRange(row, 4).setValue(_hashPassword(payload.password.trim()));
+      foundAdminSh.getRange(row, 7).setValue(payload.status || 'Active');
+      foundAdminSh.getRange(row, 9).setValue(now);
+      return { success: true };
+    }
+
+    // ── Branch changed — move admin to new branch spreadsheet ─────
+    const newBranchRow = branchData.find((r, i) => i > 0 && String(r[0]) === newBranchId);
+    if (!newBranchRow) return { success: false, error: 'New branch not found.' };
+
+    const newSsId       = String(newBranchRow[7]);
+    const newBranchName = String(newBranchRow[1]);
+
+    // Insert into new branch spreadsheet
+    const newAdminSh = _getBranchAdminSheet(newSsId);
+    const pwHash = (payload.password && payload.password.trim() !== '')
+      ? _hashPassword(payload.password.trim())
+      : String(existingRow[3]);
+
+    newAdminSh.appendRow([
+      String(existingRow[0]),
+      payload.full_name.trim(),
+      payload.username.trim().toLowerCase(),
+      pwHash,
+      newBranchId,
+      newBranchName,
+      payload.status || 'Active',
+      String(existingRow[7]),
+      now
+    ]);
+
+    // Delete from old branch spreadsheet
+    foundAdminSh.deleteRow(foundIdx + 1);
+
+    return { success: true };
   } catch (e) {
     return { success: false, error: e.message };
   }
