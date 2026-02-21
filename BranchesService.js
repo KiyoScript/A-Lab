@@ -2,7 +2,6 @@
 // BRANCHES SERVICE
 // ═══════════════════════════════════════════════════════════════
 
-// ─── Get or Auto-Create the Registry Spreadsheet ─────────────────
 function _getOrCreateRegistry() {
   const props = PropertiesService.getScriptProperties();
   let ssId = props.getProperty('REGISTRY_SS_ID');
@@ -56,41 +55,97 @@ function _rowToObj(row) {
   };
 }
 
+// ─── Default Departments ──────────────────────────────────────────
+// These are pre-loaded when a branch spreadsheet is first created.
+// Add or remove entries here to change the defaults for ALL new branches.
+var DEFAULT_DEPARTMENTS = [
+  { code: 'HEM',  name: 'Hematology',         description: 'Blood tests and blood cell analysis' },
+  { code: 'CHEM', name: 'Chemistry',           description: 'Blood chemistry and metabolic panels' },
+  { code: 'XRAY', name: 'X-Ray',               description: 'Radiographic imaging services' },
+  { code: 'MICRO',name: 'Microbiology',        description: 'Culture, sensitivity, and bacteriology' },
+  { code: 'SERO', name: 'Serology',            description: 'Antibody and antigen testing' },
+  { code: 'HISTO',name: 'Histopathology',      description: 'Tissue and biopsy examination' },
+  { code: 'URINE',name: 'Urinalysis',          description: 'Urine sample analysis' },
+  { code: 'ECG',  name: 'ECG / Cardiology',    description: 'Electrocardiogram and heart diagnostics' },
+  { code: 'ULTRA',name: 'Ultrasound',          description: 'Ultrasound imaging services' },
+  { code: 'IMMUNO',name: 'Immunology',         description: 'Immune function and allergy testing' },
+];
+
 // ─── Auto-create Spreadsheet for a new Branch ────────────────────
 function _createBranchSpreadsheet(branchName, branchCode) {
-  const title = '[A-Lab] ' + branchName + ' (' + branchCode + ') — Lab Orders';
+  const title = '[A-Lab] ' + branchName + ' (' + branchCode + ')';
   const ss = SpreadsheetApp.create(title);
 
-  const ordersSheet = ss.getActiveSheet();
-  ordersSheet.setName('Lab Orders');
-  const orderHeaders = [
-    'order_no', 'patient_name', 'doctor', 'tests',
-    'amount', 'discount', 'net_amount', 'status',
-    'med_tech', 'ordered_at', 'released_at', 'notes'
-  ];
-  ordersSheet.appendRow(orderHeaders);
-  ordersSheet.getRange(1, 1, 1, orderHeaders.length)
-    .setFontWeight('bold').setBackground('#1e293b').setFontColor('#ffffff');
-  ordersSheet.setFrozenRows(1);
-  ordersSheet.setColumnWidths(1, orderHeaders.length, 150);
+  // ── 1. DEPARTMENTS sheet ──────────────────────────────────────
+  const deptSheet = ss.getActiveSheet();
+  deptSheet.setName('Departments');
 
+  const deptHeaders = [
+    'dept_id', 'dept_code', 'dept_name', 'description', 'status', 'created_at'
+  ];
+  deptSheet.appendRow(deptHeaders);
+
+  // Style header row
+  const deptHeaderRange = deptSheet.getRange(1, 1, 1, deptHeaders.length);
+  deptHeaderRange
+    .setFontWeight('bold')
+    .setBackground('#1e293b')
+    .setFontColor('#ffffff')
+    .setHorizontalAlignment('center');
+  deptSheet.setFrozenRows(1);
+
+  // Pre-load default departments
+  const now = new Date().toISOString();
+  DEFAULT_DEPARTMENTS.forEach(function(dept, i) {
+    const deptId = branchCode + '-' + dept.code;
+    deptSheet.appendRow([
+      deptId,
+      dept.code,
+      dept.name,
+      dept.description,
+      'Active',
+      now
+    ]);
+  });
+
+  // Alternate row shading for readability
+  const dataRows = DEFAULT_DEPARTMENTS.length;
+  for (var r = 2; r <= dataRows + 1; r++) {
+    if (r % 2 === 0) {
+      deptSheet.getRange(r, 1, 1, deptHeaders.length)
+        .setBackground('#f8fafc');
+    }
+  }
+
+  // Column widths
+  deptSheet.setColumnWidth(1, 130); // dept_id
+  deptSheet.setColumnWidth(2, 80);  // code
+  deptSheet.setColumnWidth(3, 160); // name
+  deptSheet.setColumnWidth(4, 280); // description
+  deptSheet.setColumnWidth(5, 90);  // status
+  deptSheet.setColumnWidth(6, 180); // created_at
+
+  // ── 2. SUMMARY sheet ─────────────────────────────────────────
   const summarySheet = ss.insertSheet('Summary');
   summarySheet.appendRow(['Metric', 'Value']);
   summarySheet.appendRow(['Branch', branchName]);
   summarySheet.appendRow(['Branch Code', branchCode]);
-  summarySheet.appendRow(['Total Orders',  "=COUNTA('Lab Orders'!A2:A)"]);
-  summarySheet.appendRow(['Total Revenue', "=SUM('Lab Orders'!G2:G)"]);
-  summarySheet.appendRow(['For Release',   "=COUNTIF('Lab Orders'!H2:H,\"For Release\")"]);
-  summarySheet.appendRow(['On Review',     "=COUNTIF('Lab Orders'!H2:H,\"On Review\")"]);
-  summarySheet.appendRow(['Received',      "=COUNTIF('Lab Orders'!H2:H,\"Received\")"]);
-  summarySheet.appendRow(['Pending',       "=COUNTIF('Lab Orders'!H2:H,\"Pending\")"]);
+  summarySheet.appendRow(['Total Departments', "=COUNTA(Departments!A2:A)"]);
+  summarySheet.appendRow(['Active Departments', "=COUNTIF(Departments!E2:E,\"Active\")"]);
+  summarySheet.appendRow(['Inactive Departments', "=COUNTIF(Departments!E2:E,\"Inactive\")"]);
+
   summarySheet.getRange(1, 1, 1, 2)
-    .setFontWeight('bold').setBackground('#1e293b').setFontColor('#ffffff');
+    .setFontWeight('bold')
+    .setBackground('#1e293b')
+    .setFontColor('#ffffff');
   summarySheet.setFrozenRows(1);
-  summarySheet.setColumnWidth(1, 160);
+  summarySheet.setColumnWidth(1, 180);
   summarySheet.setColumnWidth(2, 200);
 
-  ss.setActiveSheet(ordersSheet);
+  // ── 3. Bring Departments to front ────────────────────────────
+  ss.setActiveSheet(deptSheet);
+  ss.moveActiveSheet(1);
+
   return { id: ss.getId(), url: ss.getUrl() };
 }
 
@@ -135,10 +190,22 @@ function createBranch(payload) {
       now, now
     ]);
 
-    return { success: true, data: { branch_id: branchId, branch_name: payload.branch_name.trim(),
-      branch_code: payload.branch_code.trim().toUpperCase(), address: payload.address || '',
-      contact: payload.contact || '', email: payload.email || '', status: payload.status || 'Active',
-      spreadsheet_id: ssInfo.id, spreadsheet_url: ssInfo.url, created_at: now, updated_at: now } };
+    return {
+      success: true,
+      data: {
+        branch_id: branchId,
+        branch_name: payload.branch_name.trim(),
+        branch_code: payload.branch_code.trim().toUpperCase(),
+        address: payload.address || '',
+        contact: payload.contact || '',
+        email: payload.email || '',
+        status: payload.status || 'Active',
+        spreadsheet_id: ssInfo.id,
+        spreadsheet_url: ssInfo.url,
+        created_at: now,
+        updated_at: now
+      }
+    };
   } catch (e) {
     return { success: false, error: e.message };
   }
@@ -164,7 +231,7 @@ function updateBranch(payload) {
     try {
       const ssId = String(data[idx][7] || '');
       if (ssId) SpreadsheetApp.openById(ssId)
-        .rename('[A-Lab] ' + payload.branch_name.trim() + ' (' + payload.branch_code.trim().toUpperCase() + ') — Lab Orders');
+        .rename('[A-Lab] ' + payload.branch_name.trim() + ' (' + payload.branch_code.trim().toUpperCase() + ')');
     } catch(_) {}
 
     return { success: true };
@@ -186,7 +253,7 @@ function deleteBranch(branchId) {
   }
 }
 
-// ─── Run this once in the Apps Script editor to verify setup ─────
+// ─── Run once in Apps Script editor to verify setup ──────────────
 function setupAndVerify() {
   try {
     const sh = _getRegistrySheet();
