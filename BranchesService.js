@@ -55,21 +55,7 @@ function _rowToObj(row) {
   };
 }
 
-// ─── Default Departments ──────────────────────────────────────────
-// These are pre-loaded when a branch spreadsheet is first created.
-// Add or remove entries here to change the defaults for ALL new branches.
-var DEFAULT_DEPARTMENTS = [
-  { code: 'HEM',  name: 'Hematology',         description: 'Blood tests and blood cell analysis' },
-  { code: 'CHEM', name: 'Chemistry',           description: 'Blood chemistry and metabolic panels' },
-  { code: 'XRAY', name: 'X-Ray',               description: 'Radiographic imaging services' },
-  { code: 'MICRO',name: 'Microbiology',        description: 'Culture, sensitivity, and bacteriology' },
-  { code: 'SERO', name: 'Serology',            description: 'Antibody and antigen testing' },
-  { code: 'HISTO',name: 'Histopathology',      description: 'Tissue and biopsy examination' },
-  { code: 'URINE',name: 'Urinalysis',          description: 'Urine sample analysis' },
-  { code: 'ECG',  name: 'ECG / Cardiology',    description: 'Electrocardiogram and heart diagnostics' },
-  { code: 'ULTRA',name: 'Ultrasound',          description: 'Ultrasound imaging services' },
-  { code: 'IMMUNO',name: 'Immunology',         description: 'Immune function and allergy testing' },
-];
+
 
 // ─── Auto-create Spreadsheet for a new Branch ────────────────────
 function _createBranchSpreadsheet(branchName, branchCode) {
@@ -94,28 +80,6 @@ function _createBranchSpreadsheet(branchName, branchCode) {
     .setHorizontalAlignment('center');
   deptSheet.setFrozenRows(1);
 
-  // Pre-load default departments
-  const now = new Date().toISOString();
-  DEFAULT_DEPARTMENTS.forEach(function(dept, i) {
-    const deptId = branchCode + '-' + dept.code;
-    deptSheet.appendRow([
-      deptId,
-      dept.code,
-      dept.name,
-      dept.description,
-      'Active',
-      now
-    ]);
-  });
-
-  // Alternate row shading for readability
-  const dataRows = DEFAULT_DEPARTMENTS.length;
-  for (var r = 2; r <= dataRows + 1; r++) {
-    if (r % 2 === 0) {
-      deptSheet.getRange(r, 1, 1, deptHeaders.length)
-        .setBackground('#f8fafc');
-    }
-  }
 
   // Column widths
   deptSheet.setColumnWidth(1, 130); // dept_id
