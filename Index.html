@@ -144,7 +144,7 @@
       <!-- Main -->
       <p class="nav-section-label text-[10px] font-semibold text-slate-400 uppercase tracking-widest px-3 mb-2 mt-1">Main</p>
 
-      <a href="Dashboard.html" target="content-frame" onclick="setActive(this)"
+      <a href="#" onclick="setActive(this); loadPage('Dashboard')"
          class="nav-link active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-600 cursor-pointer">
         <svg class="w-4.5 h-4.5 w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
@@ -284,7 +284,7 @@
     <!-- CONTENT FRAME -->
     <main class="flex-1 overflow-hidden bg-slate-50">
       <iframe id="content-frame" name="content-frame"
-        src="Dashboard.html"
+        src=""
         class="w-full h-full">
       </iframe>
 
@@ -302,6 +302,26 @@
   </div>
 
   <script>
+    let baseUrl = '';
+
+    // Get the deployed web app URL, then load Dashboard by default
+    google.script.run
+      .withSuccessHandler(function(url) {
+        baseUrl = url;
+        loadPage('Dashboard');
+      })
+      .getScriptUrl();
+
+    function loadPage(pageName) {
+      if (!baseUrl) return;
+      const frame = document.getElementById('content-frame');
+      const placeholder = document.getElementById('placeholder');
+      frame.src = baseUrl + '?page=' + pageName;
+      frame.classList.remove('hidden');
+      placeholder.classList.add('hidden');
+      placeholder.classList.remove('flex');
+    }
+
     function setActive(el) {
       document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
       el.classList.add('active');
@@ -312,20 +332,15 @@
     function loadPlaceholder(name) {
       const frame = document.getElementById('content-frame');
       const placeholder = document.getElementById('placeholder');
-      // Show placeholder, hide iframe
       frame.classList.add('hidden');
       placeholder.classList.remove('hidden');
       placeholder.classList.add('flex');
       document.getElementById('placeholder-label').textContent = name + ' — Coming Soon';
     }
 
-    // When Dashboard link is clicked, show iframe again
+    // Dashboard nav link — load actual page
     document.querySelector('a[href="Dashboard.html"]').addEventListener('click', function () {
-      const frame = document.getElementById('content-frame');
-      const placeholder = document.getElementById('placeholder');
-      frame.classList.remove('hidden');
-      placeholder.classList.add('hidden');
-      placeholder.classList.remove('flex');
+      loadPage('Dashboard');
     });
 
     function toggleSidebar() {
