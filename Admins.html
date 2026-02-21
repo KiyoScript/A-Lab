@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admins — A-Lab</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans:['DM Sans','sans-serif'], mono:['DM Mono','monospace'] },
+          colors: { brand:{ 50:'#eef6ff',100:'#d9eaff',400:'#5599ff',500:'#2f76f5',600:'#1a56eb',700:'#1540d8' } }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'DM Sans', sans-serif; }
+    ::-webkit-scrollbar { width:5px; }
+    ::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:99px; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    .fade-up { animation: fadeUp 0.3s ease both; }
+    tr.data-row { transition: background 0.12s; }
+    tr.data-row:hover { background:#f8fafc; }
+    .badge { font-size:11px; font-weight:600; padding:2px 10px; border-radius:99px; letter-spacing:0.03em; }
+    .badge-active   { background:#dcfce7; color:#16a34a; }
+    .badge-inactive { background:#fee2e2; color:#dc2626; }
+    .badge-super    { background:#ede9fe; color:#7c3aed; }
+    .badge-branch   { background:#dbeafe; color:#2563eb; }
+    .spinner { width:18px;height:18px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;display:inline-block; }
+    @keyframes spin { to{transform:rotate(360deg)} }
+    #toast { transition:all 0.3s ease; transform:translateY(80px); opacity:0; }
+    #toast.show { transform:translateY(0); opacity:1; }
+    .tab-btn { transition: all 0.15s; }
+    .tab-btn.active { background: #2f76f5; color: white; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-screen overflow-auto">
+<div class="p-6 max-w-7xl mx-auto">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-6 fade-up">
+    <div>
+      <h1 class="text-xl font-bold text-slate-800">Admins</h1>
+      <p class="text-sm text-slate-400 mt-0.5">Manage super admins and branch admins.</p>
+    </div>
+    <button onclick="openModal()"
+      class="flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-sm">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+      </svg>
+      Add Admin
+    </button>
+  </div>
+
+  <!-- Tabs -->
+  <div class="flex items-center gap-2 mb-5 fade-up">
+    <button id="tab-branch" onclick="switchTab('branch')"
+      class="tab-btn active text-sm font-semibold px-4 py-2 rounded-xl border border-slate-200 text-slate-600">
+      Branch Admins
+    </button>
+    <button id="tab-super" onclick="switchTab('super')"
+      class="tab-btn text-sm font-semibold px-4 py-2 rounded-xl border border-slate-200 text-slate-600">
+      Super Admins
+    </button>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid grid-cols-3 gap-4 mb-5 fade-up">
+    <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm text-center">
+      <p class="text-2xl font-bold text-slate-800" id="stat-total">—</p>
+      <p class="text-xs text-slate-400 mt-0.5 font-medium">Total</p>
+    </div>
+    <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm text-center">
+      <p class="text-2xl font-bold text-emerald-600" id="stat-active">—</p>
+      <p class="text-xs text-slate-400 mt-0.5 font-medium">Active</p>
+    </div>
+    <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm text-center">
+      <p class="text-2xl font-bold text-red-500" id="stat-inactive">—</p>
+      <p class="text-xs text-slate-400 mt-0.5 font-medium">Inactive</p>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div class="flex items-center gap-3 mb-4 fade-up">
+    <div class="relative flex-1 max-w-sm">
+      <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
+      </svg>
+      <input id="search-input" type="text" placeholder="Search admins…" oninput="filterTable()"
+        class="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-brand-300 text-slate-700"/>
+    </div>
+    <select id="status-filter" onchange="filterTable()"
+      class="text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white text-slate-600 focus:outline-none focus:ring-2 focus:ring-brand-300">
+      <option value="">All Status</option>
+      <option value="Active">Active</option>
+      <option value="Inactive">Inactive</option>
+    </select>
+  </div>
+
+  <!-- Table Card -->
+  <div class="bg-white rounded-2xl border border-slate-100 shadow-sm fade-up">
+
+    <div id="loading-state" class="flex flex-col items-center justify-center py-16 gap-3">
+      <div class="w-10 h-10 border-2 border-brand-200 border-t-brand-500 rounded-full animate-spin"></div>
+      <p class="text-sm text-slate-400">Loading admins…</p>
+    </div>
+
+    <div id="empty-state" class="hidden flex-col items-center justify-center py-16 gap-3 text-center">
+      <div class="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center">
+        <svg class="w-7 h-7 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+        </svg>
+      </div>
+      <p class="text-slate-500 text-sm font-medium">No admins found</p>
+      <p class="text-slate-400 text-xs">Click "Add Admin" to create one.</p>
+    </div>
+
+    <div id="table-wrap" class="hidden overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-100">
+            <th class="text-left px-5 py-3">Admin</th>
+            <th class="text-left px-3 py-3">Username</th>
+            <th id="branch-col-header" class="text-left px-3 py-3">Branch</th>
+            <th class="text-left px-3 py-3">Role</th>
+            <th class="text-left px-3 py-3">Status</th>
+            <th class="text-right px-5 py-3">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="admin-tbody" class="divide-y divide-slate-50"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL ═══════════════════════════════════════════════════ -->
+<div id="modal-backdrop" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md" onclick="event.stopPropagation()">
+
+    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+      <div>
+        <h2 id="modal-title" class="text-base font-bold text-slate-800">Add Admin</h2>
+        <p id="modal-subtitle" class="text-xs text-slate-400 mt-0.5">Create a new admin account.</p>
+      </div>
+      <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-1">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="px-6 py-5 space-y-4">
+      <input type="hidden" id="f-admin-id"/>
+
+      <!-- Role selector (only on create) -->
+      <div id="role-wrap">
+        <label class="block text-xs font-semibold text-slate-600 mb-1.5">Role <span class="text-red-500">*</span></label>
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" id="role-branch" onclick="selectRole('branch_admin')"
+            class="role-btn border-2 border-brand-500 bg-brand-50 text-brand-700 rounded-xl py-2.5 text-sm font-semibold transition-all">
+            Branch Admin
+          </button>
+          <button type="button" id="role-super" onclick="selectRole('super_admin')"
+            class="role-btn border-2 border-slate-200 text-slate-500 rounded-xl py-2.5 text-sm font-semibold transition-all">
+            Super Admin
+          </button>
+        </div>
+      </div>
+
+      <!-- Branch selector (branch admin only) -->
+      <div id="branch-wrap">
+        <label class="block text-xs font-semibold text-slate-600 mb-1.5">Assign to Branch <span class="text-red-500">*</span></label>
+        <select id="f-branch-id"
+          class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 text-slate-700 bg-white">
+          <option value="">— Select Branch —</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 mb-1.5">Full Name <span class="text-red-500">*</span></label>
+        <input id="f-full-name" type="text" placeholder="e.g. Juan Dela Cruz"
+          class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 text-slate-700"/>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 mb-1.5">Username <span class="text-red-500">*</span></label>
+        <input id="f-username" type="text" placeholder="e.g. juan.delacruz"
+          class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 text-slate-700 font-mono"/>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 mb-1.5">
+          Password <span id="pw-hint" class="text-red-500">*</span>
+        </label>
+        <input id="f-password" type="password" placeholder="Enter password"
+          class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 text-slate-700"/>
+        <p id="pw-note" class="hidden text-xs text-slate-400 mt-1">Leave blank to keep current password.</p>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 mb-1.5">Status</label>
+        <select id="f-status"
+          class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 text-slate-700 bg-white">
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100">
+      <button onclick="closeModal()" class="px-4 py-2.5 text-sm font-semibold text-slate-600 hover:text-slate-800">Cancel</button>
+      <button id="save-btn" onclick="saveAdmin()"
+        class="flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-sm min-w-[110px] justify-center">
+        <span id="save-label">Save Admin</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ DELETE CONFIRM ══════════════════════════════════════════ -->
+<div id="delete-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+    <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
+      <svg class="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+      </svg>
+    </div>
+    <h3 class="text-base font-bold text-slate-800 mb-1">Delete Admin?</h3>
+    <p class="text-sm text-slate-500 mb-6">This will remove <strong id="delete-name" class="text-slate-700"></strong> permanently.</p>
+    <div class="flex gap-3">
+      <button onclick="closeDeleteModal()" class="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
+      <button id="confirm-delete-btn" onclick="confirmDelete()" class="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TOAST ════════════════════════════════════════════════════ -->
+<div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-xl text-sm font-semibold text-white shadow-lg flex items-center gap-2 pointer-events-none">
+  <svg id="toast-icon" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+  </svg>
+  <span id="toast-msg"></span>
+</div>
+
+<script>
+  let allBranchAdmins = [];
+  let allSuperAdmins  = [];
+  let allBranches     = [];
+  let currentTab      = 'branch';
+  let editingId       = null;
+  let editingRole     = null;
+  let deletingId      = null;
+  let deletingRole    = null;
+  let selectedRole    = 'branch_admin';
+
+  // ── Init ────────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', function() {
+    loadData();
+  });
+
+  function loadData() {
+    showLoading(true);
+    // Load branches for the dropdown
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (res.success) {
+          allBranches = res.data || [];
+          populateBranchDropdown();
+        }
+      })
+      .handleBranchRequest('GET_BRANCHES', {});
+
+    // Load all admins
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (res.success) allBranchAdmins = res.data || [];
+        loadSuperAdmins();
+      })
+      .withFailureHandler(function() { loadSuperAdmins(); })
+      .handleAdminRequest('GET_BRANCH_ADMINS', {});
+  }
+
+  function loadSuperAdmins() {
+    google.script.run
+      .withSuccessHandler(function(res) {
+        showLoading(false);
+        if (res.success) allSuperAdmins = res.data || [];
+        renderCurrentTab();
+        updateStats();
+      })
+      .withFailureHandler(function(err) {
+        showLoading(false);
+        showToast('Error loading admins: ' + err.message, 'error');
+      })
+      .handleAdminRequest('GET_SUPER_ADMINS', {});
+  }
+
+  // ── Tabs ────────────────────────────────────────────────────
+  function switchTab(tab) {
+    currentTab = tab;
+    document.getElementById('tab-branch').classList.toggle('active', tab === 'branch');
+    document.getElementById('tab-super').classList.toggle('active', tab === 'super');
+    document.getElementById('branch-col-header').style.display = tab === 'branch' ? '' : 'none';
+    document.getElementById('search-input').value = '';
+    document.getElementById('status-filter').value = '';
+    renderCurrentTab();
+    updateStats();
+  }
+
+  function renderCurrentTab() {
+    const data = currentTab === 'branch' ? allBranchAdmins : allSuperAdmins;
+    renderTable(data);
+  }
+
+  // ── Render ──────────────────────────────────────────────────
+  function renderTable(data) {
+    const tbody = document.getElementById('admin-tbody');
+    const wrap  = document.getElementById('table-wrap');
+    const empty = document.getElementById('empty-state');
+
+    if (!data.length) {
+      wrap.classList.add('hidden');
+      empty.classList.remove('hidden'); empty.classList.add('flex');
+      return;
+    }
+    empty.classList.add('hidden'); empty.classList.remove('flex');
+    wrap.classList.remove('hidden');
+
+    tbody.innerHTML = data.map(a => `
+      <tr class="data-row">
+        <td class="px-5 py-3.5">
+          <p class="font-semibold text-slate-800 text-sm">${escHtml(a.full_name)}</p>
+          <p class="text-[11px] text-slate-400 font-mono mt-0.5">${escHtml(a.admin_id)}</p>
+        </td>
+        <td class="px-3 py-3.5">
+          <span class="font-mono text-xs text-brand-600 bg-brand-50 px-2 py-1 rounded-lg">${escHtml(a.username)}</span>
+        </td>
+        <td class="px-3 py-3.5 text-sm text-slate-500" ${currentTab === 'super' ? 'style="display:none"' : ''}>
+          ${a.branch_name
+            ? `<span class="text-xs font-semibold text-slate-600">${escHtml(a.branch_name)}</span><br>
+               <span class="text-[11px] text-slate-400 font-mono">${escHtml(a.branch_id)}</span>`
+            : '<span class="text-xs text-slate-300">—</span>'}
+        </td>
+        <td class="px-3 py-3.5">
+          <span class="badge ${currentTab === 'super' ? 'badge-super' : 'badge-branch'}">
+            ${currentTab === 'super' ? 'Super Admin' : 'Branch Admin'}
+          </span>
+        </td>
+        <td class="px-3 py-3.5">
+          <span class="badge ${a.status === 'Active' ? 'badge-active' : 'badge-inactive'}">${escHtml(a.status)}</span>
+        </td>
+        <td class="px-5 py-3.5 text-right">
+          <div class="flex items-center justify-end gap-2">
+            <button onclick="openModal('${escHtml(a.admin_id)}', '${currentTab === 'super' ? 'super_admin' : 'branch_admin'}')"
+              class="p-1.5 text-slate-400 hover:text-brand-500 hover:bg-brand-50 rounded-lg transition-colors" title="Edit">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+              </svg>
+            </button>
+            <button onclick="openDeleteModal('${escHtml(a.admin_id)}', '${escHtml(a.full_name)}', '${currentTab === 'super' ? 'super_admin' : 'branch_admin'}')"
+              class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+              </svg>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function updateStats() {
+    const data = currentTab === 'branch' ? allBranchAdmins : allSuperAdmins;
+    document.getElementById('stat-total').textContent    = data.length;
+    document.getElementById('stat-active').textContent   = data.filter(a => a.status === 'Active').length;
+    document.getElementById('stat-inactive').textContent = data.filter(a => a.status === 'Inactive').length;
+  }
+
+  // ── Filter ──────────────────────────────────────────────────
+  function filterTable() {
+    const q  = document.getElementById('search-input').value.toLowerCase();
+    const st = document.getElementById('status-filter').value;
+    const src = currentTab === 'branch' ? allBranchAdmins : allSuperAdmins;
+    const filtered = src.filter(a => {
+      const mq = !q || a.full_name.toLowerCase().includes(q) || a.username.toLowerCase().includes(q)
+               || (a.branch_name || '').toLowerCase().includes(q);
+      const ms = !st || a.status === st;
+      return mq && ms;
+    });
+    renderTable(filtered);
+  }
+
+  // ── Branch Dropdown ─────────────────────────────────────────
+  function populateBranchDropdown() {
+    const sel = document.getElementById('f-branch-id');
+    sel.innerHTML = '<option value="">— Select Branch —</option>';
+    allBranches.filter(b => b.status === 'Active').forEach(b => {
+      sel.innerHTML += `<option value="${escHtml(b.branch_id)}">${escHtml(b.branch_name)} (${escHtml(b.branch_code)})</option>`;
+    });
+  }
+
+  // ── Modal ───────────────────────────────────────────────────
+  function openModal(adminId, role) {
+    editingId = null; editingRole = null;
+    clearForm();
+
+    const isEdit = !!adminId;
+    document.getElementById('modal-title').textContent    = isEdit ? 'Edit Admin' : 'Add Admin';
+    document.getElementById('modal-subtitle').textContent = isEdit ? 'Update admin details.' : 'Create a new admin account.';
+    document.getElementById('save-label').textContent     = isEdit ? 'Update Admin' : 'Save Admin';
+    document.getElementById('role-wrap').classList.toggle('hidden', isEdit);
+    document.getElementById('pw-note').classList.toggle('hidden', !isEdit);
+    document.getElementById('pw-hint').classList.toggle('hidden', isEdit);
+
+    if (isEdit) {
+      editingId   = adminId;
+      editingRole = role;
+      const data  = role === 'super_admin' ? allSuperAdmins : allBranchAdmins;
+      const admin = data.find(a => a.admin_id === adminId);
+      if (!admin) return;
+
+      document.getElementById('f-admin-id').value  = admin.admin_id;
+      document.getElementById('f-full-name').value = admin.full_name;
+      document.getElementById('f-username').value  = admin.username;
+      document.getElementById('f-status').value    = admin.status;
+
+      document.getElementById('branch-wrap').classList.toggle('hidden', role === 'super_admin');
+      if (role === 'branch_admin') document.getElementById('f-branch-id').value = admin.branch_id;
+    } else {
+      selectRole('branch_admin');
+    }
+
+    document.getElementById('modal-backdrop').classList.remove('hidden');
+  }
+
+  function closeModal() {
+    document.getElementById('modal-backdrop').classList.add('hidden');
+    clearForm(); editingId = null; editingRole = null;
+  }
+
+  function clearForm() {
+    ['f-admin-id','f-full-name','f-username','f-password'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('f-status').value    = 'Active';
+    document.getElementById('f-branch-id').value = '';
+  }
+
+  function selectRole(role) {
+    selectedRole = role;
+    const branchBtn = document.getElementById('role-branch');
+    const superBtn  = document.getElementById('role-super');
+    const isBranch  = role === 'branch_admin';
+
+    branchBtn.className = 'role-btn border-2 rounded-xl py-2.5 text-sm font-semibold transition-all ' +
+      (isBranch ? 'border-brand-500 bg-brand-50 text-brand-700' : 'border-slate-200 text-slate-500');
+    superBtn.className = 'role-btn border-2 rounded-xl py-2.5 text-sm font-semibold transition-all ' +
+      (!isBranch ? 'border-violet-500 bg-violet-50 text-violet-700' : 'border-slate-200 text-slate-500');
+
+    document.getElementById('branch-wrap').classList.toggle('hidden', !isBranch);
+  }
+
+  // ── Save ────────────────────────────────────────────────────
+  function saveAdmin() {
+    const fullName = document.getElementById('f-full-name').value.trim();
+    const username = document.getElementById('f-username').value.trim();
+    const password = document.getElementById('f-password').value;
+    const status   = document.getElementById('f-status').value;
+    const branchId = document.getElementById('f-branch-id').value;
+
+    if (!fullName) { showToast('Full name is required.', 'error'); return; }
+    if (!username) { showToast('Username is required.', 'error'); return; }
+    if (!editingId && !password) { showToast('Password is required.', 'error'); return; }
+
+    const role = editingId ? editingRole : selectedRole;
+    if (role === 'branch_admin' && !branchId) { showToast('Please select a branch.', 'error'); return; }
+
+    const payload = {
+      admin_id:  document.getElementById('f-admin-id').value,
+      full_name: fullName,
+      username:  username,
+      password:  password,
+      branch_id: branchId,
+      status:    status
+    };
+
+    const action = editingId
+      ? (role === 'super_admin' ? 'UPDATE_SUPER_ADMIN' : 'UPDATE_BRANCH_ADMIN')
+      : (role === 'super_admin' ? 'CREATE_SUPER_ADMIN' : 'CREATE_BRANCH_ADMIN');
+
+    setSaving(true);
+    google.script.run
+      .withSuccessHandler(function(res) {
+        setSaving(false);
+        if (res.success) {
+          closeModal();
+          showToast(editingId ? 'Admin updated!' : 'Admin created!', 'success');
+          loadData();
+        } else {
+          showToast('Error: ' + res.error, 'error');
+        }
+      })
+      .withFailureHandler(function(err) {
+        setSaving(false);
+        showToast('Error: ' + err.message, 'error');
+      })
+      .handleAdminRequest(action, payload);
+  }
+
+  function setSaving(v) {
+    const btn = document.getElementById('save-btn');
+    btn.disabled = v;
+    btn.innerHTML = v ? '<span class="spinner"></span>'
+      : `<span id="save-label">${editingId ? 'Update Admin' : 'Save Admin'}</span>`;
+  }
+
+  // ── Delete ──────────────────────────────────────────────────
+  function openDeleteModal(id, name, role) {
+    deletingId = id; deletingRole = role;
+    document.getElementById('delete-name').textContent = name;
+    document.getElementById('delete-modal').classList.remove('hidden');
+  }
+
+  function closeDeleteModal() {
+    deletingId = null; deletingRole = null;
+    document.getElementById('delete-modal').classList.add('hidden');
+  }
+
+  function confirmDelete() {
+    if (!deletingId) return;
+    const btn = document.getElementById('confirm-delete-btn');
+    btn.textContent = 'Deleting…'; btn.disabled = true;
+
+    const action = deletingRole === 'super_admin' ? 'DELETE_SUPER_ADMIN' : 'DELETE_BRANCH_ADMIN';
+    google.script.run
+      .withSuccessHandler(function(res) {
+        closeDeleteModal(); btn.textContent = 'Delete'; btn.disabled = false;
+        if (res.success) { showToast('Admin deleted.', 'success'); loadData(); }
+        else showToast('Error: ' + res.error, 'error');
+      })
+      .withFailureHandler(function(err) {
+        closeDeleteModal(); btn.textContent = 'Delete'; btn.disabled = false;
+        showToast('Error: ' + err.message, 'error');
+      })
+      .handleAdminRequest(action, { admin_id: deletingId });
+  }
+
+  // ── Helpers ─────────────────────────────────────────────────
+  function showLoading(v) {
+    document.getElementById('loading-state').classList.toggle('hidden', !v);
+    if (v) {
+      document.getElementById('table-wrap').classList.add('hidden');
+      document.getElementById('empty-state').classList.add('hidden');
+      document.getElementById('empty-state').classList.remove('flex');
+    }
+  }
+
+  let toastTimer;
+  function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    document.getElementById('toast-msg').textContent = msg;
+    t.className = t.className.replace(/bg-\w+-\d+/g, '');
+    t.classList.add(type === 'success' ? 'bg-emerald-600' : 'bg-red-500');
+    document.getElementById('toast-icon').innerHTML = type === 'success'
+      ? '<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>'
+      : '<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>';
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+  }
+
+  function escHtml(str) {
+    return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  document.getElementById('modal-backdrop').addEventListener('click', closeModal);
+  document.getElementById('delete-modal').addEventListener('click', closeDeleteModal);
+</script>
+</body>
+</html>

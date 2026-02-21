@@ -1,58 +1,170 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Branches — A-Lab</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['DM Sans', 'sans-serif'],
-            mono: ['DM Mono', 'monospace'],
-          },
-          colors: {
-            brand: { 50:'#eef6ff',100:'#d9eaff',400:'#5599ff',500:'#2f76f5',600:'#1a56eb',700:'#1540d8' },
-          }
-        }
-      }
-    }
-  </script>
   <style>
-    body { font-family: 'DM Sans', sans-serif; }
-    ::-webkit-scrollbar { width: 5px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+    * { font-family: 'DM Sans', sans-serif; }
 
-    @keyframes fadeUp {
-      from { opacity:0; transform:translateY(10px); }
-      to   { opacity:1; transform:translateY(0); }
+    /* ── LIGHT ── */
+    :root {
+      --page-bg:      #f8fafc;
+      --card-bg:      #ffffff;
+      --card-border:  #e2e8f0;
+      --text-primary: #0f172a;
+      --text-secondary:#475569;
+      --text-muted:   #94a3b8;
+      --table-hover:  #f8fafc;
+      --table-divider:#f1f5f9;
+      --thead-text:   #94a3b8;
+      --input-bg:     #f8fafc;
+      --input-border: #e2e8f0;
+      --input-text:   #334155;
+      --input-placeholder: #94a3b8;
+      --modal-bg:     #ffffff;
+      --modal-border: #e2e8f0;
+      --notice-bg:    #eef6ff;
+      --notice-border:#bbd8ff;
+      --notice-text:  #1a56eb;
+      --empty-icon:   #e2e8f0;
+      --cancel-text:  #475569;
+      --cancel-hover: #0f172a;
+      --delete-border:#e2e8f0;
+      --delete-hover: #f8fafc;
+      --toggle-bg:    #f1f5f9;
+      --toggle-border:#e2e8f0;
+      --toggle-color: #64748b;
     }
-    .fade-up { animation: fadeUp 0.3s ease both; }
 
-    /* Modal backdrop */
-    #modal-backdrop {
-      transition: opacity 0.2s ease;
+    /* ── DARK ── */
+    [data-theme="dark"] {
+      --page-bg:      #0f172a;
+      --card-bg:      #1e293b;
+      --card-border:  #334155;
+      --text-primary: #f1f5f9;
+      --text-secondary:#94a3b8;
+      --text-muted:   #64748b;
+      --table-hover:  #263044;
+      --table-divider:#263044;
+      --thead-text:   #64748b;
+      --input-bg:     #263044;
+      --input-border: #334155;
+      --input-text:   #e2e8f0;
+      --input-placeholder:#64748b;
+      --modal-bg:     #1e293b;
+      --modal-border: #334155;
+      --notice-bg:    rgba(47,118,245,0.08);
+      --notice-border:rgba(47,118,245,0.25);
+      --notice-text:  #5599ff;
+      --empty-icon:   #334155;
+      --cancel-text:  #94a3b8;
+      --cancel-hover: #f1f5f9;
+      --delete-border:#334155;
+      --delete-hover: #263044;
+      --toggle-bg:    #263044;
+      --toggle-border:#334155;
+      --toggle-color: #94a3b8;
     }
-    #modal-backdrop.hidden { display:none; }
 
-    /* Table row hover */
-    tr.data-row { transition: background 0.12s; }
-    tr.data-row:hover { background: #f8fafc; }
-
-    /* Status badge */
-    .badge {
-      font-size: 11px; font-weight: 600;
-      padding: 2px 10px; border-radius: 99px;
-      letter-spacing: 0.03em;
+    body {
+      background: var(--page-bg);
+      color: var(--text-primary);
+      height: 100vh;
+      overflow: auto;
+      transition: background 0.2s, color 0.2s;
     }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .form-input, .form-select {
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      color: var(--input-text);
+      width: 100%;
+      border-radius: 0.75rem;
+      padding: 0.625rem 0.75rem;
+      font-size: 0.875rem;
+      outline: none;
+      transition: box-shadow 0.15s, border-color 0.15s, background 0.2s;
+    }
+    .form-input::placeholder { color: var(--input-placeholder); }
+    .form-input:focus, .form-select:focus {
+      box-shadow: 0 0 0 2px rgba(47,118,245,0.25);
+      border-color: #2f76f5;
+    }
+
+    .search-input {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-input);
+      border-radius: 0.75rem;
+      padding: 0.5rem 0.75rem 0.5rem 2.25rem;
+      font-size: 0.875rem;
+      outline: none;
+      width: 100%;
+      transition: border-color 0.15s, background 0.2s;
+    }
+    .search-input:focus { border-color: #2f76f5; box-shadow: 0 0 0 2px rgba(47,118,245,0.2); }
+    .search-input::placeholder { color: var(--text-muted); }
+
+    .filter-select {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-secondary);
+      border-radius: 0.75rem;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.875rem;
+      outline: none;
+      transition: border-color 0.15s, background 0.2s;
+    }
+    .filter-select:focus { border-color: #2f76f5; }
+
+    .thead-row th { color: var(--thead-text); border-bottom: 1px solid var(--card-border); }
+    tr.data-row { border-bottom: 1px solid var(--table-divider); transition: background 0.12s; }
+    tr.data-row:hover { background: var(--table-hover); }
+
+    .badge { font-size:11px; font-weight:600; padding:2px 10px; border-radius:99px; letter-spacing:0.03em; }
     .badge-active   { background:#dcfce7; color:#16a34a; }
     .badge-inactive { background:#fee2e2; color:#dc2626; }
 
-    /* Spinner */
+    .modal-card {
+      background: var(--modal-bg);
+      border: 1px solid var(--modal-border);
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .modal-divider { border-color: var(--modal-border) !important; }
+
+    .notice-box {
+      background: var(--notice-bg);
+      border: 1px solid var(--notice-border);
+      color: var(--notice-text);
+      border-radius: 0.75rem;
+      padding: 0.75rem 1rem;
+      font-size: 0.75rem;
+      display: flex;
+      gap: 0.625rem;
+      align-items: flex-start;
+    }
+
+    .theme-toggle {
+      background: var(--toggle-bg);
+      border: 1px solid var(--toggle-border);
+      color: var(--toggle-color);
+      border-radius: 0.625rem;
+      padding: 0.375rem;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s;
+    }
+    .theme-toggle:hover { opacity: 0.75; }
+
     .spinner {
       width:18px; height:18px;
       border:2px solid rgba(255,255,255,0.4);
@@ -63,72 +175,76 @@
     }
     @keyframes spin { to { transform:rotate(360deg); } }
 
-    /* Toast */
-    #toast {
-      transition: all 0.3s ease;
-      transform: translateY(80px);
-      opacity: 0;
-    }
-    #toast.show {
-      transform: translateY(0);
-      opacity: 1;
-    }
+    #toast { transition:all 0.3s ease; transform:translateY(80px); opacity:0; }
+    #toast.show { transform:translateY(0); opacity:1; }
 
-    /* Pulse for spreadsheet icon */
-    @keyframes pulse-once {
-      0%,100% { transform:scale(1); }
-      50% { transform:scale(1.15); }
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(10px); }
+      to   { opacity:1; transform:translateY(0); }
     }
+    .fade-up { animation: fadeUp 0.3s ease both; }
+
     .ss-link:hover svg { animation: pulse-once 0.4s ease; }
+    @keyframes pulse-once { 0%,100%{transform:scale(1)} 50%{transform:scale(1.15)} }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 h-screen overflow-auto">
-
+<body>
 <div class="p-6 max-w-7xl mx-auto">
 
   <!-- Page Header -->
   <div class="flex items-center justify-between mb-6 fade-up">
     <div>
-      <h1 class="text-xl font-bold text-slate-800">Branches</h1>
-      <p class="text-sm text-slate-400 mt-0.5">Manage laboratory branches. Each new branch automatically gets its own Google Spreadsheet.</p>
+      <h1 class="text-xl font-bold" style="color:var(--text-primary)">Branches</h1>
+      <p class="text-sm mt-0.5" style="color:var(--text-muted)">Manage laboratory branches. Each new branch automatically gets its own Google Spreadsheet.</p>
     </div>
-    <button onclick="openModal('create')"
-      class="flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-sm">
-      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-      </svg>
-      Add Branch
-    </button>
+    <div class="flex items-center gap-2">
+      <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <svg id="icon-sun" class="w-4 h-4 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="5"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        </svg>
+        <svg id="icon-moon" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+        </svg>
+      </button>
+      <button onclick="openModal('create')"
+        class="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-sm">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+        </svg>
+        Add Branch
+      </button>
+    </div>
   </div>
 
   <!-- Stats Row -->
   <div class="grid grid-cols-3 gap-4 mb-6 fade-up">
-    <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm text-center">
-      <p class="text-2xl font-bold text-slate-800" id="stat-total">—</p>
-      <p class="text-xs text-slate-400 mt-0.5 font-medium">Total Branches</p>
+    <div class="card rounded-2xl p-4 text-center shadow-sm">
+      <p class="text-2xl font-bold" style="color:var(--text-primary)" id="stat-total">—</p>
+      <p class="text-xs mt-0.5 font-medium" style="color:var(--text-muted)">Total Branches</p>
     </div>
-    <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm text-center">
-      <p class="text-2xl font-bold text-emerald-600" id="stat-active">—</p>
-      <p class="text-xs text-slate-400 mt-0.5 font-medium">Active</p>
+    <div class="card rounded-2xl p-4 text-center shadow-sm">
+      <p class="text-2xl font-bold text-emerald-500" id="stat-active">—</p>
+      <p class="text-xs mt-0.5 font-medium" style="color:var(--text-muted)">Active</p>
     </div>
-    <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm text-center">
+    <div class="card rounded-2xl p-4 text-center shadow-sm">
       <p class="text-2xl font-bold text-red-500" id="stat-inactive">—</p>
-      <p class="text-xs text-slate-400 mt-0.5 font-medium">Inactive</p>
+      <p class="text-xs mt-0.5 font-medium" style="color:var(--text-muted)">Inactive</p>
     </div>
   </div>
 
   <!-- Search + Filter -->
   <div class="flex items-center gap-3 mb-4 fade-up">
     <div class="relative flex-1 max-w-sm">
-      <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style="color:var(--text-muted)" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
       </svg>
-      <input id="search-input" type="text" placeholder="Search branches…"
-        oninput="filterTable()"
-        class="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-brand-300 text-slate-700"/>
+      <input id="search-input" type="text" placeholder="Search branches…" oninput="filterTable()" class="search-input"/>
     </div>
-    <select id="status-filter" onchange="filterTable()"
-      class="text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white text-slate-600 focus:outline-none focus:ring-2 focus:ring-brand-300">
+    <select id="status-filter" onchange="filterTable()" class="filter-select">
       <option value="">All Status</option>
       <option value="Active">Active</option>
       <option value="Inactive">Inactive</option>
@@ -136,30 +252,27 @@
   </div>
 
   <!-- Table Card -->
-  <div class="bg-white rounded-2xl border border-slate-100 shadow-sm fade-up">
+  <div class="card rounded-2xl shadow-sm fade-up">
 
-    <!-- Loading state -->
     <div id="loading-state" class="flex flex-col items-center justify-center py-16 gap-3">
-      <div class="w-10 h-10 border-2 border-brand-200 border-t-brand-500 rounded-full animate-spin"></div>
-      <p class="text-sm text-slate-400">Loading branches…</p>
+      <div class="w-10 h-10 border-2 border-t-blue-500 rounded-full animate-spin" style="border-color:var(--card-border); border-top-color:#2f76f5"></div>
+      <p class="text-sm" style="color:var(--text-muted)">Loading branches…</p>
     </div>
 
-    <!-- Empty state -->
     <div id="empty-state" class="hidden flex-col items-center justify-center py-16 gap-3 text-center">
-      <div class="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center">
-        <svg class="w-7 h-7 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+      <div class="w-14 h-14 rounded-2xl flex items-center justify-center" style="background:var(--input-bg)">
+        <svg class="w-7 h-7" style="color:var(--empty-icon)" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M9 21V7l3-4 3 4v14M9 11h6"/>
         </svg>
       </div>
-      <p class="text-slate-500 text-sm font-medium">No branches yet</p>
-      <p class="text-slate-400 text-xs">Click "Add Branch" to create your first branch.</p>
+      <p class="text-sm font-medium" style="color:var(--text-secondary)">No branches yet</p>
+      <p class="text-xs" style="color:var(--text-muted)">Click "Add Branch" to create your first branch.</p>
     </div>
 
-    <!-- Table -->
     <div id="table-wrap" class="hidden overflow-x-auto">
       <table class="w-full text-sm">
         <thead>
-          <tr class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-100">
+          <tr class="thead-row text-[11px] font-semibold uppercase tracking-wider">
             <th class="text-left px-5 py-3">Branch</th>
             <th class="text-left px-3 py-3">Code</th>
             <th class="text-left px-3 py-3 hidden md:table-cell">Address</th>
@@ -169,7 +282,7 @@
             <th class="text-right px-5 py-3">Actions</th>
           </tr>
         </thead>
-        <tbody id="branch-tbody" class="divide-y divide-slate-50"></tbody>
+        <tbody id="branch-tbody"></tbody>
       </table>
     </div>
   </div>
@@ -177,111 +290,95 @@
 
 <!-- ═══ MODAL ═══════════════════════════════════════════════════════ -->
 <div id="modal-backdrop" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg" onclick="event.stopPropagation()">
+  <div class="modal-card rounded-2xl shadow-2xl w-full max-w-lg" onclick="event.stopPropagation()">
 
-    <!-- Modal Header -->
-    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+    <div class="flex items-center justify-between px-6 py-4 modal-divider" style="border-bottom:1px solid var(--modal-border)">
       <div>
-        <h2 id="modal-title" class="text-base font-bold text-slate-800">Add Branch</h2>
-        <p id="modal-subtitle" class="text-xs text-slate-400 mt-0.5">A Google Spreadsheet will be created automatically.</p>
+        <h2 id="modal-title" class="text-base font-bold" style="color:var(--text-primary)">Add Branch</h2>
+        <p id="modal-subtitle" class="text-xs mt-0.5" style="color:var(--text-muted)">A Google Spreadsheet will be created automatically.</p>
       </div>
-      <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 transition-colors p-1">
+      <button onclick="closeModal()" style="color:var(--text-muted)" class="hover:opacity-70 transition-opacity p-1">
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
         </svg>
       </button>
     </div>
 
-    <!-- Form -->
     <div class="px-6 py-5 space-y-4">
       <input type="hidden" id="f-branch-id"/>
 
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1.5">Branch Name <span class="text-red-500">*</span></label>
-          <input id="f-branch-name" type="text" placeholder="e.g. Ormoc Branch"
-            class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 text-slate-700"/>
+          <label class="block text-xs font-semibold mb-1.5" style="color:var(--text-secondary)">Branch Name <span class="text-red-500">*</span></label>
+          <input id="f-branch-name" type="text" placeholder="e.g. Ormoc Branch" class="form-input"/>
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1.5">Branch Code <span class="text-red-500">*</span></label>
-          <input id="f-branch-code" type="text" placeholder="e.g. ORM"
-            class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 text-slate-700 font-mono uppercase"/>
+          <label class="block text-xs font-semibold mb-1.5" style="color:var(--text-secondary)">Branch Code <span class="text-red-500">*</span></label>
+          <input id="f-branch-code" type="text" placeholder="e.g. ORM" class="form-input" style="font-family:'DM Mono',monospace; text-transform:uppercase"/>
         </div>
       </div>
 
       <div>
-        <label class="block text-xs font-semibold text-slate-600 mb-1.5">Address</label>
-        <input id="f-address" type="text" placeholder="Branch address"
-          class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 text-slate-700"/>
+        <label class="block text-xs font-semibold mb-1.5" style="color:var(--text-secondary)">Address</label>
+        <input id="f-address" type="text" placeholder="Branch address" class="form-input"/>
       </div>
 
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1.5">Contact No.</label>
-          <input id="f-contact" type="text" placeholder="09xx-xxx-xxxx"
-            class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 text-slate-700"/>
+          <label class="block text-xs font-semibold mb-1.5" style="color:var(--text-secondary)">Contact No.</label>
+          <input id="f-contact" type="text" placeholder="09xx-xxx-xxxx" class="form-input"/>
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1.5">Email</label>
-          <input id="f-email" type="email" placeholder="branch@alab.com"
-            class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 text-slate-700"/>
+          <label class="block text-xs font-semibold mb-1.5" style="color:var(--text-secondary)">Email</label>
+          <input id="f-email" type="email" placeholder="branch@alab.com" class="form-input"/>
         </div>
       </div>
 
       <div>
-        <label class="block text-xs font-semibold text-slate-600 mb-1.5">Status</label>
-        <select id="f-status"
-          class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 text-slate-700 bg-white">
+        <label class="block text-xs font-semibold mb-1.5" style="color:var(--text-secondary)">Status</label>
+        <select id="f-status" class="form-select">
           <option value="Active">Active</option>
           <option value="Inactive">Inactive</option>
         </select>
       </div>
 
-      <!-- Create-mode notice -->
-      <div id="ss-notice" class="flex items-start gap-2.5 bg-brand-50 rounded-xl px-4 py-3">
-        <svg class="w-4 h-4 text-brand-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <div id="ss-notice" class="notice-box">
+        <svg class="w-4 h-4 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="color:var(--notice-text)">
           <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20A10 10 0 0012 2z"/>
         </svg>
-        <p class="text-xs text-brand-700 leading-relaxed">
-          Saving will automatically create a dedicated <strong>Google Spreadsheet</strong> for this branch's lab orders, pre-formatted with Lab Orders and Summary sheets.
+        <p style="color:var(--notice-text)">
+          Saving will automatically create a dedicated <strong>Google Spreadsheet</strong> for this branch, pre-formatted with Departments and Admins sheets.
         </p>
       </div>
     </div>
 
-    <!-- Modal Footer -->
-    <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100">
-      <button onclick="closeModal()"
-        class="px-4 py-2.5 text-sm font-semibold text-slate-600 hover:text-slate-800 transition-colors">
-        Cancel
-      </button>
+    <div class="flex items-center justify-end gap-3 px-6 py-4" style="border-top:1px solid var(--modal-border)">
+      <button onclick="closeModal()" class="px-4 py-2.5 text-sm font-semibold transition-colors" style="color:var(--cancel-text)">Cancel</button>
       <button id="save-btn" onclick="saveBranch()"
-        class="flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors shadow-sm min-w-[110px] justify-center">
+        class="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors shadow-sm min-w-[110px] justify-center">
         <span id="save-label">Save Branch</span>
       </button>
     </div>
   </div>
 </div>
 
-<!-- ═══ DELETE CONFIRM MODAL ════════════════════════════════════════ -->
+<!-- ═══ DELETE CONFIRM ════════════════════════════════════════════════ -->
 <div id="delete-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+  <div class="modal-card rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center" onclick="event.stopPropagation()">
     <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
       <svg class="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
       </svg>
     </div>
-    <h3 class="text-base font-bold text-slate-800 mb-1">Delete Branch?</h3>
-    <p class="text-sm text-slate-500 mb-1">This will remove <strong id="delete-name" class="text-slate-700"></strong> from the registry.</p>
-    <p class="text-xs text-slate-400 mb-6">The branch spreadsheet will be kept to preserve data.</p>
+    <h3 class="text-base font-bold mb-1" style="color:var(--text-primary)">Delete Branch?</h3>
+    <p class="text-sm mb-1" style="color:var(--text-secondary)">This will remove <strong id="delete-name"></strong> from the registry.</p>
+    <p class="text-xs mb-6" style="color:var(--text-muted)">The branch spreadsheet will be kept to preserve data.</p>
     <div class="flex gap-3">
       <button onclick="closeDeleteModal()"
-        class="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors">
-        Cancel
-      </button>
+        class="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors"
+        style="border:1px solid var(--delete-border); color:var(--cancel-text)">Cancel</button>
       <button id="confirm-delete-btn" onclick="confirmDelete()"
-        class="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition-colors">
-        Delete
-      </button>
+        class="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition-colors">Delete</button>
     </div>
   </div>
 </div>
@@ -295,6 +392,27 @@
 </div>
 
 <script>
+  // ── Theme ──────────────────────────────────────────────────────────
+  const savedTheme = localStorage.getItem('alab-theme') || 'light';
+  applyTheme(savedTheme);
+
+  window.addEventListener('storage', function(e) {
+    if (e.key === 'alab-theme') applyTheme(e.newValue);
+  });
+
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    document.getElementById('icon-sun').classList.toggle('hidden', theme === 'light');
+    document.getElementById('icon-moon').classList.toggle('hidden', theme === 'dark');
+    localStorage.setItem('alab-theme', theme);
+  }
+
+  function toggleTheme() {
+    const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    applyTheme(next);
+    try { window.parent.postMessage({ type: 'ALAB_THEME', theme: next }, '*'); } catch(_) {}
+  }
+
   // ── State ──────────────────────────────────────────────────────────
   let allBranches = [];
   let editingId   = null;
@@ -335,7 +453,6 @@
       empty.classList.add('flex');
       return;
     }
-
     empty.classList.add('hidden');
     empty.classList.remove('flex');
     wrap.classList.remove('hidden');
@@ -343,38 +460,37 @@
     tbody.innerHTML = data.map(b => `
       <tr class="data-row">
         <td class="px-5 py-3.5">
-          <p class="font-semibold text-slate-800 text-sm">${escHtml(b.branch_name)}</p>
-          <p class="text-[11px] text-slate-400 font-mono mt-0.5">${escHtml(b.branch_id)}</p>
+          <p class="font-semibold text-sm" style="color:var(--text-primary)">${escHtml(b.branch_name)}</p>
+          <p class="text-[11px] mt-0.5" style="color:var(--text-muted);font-family:'DM Mono',monospace">${escHtml(b.branch_id)}</p>
         </td>
         <td class="px-3 py-3.5">
-          <span class="font-mono text-xs font-semibold text-brand-600 bg-brand-50 px-2 py-1 rounded-lg">${escHtml(b.branch_code)}</span>
+          <span class="text-xs font-semibold text-blue-500 px-2 py-1 rounded-lg" style="background:rgba(47,118,245,0.08);font-family:'DM Mono',monospace">${escHtml(b.branch_code)}</span>
         </td>
-        <td class="px-3 py-3.5 text-sm text-slate-500 hidden md:table-cell max-w-[180px] truncate">${escHtml(b.address || '—')}</td>
-        <td class="px-3 py-3.5 text-sm text-slate-500 hidden lg:table-cell">${escHtml(b.contact || '—')}</td>
+        <td class="px-3 py-3.5 text-sm hidden md:table-cell max-w-[180px] truncate" style="color:var(--text-secondary)">${escHtml(b.address || '—')}</td>
+        <td class="px-3 py-3.5 text-sm hidden lg:table-cell" style="color:var(--text-secondary)">${escHtml(b.contact || '—')}</td>
         <td class="px-3 py-3.5">
           <span class="badge ${b.status === 'Active' ? 'badge-active' : 'badge-inactive'}">${escHtml(b.status)}</span>
         </td>
         <td class="px-3 py-3.5">
           ${b.spreadsheet_url
             ? `<a href="${escHtml(b.spreadsheet_url)}" target="_blank"
-                class="ss-link flex items-center gap-1.5 text-xs font-semibold text-emerald-600 hover:text-emerald-700 transition-colors group">
+                class="ss-link flex items-center gap-1.5 text-xs font-semibold text-emerald-500 hover:text-emerald-600 transition-colors">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2a4 4 0 014-4h0a4 4 0 014 4v2M3 21h18M8 7h.01M16 7h.01M12 11h.01"/>
                 </svg>
-                Open Sheet
-              </a>`
-            : '<span class="text-xs text-slate-300">No sheet</span>'}
+                Open Sheet</a>`
+            : `<span class="text-xs" style="color:var(--text-muted)">No sheet</span>`}
         </td>
         <td class="px-5 py-3.5 text-right">
           <div class="flex items-center justify-end gap-2">
-            <button onclick="openModal('edit', '${escHtml(b.branch_id)}')"
-              class="p-1.5 text-slate-400 hover:text-brand-500 hover:bg-brand-50 rounded-lg transition-colors" title="Edit">
+            <button onclick="openModal('edit','${escHtml(b.branch_id)}')"
+              class="p-1.5 rounded-lg transition-colors hover:bg-blue-50 hover:text-blue-500" style="color:var(--text-muted)" title="Edit">
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
               </svg>
             </button>
-            <button onclick="openDeleteModal('${escHtml(b.branch_id)}', '${escHtml(b.branch_name)}')"
-              class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete">
+            <button onclick="openDeleteModal('${escHtml(b.branch_id)}','${escHtml(b.branch_name)}')"
+              class="p-1.5 rounded-lg transition-colors hover:bg-red-50 hover:text-red-500" style="color:var(--text-muted)" title="Delete">
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
               </svg>
@@ -396,9 +512,9 @@
     const q  = document.getElementById('search-input').value.toLowerCase();
     const st = document.getElementById('status-filter').value;
     const filtered = allBranches.filter(b => {
-      const matchQ  = !q || b.branch_name.toLowerCase().includes(q) || b.branch_code.toLowerCase().includes(q) || (b.address||'').toLowerCase().includes(q);
-      const matchSt = !st || b.status === st;
-      return matchQ && matchSt;
+      const mq = !q || b.branch_name.toLowerCase().includes(q) || b.branch_code.toLowerCase().includes(q) || (b.address||'').toLowerCase().includes(q);
+      const ms = !st || b.status === st;
+      return mq && ms;
     });
     renderTable(filtered);
   }
@@ -407,33 +523,23 @@
   function openModal(mode, branchId) {
     editingId = null;
     clearForm();
+    const isEdit = mode === 'edit';
+    document.getElementById('modal-title').textContent    = isEdit ? 'Edit Branch' : 'Add Branch';
+    document.getElementById('modal-subtitle').textContent = isEdit ? 'The branch spreadsheet will also be renamed.' : 'A Google Spreadsheet will be created automatically.';
+    document.getElementById('save-label').textContent     = isEdit ? 'Update Branch' : 'Save Branch';
+    document.getElementById('ss-notice').classList.toggle('hidden', isEdit);
 
-    const titleEl    = document.getElementById('modal-title');
-    const subtitleEl = document.getElementById('modal-subtitle');
-    const saveLbl    = document.getElementById('save-label');
-    const ssNotice   = document.getElementById('ss-notice');
-
-    if (mode === 'create') {
-      titleEl.textContent    = 'Add Branch';
-      subtitleEl.textContent = 'A Google Spreadsheet will be created automatically.';
-      saveLbl.textContent    = 'Save Branch';
-      ssNotice.classList.remove('hidden');
-    } else {
+    if (isEdit) {
       const b = allBranches.find(x => x.branch_id === branchId);
       if (!b) return;
       editingId = branchId;
-      titleEl.textContent    = 'Edit Branch';
-      subtitleEl.textContent = 'The branch spreadsheet will also be renamed.';
-      saveLbl.textContent    = 'Update Branch';
-      ssNotice.classList.add('hidden');
-
       document.getElementById('f-branch-id').value   = b.branch_id;
       document.getElementById('f-branch-name').value = b.branch_name;
       document.getElementById('f-branch-code').value = b.branch_code;
-      document.getElementById('f-address').value     = b.address   || '';
-      document.getElementById('f-contact').value     = b.contact   || '';
-      document.getElementById('f-email').value       = b.email     || '';
-      document.getElementById('f-status').value      = b.status    || 'Active';
+      document.getElementById('f-address').value     = b.address  || '';
+      document.getElementById('f-contact').value     = b.contact  || '';
+      document.getElementById('f-email').value       = b.email    || '';
+      document.getElementById('f-status').value      = b.status   || 'Active';
     }
 
     document.getElementById('modal-backdrop').classList.remove('hidden');
@@ -456,14 +562,12 @@
   function saveBranch() {
     const name = document.getElementById('f-branch-name').value.trim();
     const code = document.getElementById('f-branch-code').value.trim().toUpperCase();
-
     if (!name) { showToast('Branch name is required.', 'error'); return; }
     if (!code) { showToast('Branch code is required.', 'error'); return; }
 
     const payload = {
       branch_id:   document.getElementById('f-branch-id').value,
-      branch_name: name,
-      branch_code: code,
+      branch_name: name, branch_code: code,
       address:     document.getElementById('f-address').value.trim(),
       contact:     document.getElementById('f-contact').value.trim(),
       email:       document.getElementById('f-email').value.trim(),
@@ -471,8 +575,6 @@
     };
 
     setSaving(true);
-    const action = editingId ? 'UPDATE_BRANCH' : 'CREATE_BRANCH';
-
     google.script.run
       .withSuccessHandler(res => {
         setSaving(false);
@@ -484,23 +586,15 @@
           showToast('Error: ' + res.error, 'error');
         }
       })
-      .withFailureHandler(err => {
-        setSaving(false);
-        showToast('Error: ' + err.message, 'error');
-      })
-      .handleBranchRequest(action, payload);
+      .withFailureHandler(err => { setSaving(false); showToast('Error: ' + err.message, 'error'); })
+      .handleBranchRequest(editingId ? 'UPDATE_BRANCH' : 'CREATE_BRANCH', payload);
   }
 
-  function setSaving(loading) {
+  function setSaving(v) {
     const btn = document.getElementById('save-btn');
-    const lbl = document.getElementById('save-label');
-    if (loading) {
-      btn.disabled = true;
-      btn.innerHTML = '<span class="spinner"></span>';
-    } else {
-      btn.disabled = false;
-      btn.innerHTML = `<span id="save-label">${editingId ? 'Update Branch' : 'Save Branch'}</span>`;
-    }
+    btn.disabled = v;
+    btn.innerHTML = v ? '<span class="spinner"></span>'
+      : `<span id="save-label">${editingId ? 'Update Branch' : 'Save Branch'}</span>`;
   }
 
   // ── Delete ────────────────────────────────────────────────────────
@@ -518,25 +612,15 @@
   function confirmDelete() {
     if (!deletingId) return;
     const btn = document.getElementById('confirm-delete-btn');
-    btn.textContent = 'Deleting…';
-    btn.disabled    = true;
-
+    btn.textContent = 'Deleting…'; btn.disabled = true;
     google.script.run
       .withSuccessHandler(res => {
-        closeDeleteModal();
-        btn.textContent = 'Delete';
-        btn.disabled    = false;
-        if (res.success) {
-          showToast('Branch deleted.', 'success');
-          loadBranches();
-        } else {
-          showToast('Error: ' + res.error, 'error');
-        }
+        closeDeleteModal(); btn.textContent = 'Delete'; btn.disabled = false;
+        if (res.success) { showToast('Branch deleted.', 'success'); loadBranches(); }
+        else showToast('Error: ' + res.error, 'error');
       })
       .withFailureHandler(err => {
-        closeDeleteModal();
-        btn.textContent = 'Delete';
-        btn.disabled    = false;
+        closeDeleteModal(); btn.textContent = 'Delete'; btn.disabled = false;
         showToast('Error: ' + err.message, 'error');
       })
       .handleBranchRequest('DELETE_BRANCH', { branch_id: deletingId });
@@ -554,12 +638,11 @@
 
   let toastTimer;
   function showToast(msg, type = 'success') {
-    const t    = document.getElementById('toast');
-    const icon = document.getElementById('toast-icon');
+    const t = document.getElementById('toast');
     document.getElementById('toast-msg').textContent = msg;
     t.className = t.className.replace(/bg-\w+-\d+/g, '');
     t.classList.add(type === 'success' ? 'bg-emerald-600' : 'bg-red-500');
-    icon.innerHTML = type === 'success'
+    document.getElementById('toast-icon').innerHTML = type === 'success'
       ? '<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>'
       : '<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>';
     t.classList.add('show');
@@ -568,10 +651,9 @@
   }
 
   function escHtml(str) {
-    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
-  // Close modals on backdrop click
   document.getElementById('modal-backdrop').addEventListener('click', closeModal);
   document.getElementById('delete-modal').addEventListener('click', closeDeleteModal);
 </script>

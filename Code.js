@@ -3,8 +3,24 @@
 // ═══════════════════════════════════════════════════════════════
 
 function doGet(e) {
-  const page = e.parameter.page || 'Index';
+  const page    = e.parameter.page || 'Index';
+  const session = _getSession();
 
+  // Public pages — always accessible
+  const publicPages = ['Login'];
+  if (publicPages.indexOf(page) !== -1) {
+    return _serve(page);
+  }
+
+  // All other pages require a valid session
+  if (!session) {
+    return _serve('Login');
+  }
+
+  return _serve(page);
+}
+
+function _serve(page) {
   return HtmlService.createTemplateFromFile(page)
     .evaluate()
     .setTitle('A-Lab — Automation Hub')
@@ -20,22 +36,31 @@ function getScriptUrl() {
   return ScriptApp.getService().getUrl();
 }
 
-// ─── Unified POST/RPC router ──────────────────────────────────────
-// All client-side google.script.run calls route through here.
-// Each module (Branches, Patients, etc.) has its own handler file.
-
+// ─── Branch requests ──────────────────────────────────────────────
 function handleBranchRequest(action, payload) {
-  // Delegates to BranchesService.gs
-  return _handleBranchRequest(action, payload);
-}
-
-// Internal alias (avoids name collision if you add more modules)
-function _handleBranchRequest(action, payload) {
   switch (action) {
     case 'GET_BRANCHES':   return getBranches();
     case 'CREATE_BRANCH':  return createBranch(payload);
     case 'UPDATE_BRANCH':  return updateBranch(payload);
     case 'DELETE_BRANCH':  return deleteBranch(payload.branch_id);
     default:               return { success: false, error: 'Unknown action: ' + action };
+  }
+}
+
+// ─── Admin requests ───────────────────────────────────────────────
+function handleAdminRequest(action, payload) {
+  switch (action) {
+    case 'LOGIN':               return login(payload.username, payload.password);
+    case 'LOGOUT':              return logout();
+    case 'GET_SESSION':         return getSession();
+    case 'GET_SUPER_ADMINS':    return getSuperAdmins();
+    case 'CREATE_SUPER_ADMIN':  return createSuperAdmin(payload);
+    case 'UPDATE_SUPER_ADMIN':  return updateSuperAdmin(payload);
+    case 'DELETE_SUPER_ADMIN':  return deleteSuperAdmin(payload.admin_id);
+    case 'GET_BRANCH_ADMINS':   return getBranchAdmins();
+    case 'CREATE_BRANCH_ADMIN': return createBranchAdmin(payload);
+    case 'UPDATE_BRANCH_ADMIN': return updateBranchAdmin(payload);
+    case 'DELETE_BRANCH_ADMIN': return deleteBranchAdmin(payload.admin_id);
+    default: return { success: false, error: 'Unknown action: ' + action };
   }
 }
