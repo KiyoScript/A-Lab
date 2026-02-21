@@ -36,4 +36,16 @@ jobs:
         run: clasp push --force
 
       - name: Create new version
-        run: clasp version "Deployed from ${{ github.ref_name }} by ${{ github.actor }} - $(date)"
+        id: version
+        run: |
+          OUTPUT=$(clasp version "Auto deployed from ${{ github.ref_name }} by ${{ github.actor }} - $(date)")
+          echo "$OUTPUT"
+          VERSION=$(echo "$OUTPUT" | grep -oP '(?<=Created version )\d+')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Deploy Web App
+        run: |
+          clasp deploy \
+            --deploymentId ${{ secrets.DEPLOYMENT_ID }} \
+            --versionNumber ${{ steps.version.outputs.version }} \
+            --description "Auto deploy from ${{ github.ref_name }} by ${{ github.actor }}"
