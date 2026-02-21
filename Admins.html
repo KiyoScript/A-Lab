@@ -25,7 +25,7 @@
     @keyframes spin { to{transform:rotate(360deg)} }
     #toast { transition:all 0.3s ease; transform:translateY(80px); opacity:0; }
     #toast.show { transform:translateY(0); opacity:1; }
-    .tab-btn { transition: all 0.15s; border:1px solid #e2e8f0; color:#475569; background:#fff; }
+    .tab-btn { transition: all 0.15s; border:1px solid #cbd5e1; color:#475569 !important; background:#fff; }
     .tab-btn:hover:not(.active) { background:#f1f5f9; color:#1e293b; }
     .tab-btn.active { background:#2f76f5; color:#fff; border-color:#2f76f5; }
     .form-field {
@@ -57,8 +57,8 @@
 
   <!-- Tabs -->
   <div class="flex items-center gap-2 mb-5 fade-up">
-    <button id="tab-branch" onclick="switchTab('branch')" class="tab-btn active text-sm font-semibold px-4 py-2 rounded-xl text-white">Branch Admins</button>
-    <button id="tab-super"  onclick="switchTab('super')"  class="tab-btn text-sm font-semibold px-4 py-2 rounded-xl text-slate-600">Super Admins</button>
+    <button id="tab-branch" onclick="switchTab('branch')" class="tab-btn active text-sm font-semibold px-4 py-2 rounded-xl">Branch Admins</button>
+    <button id="tab-super"  onclick="switchTab('super')"  class="tab-btn text-sm font-semibold px-4 py-2 rounded-xl">Super Admins</button>
   </div>
 
   <!-- Stats -->
