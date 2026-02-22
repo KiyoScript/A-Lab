@@ -200,8 +200,21 @@ function updateBranch(payload) {
 
     try {
       const ssId = String(data[idx][7] || '');
-      if (ssId) SpreadsheetApp.openById(ssId)
-        .rename('[A-Lab] ' + payload.branch_name.trim() + ' (' + payload.branch_code.trim().toUpperCase() + ')');
+      if (ssId) {
+        const branchSs = SpreadsheetApp.openById(ssId);
+
+        // Rename the spreadsheet
+        branchSs.rename('[A-Lab] ' + payload.branch_name.trim() + ' (' + payload.branch_code.trim().toUpperCase() + ')');
+
+        // Sync branch_name in all admin rows (col 6 = branch_name)
+        const adminSh = branchSs.getSheetByName('Admins');
+        if (adminSh && adminSh.getLastRow() > 1) {
+          const numRows = adminSh.getLastRow() - 1;
+          const branchNameCol = adminSh.getRange(2, 6, numRows, 1);
+          const vals = branchNameCol.getValues().map(() => [payload.branch_name.trim()]);
+          branchNameCol.setValues(vals);
+        }
+      }
     } catch(_) {}
 
     return { success: true };

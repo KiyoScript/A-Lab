@@ -247,8 +247,10 @@ function getBranchAdmins() {
     const allAdmins  = [];
 
     for (var b = 1; b < branchData.length; b++) {
-      const bRow  = branchData[b];
-      const ssId  = String(bRow[7] || '');
+      const bRow       = branchData[b];
+      const ssId       = String(bRow[7] || '');
+      const liveBranchName = String(bRow[1] || ''); // always use current name from registry
+      const liveBranchId   = String(bRow[0] || '');
       if (!ssId) continue;
 
       try {
@@ -259,8 +261,8 @@ function getBranchAdmins() {
             admin_id:    String(r[0]),
             full_name:   String(r[1]),
             username:    String(r[2]),
-            branch_id:   String(r[4]),
-            branch_name: String(r[5]),
+            branch_id:   liveBranchId,   // from registry, always fresh
+            branch_name: liveBranchName, // from registry, always fresh
             status:      String(r[6]),
             created_at:  String(r[7]),
             updated_at:  String(r[8])
