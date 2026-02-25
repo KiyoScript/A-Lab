@@ -81,3 +81,19 @@ function handleDepartmentRequest(action, payload, token) {
     default: return { success: false, error: 'Unknown action: ' + action };
   }
 }
+// ─── ADD THIS BLOCK to Code.js after handleDepartmentRequest ─────
+
+// ─── Discount requests (super_admin only) ────────────────────────
+function handleDiscountRequest(action, payload, token) {
+  const session = _getSession(token);
+  if (!session) return { success: false, error: 'Session expired. Please log in again.', expired: true };
+  if (session.role !== 'super_admin') return { success: false, error: 'Access denied. Super admin only.' };
+
+  switch (action) {
+    case 'GET_DISCOUNTS':   return getDiscounts(token);
+    case 'CREATE_DISCOUNT': return createDiscount(payload, token);
+    case 'UPDATE_DISCOUNT': return updateDiscount(payload, token);
+    case 'DELETE_DISCOUNT': return deleteDiscount(payload.discount_id, token);
+    default: return { success: false, error: 'Unknown action: ' + action };
+  }
+}
