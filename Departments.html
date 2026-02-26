@@ -123,7 +123,6 @@
           <tr class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-100">
             <th class="text-left px-5 py-3">Department</th>
             <th id="th-branch" class="text-left px-3 py-3">Branch</th>
-            <th class="text-left px-3 py-3">Sort Order</th>
             <th class="text-left px-3 py-3">Status</th>
             <th class="text-right px-5 py-3">Actions</th>
           </tr>
@@ -169,11 +168,6 @@
       <div>
         <label class="block text-xs font-semibold text-slate-600 mb-1.5">Department Name <span class="text-red-500">*</span></label>
         <input id="f-dept-name" type="text" placeholder="e.g. Hematology" class="form-input"/>
-      </div>
-      <div>
-        <label class="block text-xs font-semibold text-slate-600 mb-1.5">Sort Order</label>
-        <input id="f-sort-order" type="number" min="0" placeholder="0" class="form-input"/>
-        <p class="text-[11px] text-slate-400 mt-1">Lower numbers appear first. Default is 0.</p>
       </div>
       <div>
         <label class="block text-xs font-semibold text-slate-600 mb-2">Status</label>
@@ -351,9 +345,6 @@
             : '<span class="text-xs text-slate-300">—</span>'}
         </td>
         <td class="px-3 py-3.5">
-          <span class="text-sm font-mono text-slate-500">${d.sort_order !== undefined ? d.sort_order : 0}</span>
-        </td>
-        <td class="px-3 py-3.5">
           <span class="badge ${d.is_active ? 'badge-active' : 'badge-inactive'}">${d.is_active ? 'Active' : 'Inactive'}</span>
         </td>
         <td class="px-5 py-3.5 text-right">
@@ -423,7 +414,6 @@
       editingBranchId = branchId;
       document.getElementById('f-dept-id').value    = dept.dept_id;
       document.getElementById('f-dept-name').value  = dept.dept_name;
-      document.getElementById('f-sort-order').value = dept.sort_order !== undefined ? dept.sort_order : 0;
       document.getElementById('f-is-active').checked = dept.is_active;
       document.getElementById('toggle-label').textContent = dept.is_active ? 'Active' : 'Inactive';
       document.getElementById('toggle-label').className  = 'text-sm font-semibold ' + (dept.is_active ? 'text-emerald-600' : 'text-slate-400');
@@ -441,7 +431,6 @@
   function clearForm() {
     document.getElementById('f-dept-id').value    = '';
     document.getElementById('f-dept-name').value  = '';
-    document.getElementById('f-sort-order').value = '0';
     document.getElementById('f-branch-id').value  = '';
     document.getElementById('f-is-active').checked = true;
     document.getElementById('toggle-label').textContent = 'Active';
@@ -451,7 +440,6 @@
   function saveDept() {
     const isSuperAdmin = currentSession && currentSession.role === 'super_admin';
     const deptName  = document.getElementById('f-dept-name').value.trim();
-    const sortOrder = parseInt(document.getElementById('f-sort-order').value) || 0;
     const isActive  = document.getElementById('f-is-active').checked;
 
     let branchId;
@@ -465,11 +453,10 @@
     if (!branchId) { showToast('Please select a branch.', 'error'); return; }
 
     const payload = {
-      dept_id:    document.getElementById('f-dept-id').value,
-      dept_name:  deptName,
-      sort_order: sortOrder,
-      is_active:  isActive,
-      branch_id:  branchId
+      dept_id:   document.getElementById('f-dept-id').value,
+      dept_name: deptName,
+      is_active: isActive,
+      branch_id: branchId
     };
 
     const action = editingId ? 'UPDATE_DEPARTMENT' : 'CREATE_DEPARTMENT';

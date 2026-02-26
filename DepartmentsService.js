@@ -2,7 +2,7 @@
 // DEPARTMENTS SERVICE
 // Departments are stored in each branch's own Spreadsheet
 // under a "Departments" sheet.
-// Schema: dept_id | dept_name | sort_order | is_active | branch_id | created_at | updated_at
+// Schema: dept_id | dept_name | is_active | branch_id | created_at | updated_at
 // ═══════════════════════════════════════════════════════════════
 
 function _getDeptSheet(spreadsheetId) {
@@ -11,7 +11,7 @@ function _getDeptSheet(spreadsheetId) {
 
   if (!sh) {
     sh = ss.insertSheet('Departments');
-    const headers = ['dept_id', 'dept_name', 'sort_order', 'is_active', 'branch_id', 'created_at', 'updated_at'];
+    const headers = ['dept_id', 'dept_name', 'is_active', 'branch_id', 'created_at', 'updated_at'];
     sh.appendRow(headers);
     sh.getRange(1, 1, 1, headers.length)
       .setFontWeight('bold')
@@ -20,12 +20,11 @@ function _getDeptSheet(spreadsheetId) {
       .setHorizontalAlignment('center');
     sh.setFrozenRows(1);
     sh.setColumnWidth(1, 160); // dept_id
-    sh.setColumnWidth(2, 220); // dept_name
-    sh.setColumnWidth(3, 100); // sort_order
-    sh.setColumnWidth(4, 90);  // is_active
-    sh.setColumnWidth(5, 140); // branch_id
-    sh.setColumnWidth(6, 180); // created_at
-    sh.setColumnWidth(7, 180); // updated_at
+    sh.setColumnWidth(2, 240); // dept_name
+    sh.setColumnWidth(3, 90);  // is_active
+    sh.setColumnWidth(4, 140); // branch_id
+    sh.setColumnWidth(5, 180); // created_at
+    sh.setColumnWidth(6, 180); // updated_at
   }
 
   return sh;
@@ -35,12 +34,11 @@ function _deptRowToObj(row, branchId, branchName) {
   return {
     dept_id:     String(row[0] || ''),
     dept_name:   String(row[1] || ''),
-    sort_order:  Number(row[2] || 0),
-    is_active:   String(row[3]).toUpperCase() === 'TRUE' || row[3] === true,
-    branch_id:   String(row[4] || branchId || ''),
+    is_active:   String(row[2]).toUpperCase() === 'TRUE' || row[2] === true,
+    branch_id:   String(row[3] || branchId || ''),
     branch_name: branchName || '',
-    created_at:  String(row[5] || ''),
-    updated_at:  String(row[6] || '')
+    created_at:  String(row[4] || ''),
+    updated_at:  String(row[5] || '')
   };
 }
 
@@ -128,15 +126,13 @@ function createDepartment(payload, token) {
     const ssId = String(branchRow[7]);
     const sh   = _getDeptSheet(ssId);
 
-    const now    = new Date().toISOString();
-    const deptId = 'DEPT-' + Utilities.getUuid().substring(0, 8).toUpperCase();
-    const sortOrder = Number(payload.sort_order) || 0;
-    const isActive  = payload.is_active !== undefined ? payload.is_active : true;
+    const now     = new Date().toISOString();
+    const deptId  = 'DEPT-' + Utilities.getUuid().substring(0, 8).toUpperCase();
+    const isActive = payload.is_active !== undefined ? payload.is_active : true;
 
     sh.appendRow([
       deptId,
       payload.dept_name.trim(),
-      sortOrder,
       isActive,
       targetBranchId,
       now,
@@ -148,7 +144,6 @@ function createDepartment(payload, token) {
       data: {
         dept_id:     deptId,
         dept_name:   payload.dept_name.trim(),
-        sort_order:  sortOrder,
         is_active:   isActive,
         branch_id:   targetBranchId,
         branch_name: String(branchRow[1]),
@@ -191,9 +186,8 @@ function updateDepartment(payload, token) {
     const now = new Date().toISOString();
     const row = idx + 1;
     sh.getRange(row, 2).setValue(payload.dept_name.trim());
-    sh.getRange(row, 3).setValue(Number(payload.sort_order) || 0);
-    sh.getRange(row, 4).setValue(payload.is_active);
-    sh.getRange(row, 7).setValue(now);
+    sh.getRange(row, 3).setValue(payload.is_active);
+    sh.getRange(row, 6).setValue(now);
 
     return { success: true };
   } catch (e) {

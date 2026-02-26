@@ -67,7 +67,7 @@ function _createBranchSpreadsheet(branchName, branchCode) {
   deptSheet.setName('Departments');
 
   const deptHeaders = [
-    'dept_id', 'dept_code', 'dept_name', 'description', 'status', 'created_at'
+    'dept_id', 'dept_name', 'is_active', 'branch_id', 'created_at', 'updated_at'
   ];
   deptSheet.appendRow(deptHeaders);
 
@@ -80,14 +80,13 @@ function _createBranchSpreadsheet(branchName, branchCode) {
     .setHorizontalAlignment('center');
   deptSheet.setFrozenRows(1);
 
-
   // Column widths
-  deptSheet.setColumnWidth(1, 130); // dept_id
-  deptSheet.setColumnWidth(2, 80);  // code
-  deptSheet.setColumnWidth(3, 160); // name
-  deptSheet.setColumnWidth(4, 280); // description
-  deptSheet.setColumnWidth(5, 90);  // status
-  deptSheet.setColumnWidth(6, 180); // created_at
+  deptSheet.setColumnWidth(1, 160); // dept_id
+  deptSheet.setColumnWidth(2, 240); // dept_name
+  deptSheet.setColumnWidth(3, 90);  // is_active
+  deptSheet.setColumnWidth(4, 140); // branch_id
+  deptSheet.setColumnWidth(5, 180); // created_at
+  deptSheet.setColumnWidth(6, 180); // updated_at
 
   // ── 2. ADMINS sheet ──────────────────────────────────────────
   const adminsSheet = ss.insertSheet('Admins');
