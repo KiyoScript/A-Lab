@@ -69,3 +69,15 @@ function handleAdminRequest(action, payload, token) {
     default: return { success: false, error: 'Unknown action: ' + action };
   }
 }
+
+// ─── Department requests ──────────────────────────────────────────
+function handleDepartmentRequest(action, payload, token) {
+  if (!_getSession(token)) return { success: false, error: 'Session expired. Please log in again.', expired: true };
+  switch (action) {
+    case 'GET_DEPARTMENTS':   return getDepartments(payload, token);
+    case 'CREATE_DEPARTMENT': return createDepartment(payload, token);
+    case 'UPDATE_DEPARTMENT': return updateDepartment(payload, token);
+    case 'DELETE_DEPARTMENT': return deleteDepartment(payload, token);
+    default: return { success: false, error: 'Unknown action: ' + action };
+  }
+}
