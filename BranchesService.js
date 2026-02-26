@@ -58,6 +58,11 @@ function _rowToObj(row) {
 
 
 // ─── Auto-create Spreadsheet for a new Branch ────────────────────
+// ─── Auto-create Spreadsheet for a new Branch ────────────────────
+// Replace the existing _createBranchSpreadsheet() in BranchesService.js
+// with this updated version. Only the MedTechs block (step 4) is new.
+// ─────────────────────────────────────────────────────────────────
+
 function _createBranchSpreadsheet(branchName, branchCode) {
   const title = '[A-Lab] ' + branchName + ' (' + branchCode + ')';
   const ss = SpreadsheetApp.create(title);
@@ -68,17 +73,12 @@ function _createBranchSpreadsheet(branchName, branchCode) {
 
   const deptHeaders = ['dept_id', 'dept_name', 'is_active', 'branch_id', 'created_at', 'updated_at'];
   deptSheet.appendRow(deptHeaders);
-
-  // Style header row
-  const deptHeaderRange = deptSheet.getRange(1, 1, 1, deptHeaders.length);
-  deptHeaderRange
+  deptSheet.getRange(1, 1, 1, deptHeaders.length)
     .setFontWeight('bold')
     .setBackground('#1e293b')
     .setFontColor('#ffffff')
     .setHorizontalAlignment('center');
   deptSheet.setFrozenRows(1);
-
-  // Column widths
   deptSheet.setColumnWidth(1, 160); // dept_id
   deptSheet.setColumnWidth(2, 220); // dept_name
   deptSheet.setColumnWidth(3, 90);  // is_active
@@ -136,7 +136,71 @@ function _createBranchSpreadsheet(branchName, branchCode) {
   labSheet.setColumnWidth(11, 180); // created_at
   labSheet.setColumnWidth(12, 180); // updated_at
 
-  // ── 4. Bring Departments to front ────────────────────────────
+  // ── 4. MEDTECHS sheet ────────────────────────────────────────
+  const mtSheet = ss.insertSheet('MedTechs');
+  const mtHeaders = [
+    'medtech_id', 'last_name', 'first_name', 'middle_name',
+    'email', 'password_hash', 'role', 'status',
+    'branch_id', 'branch_name', 'created_at', 'updated_at'
+  ];
+  mtSheet.appendRow(mtHeaders);
+  mtSheet.getRange(1, 1, 1, mtHeaders.length)
+    .setFontWeight('bold')
+    .setBackground('#0f172a')
+    .setFontColor('#ffffff')
+    .setHorizontalAlignment('center');
+  mtSheet.setFrozenRows(1);
+  mtSheet.setColumnWidth(1,  160); // medtech_id
+  mtSheet.setColumnWidth(2,  140); // last_name
+  mtSheet.setColumnWidth(3,  140); // first_name
+  mtSheet.setColumnWidth(4,  140); // middle_name
+  mtSheet.setColumnWidth(5,  220); // email
+  mtSheet.setColumnWidth(6,  260); // password_hash
+  mtSheet.setColumnWidth(7,  180); // role
+  mtSheet.setColumnWidth(8,   90); // status
+  mtSheet.setColumnWidth(9,  140); // branch_id
+  mtSheet.setColumnWidth(10, 170); // branch_name
+  mtSheet.setColumnWidth(11, 180); // created_at
+  mtSheet.setColumnWidth(12, 180); // updated_at
+
+  // ── Sample data rows (greyed out — for reference only) ───────
+  const sampleBg   = '#f8fafc';
+  const sampleFont = '#94a3b8';
+  const sampleRows = [
+    [
+      '← auto-generated', 'Dela Cruz', 'Juan', 'Santos',
+      'jdelacruz@branch.com', '← hashed on enroll', 'Medical Technologist', 'Active',
+      '← auto-filled', branchName, '← auto-filled', '← auto-filled'
+    ],
+    [
+      '← auto-generated', 'Reyes', 'Maria', 'Lopez',
+      'mreyes@branch.com', '← hashed on enroll', 'Senior Med Tech', 'Active',
+      '← auto-filled', branchName, '← auto-filled', '← auto-filled'
+    ],
+    [
+      '← auto-generated', 'Santos', 'Pedro', '',
+      'psantos@branch.com', '← hashed on enroll', 'Lab Supervisor', 'Active',
+      '← auto-filled', branchName, '← auto-filled', '← auto-filled'
+    ]
+  ];
+
+  sampleRows.forEach((row, i) => {
+    mtSheet.appendRow(row);
+    const rowNum = i + 2; // data starts at row 2
+    mtSheet.getRange(rowNum, 1, 1, mtHeaders.length)
+      .setBackground(sampleBg)
+      .setFontColor(sampleFont)
+      .setFontStyle('italic');
+  });
+
+  // Add a note on the header explaining sample rows
+  mtSheet.getRange(1, 1).setNote(
+    'MedTechs sheet — managed by A-Lab system.\n' +
+    'Rows 2–4 are sample/reference rows and will be replaced when real enrollments are made.\n' +
+    'Do NOT manually edit this sheet.'
+  );
+
+  // ── 5. Bring Departments to front ────────────────────────────
   ss.setActiveSheet(deptSheet);
   ss.moveActiveSheet(1);
 
