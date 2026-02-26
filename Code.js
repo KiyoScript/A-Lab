@@ -97,3 +97,16 @@ function handleDiscountRequest(action, payload, token) {
     default: return { success: false, error: 'Unknown action: ' + action };
   }
 }
+
+function handleMedTechRequest(action, payload, token) {
+  if (!_getSession(token)) return { success: false, error: 'Session expired. Please log in again.', expired: true };
+
+  switch (action) {
+    case 'GET_MEDTECHS':        return getMedTechs(payload, token);
+    case 'CREATE_MEDTECH':      return createMedTech(payload, token);
+    case 'UPDATE_MEDTECH':      return updateMedTech(payload, token);
+    case 'DELETE_MEDTECH':      return deleteMedTech(payload.medtech_id, token);
+    case 'CHANGE_MT_PASSWORD':  return changeMedTechPassword(payload, token);
+    default:                    return { success: false, error: 'Unknown action: ' + action };
+  }
+}
