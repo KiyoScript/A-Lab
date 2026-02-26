@@ -207,6 +207,15 @@
 
 <script>
   let allBranches = [];
+  var alab_token = (new URLSearchParams(window.location.search)).get('token') || localStorage.getItem('alab_token') || '';
+
+  function _handleExpired() {
+    localStorage.removeItem('alab_token');
+    google.script.run.withSuccessHandler(function(url) {
+      window.top.location.href = url + '?page=Login';
+    }).getScriptUrl();
+  }
+  function _checkExpired(res) { if (res && res.expired) { _handleExpired(); return true; } return false; }
   let editingId     = null;
   let deletingId    = null;
   let currentSession = null;
@@ -221,7 +230,7 @@
         loadBranches();
       })
       .withFailureHandler(() => loadBranches())
-      .handleAdminRequest('GET_SESSION', {});
+      .handleAdminRequest('GET_SESSION', {}, alab_token);
   }
 
   function applySessionUI() {
@@ -236,6 +245,7 @@
     google.script.run
       .withSuccessHandler(res => {
         showLoading(false);
+        if (_checkExpired(res)) return;
         if (res.success) {
           let branches = res.data || [];
           // Branch admin: filter to assigned branch only
@@ -248,7 +258,7 @@
         } else showToast('Failed to load branches: ' + res.error, 'error');
       })
       .withFailureHandler(err => { showLoading(false); showToast('Error: ' + err.message, 'error'); })
-      .handleBranchRequest('GET_BRANCHES', {});
+      .handleBranchRequest('GET_BRANCHES', {}, alab_token);
   }
 
   function renderTable(data) {
@@ -339,7 +349,7 @@
         else showToast('Error: ' + res.error, 'error');
       })
       .withFailureHandler(err => { setSaving(false); showToast('Error: ' + err.message, 'error'); })
-      .handleBranchRequest(editingId ? 'UPDATE_BRANCH' : 'CREATE_BRANCH', payload);
+      .handleBranchRequest(editingId ? 'UPDATE_BRANCH' : 'CREATE_BRANCH', payload, alab_token);
   }
 
   function setSaving(v) {
@@ -362,7 +372,7 @@
         else showToast('Error: ' + res.error, 'error');
       })
       .withFailureHandler(err => { closeDeleteModal(); btn.textContent = 'Delete'; btn.disabled = false; showToast('Error: ' + err.message, 'error'); })
-      .handleBranchRequest('DELETE_BRANCH', { branch_id: deletingId });
+      .handleBranchRequest('DELETE_BRANCH', { branch_id: deletingId }, alab_token);
   }
 
   function showLoading(v) {

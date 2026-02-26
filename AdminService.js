@@ -55,18 +55,60 @@ function _getBranchAdminSheet(spreadsheetId) {
   return sh;
 }
 
-// ─── SESSION helpers (Script Properties = server-side session) ───
-function _setSession(data) {
-  PropertiesService.getUserProperties().setProperty('ALAB_SESSION', JSON.stringify(data));
+// ═══════════════════════════════════════════════════════════════
+// TOKEN-BASED SESSION (ScriptProperties — shared, multi-user safe)
+// Key: SESSION_<token>
+// Value: JSON { ...userData, expires_at: ISO string }
+// SESSION_DURATION_MS: 8 hours
+// ═══════════════════════════════════════════════════════════════
+
+var SESSION_DURATION_MS = 8 * 60 * 60 * 1000; // 8 hours
+
+function _generateToken() {
+  return Utilities.getUuid().replace(/-/g, '');
 }
 
-function _getSession() {
-  const raw = PropertiesService.getUserProperties().getProperty('ALAB_SESSION');
-  return raw ? JSON.parse(raw) : null;
+function _sessionKey(token) {
+  return 'SESSION_' + token;
 }
 
-function _clearSession() {
-  PropertiesService.getUserProperties().deleteProperty('ALAB_SESSION');
+function _setSession(token, data) {
+  var payload = JSON.parse(JSON.stringify(data));
+  payload.expires_at = new Date(Date.now() + SESSION_DURATION_MS).toISOString();
+  PropertiesService.getScriptProperties().setProperty(_sessionKey(token), JSON.stringify(payload));
+}
+
+function _getSession(token) {
+  if (!token) return null;
+  var raw = PropertiesService.getScriptProperties().getProperty(_sessionKey(token));
+  if (!raw) return null;
+  var data = JSON.parse(raw);
+  // Check expiry
+  if (new Date(data.expires_at) < new Date()) {
+    PropertiesService.getScriptProperties().deleteProperty(_sessionKey(token));
+    return null;
+  }
+  return data;
+}
+
+function _clearSession(token) {
+  if (!token) return;
+  PropertiesService.getScriptProperties().deleteProperty(_sessionKey(token));
+}
+
+function _cleanExpiredSessions() {
+  // Housekeeping — remove expired tokens (call occasionally)
+  var props = PropertiesService.getScriptProperties().getProperties();
+  var now   = new Date();
+  Object.keys(props).forEach(function(key) {
+    if (key.indexOf('SESSION_') !== 0) return;
+    try {
+      var data = JSON.parse(props[key]);
+      if (new Date(data.expires_at) < now) {
+        PropertiesService.getScriptProperties().deleteProperty(key);
+      }
+    } catch(e) {}
+  });
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -76,6 +118,9 @@ function _clearSession() {
 function login(username, password) {
   try {
     if (!username || !password) return { success: false, error: 'Username and password are required.' };
+
+    // Housekeep expired sessions occasionally
+    try { _cleanExpiredSessions(); } catch(e) {}
 
     const hashed = _hashPassword(password.trim());
     const uname  = username.trim().toLowerCase();
@@ -87,16 +132,17 @@ function login(username, password) {
       const row = superData[i];
       if (String(row[2]).toLowerCase() === uname && String(row[3]) === hashed) {
         if (String(row[4]) !== 'Active') return { success: false, error: 'Account is inactive.' };
-        const session = {
-          admin_id:  String(row[0]),
-          full_name: String(row[1]),
-          username:  String(row[2]),
-          role:      'super_admin',
-          branch_id: null,
+        const sessionData = {
+          admin_id:    String(row[0]),
+          full_name:   String(row[1]),
+          username:    String(row[2]),
+          role:        'super_admin',
+          branch_id:   null,
           branch_name: null
         };
-        _setSession(session);
-        return { success: true, data: session };
+        const token = _generateToken();
+        _setSession(token, sessionData);
+        return { success: true, token: token, data: sessionData };
       }
     }
 
@@ -106,7 +152,6 @@ function login(username, password) {
     for (var b = 1; b < branchData.length; b++) {
       const ssId = String(branchData[b][7] || '');
       if (!ssId) continue;
-
       try {
         const adminSh   = _getBranchAdminSheet(ssId);
         const adminData = adminSh.getDataRange().getValues();
@@ -114,16 +159,17 @@ function login(username, password) {
           const row = adminData[a];
           if (String(row[2]).toLowerCase() === uname && String(row[3]) === hashed) {
             if (String(row[6]) !== 'Active') return { success: false, error: 'Account is inactive.' };
-            const session = {
+            const sessionData = {
               admin_id:    String(row[0]),
               full_name:   String(row[1]),
               username:    String(row[2]),
               role:        'branch_admin',
-              branch_id:   String(row[4]),
-              branch_name: String(row[5])
+              branch_id:   String(branchData[b][0]),
+              branch_name: String(branchData[b][1])
             };
-            _setSession(session);
-            return { success: true, data: session };
+            const token = _generateToken();
+            _setSession(token, sessionData);
+            return { success: true, token: token, data: sessionData };
           }
         }
       } catch(_) { /* skip unreadable branch SS */ }
@@ -135,13 +181,13 @@ function login(username, password) {
   }
 }
 
-function logout() {
-  _clearSession();
+function logout(token) {
+  _clearSession(token);
   return { success: true };
 }
 
-function getSession() {
-  const s = _getSession();
+function getSession(token) {
+  const s = _getSession(token);
   return s ? { success: true, data: s } : { success: false, error: 'Not logged in.' };
 }
 

@@ -206,6 +206,15 @@
 
 <script>
   let allBranchAdmins = [];
+  var alab_token = (new URLSearchParams(window.location.search)).get('token') || localStorage.getItem('alab_token') || '';
+
+  function _handleExpired() {
+    localStorage.removeItem('alab_token');
+    google.script.run.withSuccessHandler(function(url) {
+      window.top.location.href = url + '?page=Login';
+    }).getScriptUrl();
+  }
+  function _checkExpired(res) { if (res && res.expired) { _handleExpired(); return true; } return false; }
   let allSuperAdmins  = [];
   let allBranches     = [];
   let currentTab      = 'branch';
@@ -237,7 +246,7 @@
                 updateStats();
               })
               .withFailureHandler(err => { showLoading(false); showToast('Error: ' + err.message, 'error'); })
-              .handleAdminRequest('GET_SUPER_ADMINS', {});
+              .handleAdminRequest('GET_SUPER_ADMINS', {}, alab_token);
           })
           .withFailureHandler(() => {
             allBranchAdmins = [];
@@ -247,12 +256,12 @@
                 showLoading(false); renderCurrentTab(); updateStats();
               })
               .withFailureHandler(err => { showLoading(false); })
-              .handleAdminRequest('GET_SUPER_ADMINS', {});
+              .handleAdminRequest('GET_SUPER_ADMINS', {}, alab_token);
           })
-          .handleAdminRequest('GET_BRANCH_ADMINS', {});
+          .handleAdminRequest('GET_BRANCH_ADMINS', {}, alab_token);
       })
       .withFailureHandler(() => { showLoading(false); })
-      .handleBranchRequest('GET_BRANCHES', {});
+      .handleBranchRequest('GET_BRANCHES', {}, alab_token);
   }
 
   function loadSuperAdmins() {
@@ -264,7 +273,7 @@
         renderCurrentTab(); updateStats();
       })
       .withFailureHandler(err => { showLoading(false); showToast('Error loading admins: ' + err.message, 'error'); })
-      .handleAdminRequest('GET_SUPER_ADMINS', {});
+      .handleAdminRequest('GET_SUPER_ADMINS', {}, alab_token);
   }
 
   function switchTab(tab) {
@@ -388,7 +397,7 @@
         else showToast('Error: '+res.error,'error');
       })
       .withFailureHandler(err => { setSaving(false); showToast('Error: '+err.message,'error'); })
-      .handleAdminRequest(action, payload);
+      .handleAdminRequest(action, payload, alab_token);
   }
 
   function setSaving(v) {
@@ -412,7 +421,7 @@
         else showToast('Error: '+res.error,'error');
       })
       .withFailureHandler(err => { closeDeleteModal(); btn.textContent='Delete'; btn.disabled=false; showToast('Error: '+err.message,'error'); })
-      .handleAdminRequest(action, { admin_id:deletingId });
+      .handleAdminRequest(action, { admin_id:deletingId }, alab_token);
   }
 
   function showLoading(v) {

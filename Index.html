@@ -243,13 +243,42 @@
 
   <script>
     let baseUrl = '';
+    let alab_token = '';
+
+    // ── Read token from URL param or localStorage ──────────────────
+    (function() {
+      const params = new URLSearchParams(window.location.search);
+      alab_token = params.get('token') || localStorage.getItem('alab_token') || '';
+      if (alab_token) localStorage.setItem('alab_token', alab_token);
+    })();
 
     // ── Init ───────────────────────────────────────────────────────
     google.script.run
       .withSuccessHandler(function(url) {
         baseUrl = url;
-        document.getElementById('init-loading').classList.add('hidden');
-        loadPage('Dashboard');
+        // Validate session — redirect to login if expired/invalid
+        google.script.run
+          .withSuccessHandler(function(res) {
+            if (!res.success) {
+              localStorage.removeItem('alab_token');
+              window.top.location.href = url + '?page=Login';
+              return;
+            }
+            if (res.data) {
+              document.getElementById('sidebar-name').textContent = res.data.full_name || 'Admin';
+              document.getElementById('sidebar-role').textContent =
+                res.data.role === 'super_admin'
+                  ? 'Super Admin'
+                  : (res.data.branch_name ? res.data.branch_name + ' Admin' : 'Branch Admin');
+            }
+            document.getElementById('init-loading').classList.add('hidden');
+            loadPage('Dashboard');
+          })
+          .withFailureHandler(function() {
+            localStorage.removeItem('alab_token');
+            window.top.location.href = url + '?page=Login';
+          })
+          .handleAdminRequest('GET_SESSION', {}, alab_token);
       })
       .withFailureHandler(function(err) {
         document.getElementById('init-loading').innerHTML =
@@ -257,25 +286,12 @@
       })
       .getScriptUrl();
 
-    // ── Load session info into sidebar ─────────────────────────────
-    google.script.run
-      .withSuccessHandler(function(res) {
-        if (res.success && res.data) {
-          document.getElementById('sidebar-name').textContent = res.data.full_name || 'Admin';
-          document.getElementById('sidebar-role').textContent =
-            res.data.role === 'super_admin'
-              ? 'Super Admin'
-              : (res.data.branch_name ? res.data.branch_name + ' Admin' : 'Branch Admin');
-        }
-      })
-      .handleAdminRequest('GET_SESSION', {});
-
     // ── Navigation ─────────────────────────────────────────────────
     function loadPage(pageName) {
       if (!baseUrl) return;
       const frame       = document.getElementById('content-frame');
       const placeholder = document.getElementById('placeholder');
-      frame.src = baseUrl + '?page=' + pageName;
+      frame.src = baseUrl + '?page=' + pageName + '&token=' + encodeURIComponent(alab_token);
       frame.classList.remove('hidden');
       placeholder.classList.add('hidden');
       placeholder.classList.remove('flex');
@@ -333,7 +349,7 @@
 
       google.script.run
         .withSuccessHandler(function() {
-          // Session cleared — redirect to Login
+          localStorage.removeItem('alab_token');
           google.script.run
             .withSuccessHandler(function(url) {
               window.top.location.href = url + '?page=Login';
@@ -341,14 +357,14 @@
             .getScriptUrl();
         })
         .withFailureHandler(function() {
-          // Redirect anyway even if failure
+          localStorage.removeItem('alab_token');
           google.script.run
             .withSuccessHandler(function(url) {
               window.top.location.href = url + '?page=Login';
             })
             .getScriptUrl();
         })
-        .handleAdminRequest('LOGOUT', {});
+        .handleAdminRequest('LOGOUT', {}, alab_token);
     }
 
     document.getElementById('logout-modal').addEventListener('click', closeLogoutModal);

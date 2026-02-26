@@ -3,19 +3,15 @@
 // ═══════════════════════════════════════════════════════════════
 
 function doGet(e) {
-  const page    = e.parameter.page || 'Index';
-  const session = _getSession();
+  const page  = e.parameter.page || 'Index';
+  const token = e.parameter.token || '';
 
   // Public pages — always accessible
-  const publicPages = ['Login'];
-  if (publicPages.indexOf(page) !== -1) {
-    return _serve(page);
-  }
+  if (page === 'Login') return _serve('Login');
 
-  // All other pages require a valid session
-  if (!session) {
-    return _serve('Login');
-  }
+  // All other pages require a valid session token
+  const session = _getSession(token);
+  if (!session) return _serve('Login');
 
   return _serve(page);
 }
@@ -37,7 +33,9 @@ function getScriptUrl() {
 }
 
 // ─── Branch requests ──────────────────────────────────────────────
-function handleBranchRequest(action, payload) {
+function handleBranchRequest(action, payload, token) {
+  // Validate session for all branch actions
+  if (!_getSession(token)) return { success: false, error: 'Session expired. Please log in again.', expired: true };
   switch (action) {
     case 'GET_BRANCHES':   return getBranches();
     case 'CREATE_BRANCH':  return createBranch(payload);
@@ -48,11 +46,18 @@ function handleBranchRequest(action, payload) {
 }
 
 // ─── Admin requests ───────────────────────────────────────────────
-function handleAdminRequest(action, payload) {
+function handleAdminRequest(action, payload, token) {
+  // LOGIN does not need a token
+  if (action === 'LOGIN') return login(payload.username, payload.password);
+
+  // GET_SESSION just validates the token
+  if (action === 'GET_SESSION') return getSession(token);
+
+  // All other actions require a valid session
+  if (!_getSession(token)) return { success: false, error: 'Session expired. Please log in again.', expired: true };
+
   switch (action) {
-    case 'LOGIN':               return login(payload.username, payload.password);
-    case 'LOGOUT':              return logout();
-    case 'GET_SESSION':         return getSession();
+    case 'LOGOUT':              return logout(token);
     case 'GET_SUPER_ADMINS':    return getSuperAdmins();
     case 'CREATE_SUPER_ADMIN':  return createSuperAdmin(payload);
     case 'UPDATE_SUPER_ADMIN':  return updateSuperAdmin(payload);

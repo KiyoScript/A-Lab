@@ -127,11 +127,17 @@
         .withSuccessHandler(function(res) {
           setLoading(false);
           if (res.success) {
-            google.script.run.withSuccessHandler(function(url) { window.top.location.href = url; }).getScriptUrl();
+            // Save token to localStorage for use across all pages
+            localStorage.setItem('alab_token', res.token);
+            google.script.run
+              .withSuccessHandler(function(url) {
+                window.top.location.href = url + '?token=' + encodeURIComponent(res.token);
+              })
+              .getScriptUrl();
           } else { showError(res.error || 'Login failed.'); }
         })
         .withFailureHandler(function(err) { setLoading(false); showError('Error: ' + err.message); })
-        .handleAdminRequest('LOGIN', { username, password });
+        .handleAdminRequest('LOGIN', { username: username, password: password }, '');
     }
 
     function setLoading(v) {
