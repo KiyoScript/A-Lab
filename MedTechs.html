@@ -88,7 +88,7 @@
     <p class="text-xs text-slate-400 mt-0.5">Manage medical technologist accounts per branch</p>
   </div>
   <button id="add-btn" onclick="openModal(null)"
-    class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-sm shadow-blue-200">
+    class="hidden flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-sm shadow-blue-200">
     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
       <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
     </svg>
@@ -200,14 +200,6 @@
     <div class="p-6 space-y-4">
 
       <input type="hidden" id="f-medtech-id"/>
-
-      <!-- Branch (super_admin only) -->
-      <div id="branch-wrap">
-        <label class="field-label">Branch <span class="text-red-400">*</span></label>
-        <select id="f-branch-id" class="field-input">
-          <option value="">— Select Branch —</option>
-        </select>
-      </div>
 
       <!-- ── Name Section ── -->
       <p class="form-section">Personal Information</p>
@@ -396,11 +388,12 @@
       .withSuccessHandler(res => {
         if (res.success) {
           currentSession = res.data;
-          // Branch admin: hide branch selector
+          // Only branch_admin can enroll / edit / delete
           if (currentSession.role === 'branch_admin') {
-            document.getElementById('branch-wrap').classList.add('hidden');
+            document.getElementById('add-btn').classList.remove('hidden');
             document.getElementById('branch-filter').classList.add('hidden');
           } else {
+            // super_admin: read-only, show branch filter
             document.getElementById('branch-filter').classList.remove('hidden');
           }
           loadBranches();
@@ -414,7 +407,6 @@
       .withSuccessHandler(res => {
         if (res.success) {
           allBranches = (res.data || []).filter(b => b.status === 'Active');
-          populateBranchDropdown();
           populateBranchFilter();
         }
         loadMedTechs();
@@ -487,6 +479,7 @@
         </td>
         <td class="px-5 py-3.5 text-right">
           <div class="flex items-center justify-end gap-1.5">
+            ${currentSession && currentSession.role === 'branch_admin' ? `
             <button onclick="openPwModal('${escHtml(mt.medtech_id)}','${escHtml(mt.first_name + ' ' + mt.last_name)}')"
               class="p-1.5 text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-colors" title="Change Password">
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -504,7 +497,7 @@
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
               </svg>
-            </button>
+            </button>` : `<span class="text-[11px] text-slate-300 font-medium px-2">View only</span>`}
           </div>
         </td>
       </tr>`;
@@ -543,14 +536,6 @@
     const roles = [...new Set(allMedTechs.map(m => m.role))].filter(Boolean).sort();
     sel.innerHTML = '<option value="">All Roles</option>';
     roles.forEach(r => { sel.innerHTML += `<option value="${escHtml(r)}" ${cur===r?'selected':''}>${escHtml(r)}</option>`; });
-  }
-
-  function populateBranchDropdown() {
-    const sel = document.getElementById('f-branch-id');
-    sel.innerHTML = '<option value="">— Select Branch —</option>';
-    allBranches.forEach(b => {
-      sel.innerHTML += `<option value="${escHtml(b.branch_id)}">${escHtml(b.branch_name)} (${escHtml(b.branch_code)})</option>`;
-    });
   }
 
   function populateBranchFilter() {
@@ -617,15 +602,9 @@
       document.getElementById('f-middle-name').value  = mt.middle_name;
       document.getElementById('f-email').value        = mt.email;
       document.getElementById('f-status').value       = mt.status;
-      document.getElementById('f-branch-id').value    = mt.branch_id;
       selectRole(mt.role);
     } else {
       selectRole('Medical Technologist');
-    }
-
-    // Branch wrap: hide for branch_admin
-    if (currentSession && currentSession.role === 'branch_admin') {
-      document.getElementById('branch-wrap').classList.add('hidden');
     }
 
     document.getElementById('modal-backdrop').classList.remove('hidden');
@@ -643,7 +622,6 @@
       if (el) el.value = '';
     });
     document.getElementById('f-status').value = 'Active';
-    document.getElementById('f-branch-id').value = '';
     selectedRole = '';
     // Reset role grid
     ROLES.forEach(r => {
@@ -661,7 +639,6 @@
     const password   = document.getElementById('f-password').value;
     const role       = document.getElementById('f-role').value || selectedRole;
     const status     = document.getElementById('f-status').value;
-    const branchId   = document.getElementById('f-branch-id').value;
 
     if (!lastName)  { showToast('Last name is required.', 'error'); return; }
     if (!firstName) { showToast('First name is required.', 'error'); return; }
@@ -669,15 +646,13 @@
     if (!role)      { showToast('Please select a role.', 'error'); return; }
     if (!editingId && !password) { showToast('Password is required.', 'error'); return; }
     if (!editingId && password.length < 6) { showToast('Password must be at least 6 characters.', 'error'); return; }
-    if (currentSession.role === 'super_admin' && !editingId && !branchId) { showToast('Please select a branch.', 'error'); return; }
 
     const payload = {
       medtech_id:  editingId || '',
       last_name:   lastName,
       first_name:  firstName,
       middle_name: middleName,
-      email, role, status,
-      branch_id: branchId
+      email, role, status
     };
     if (password) payload.password = password;
 
