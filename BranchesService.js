@@ -66,9 +66,7 @@ function _createBranchSpreadsheet(branchName, branchCode) {
   const deptSheet = ss.getActiveSheet();
   deptSheet.setName('Departments');
 
-  const deptHeaders = [
-    'dept_id', 'dept_name', 'is_active', 'branch_id', 'created_at', 'updated_at'
-  ];
+  const deptHeaders = ['dept_id', 'dept_name', 'is_active', 'branch_id', 'created_at', 'updated_at'];
   deptSheet.appendRow(deptHeaders);
 
   // Style header row
@@ -82,7 +80,7 @@ function _createBranchSpreadsheet(branchName, branchCode) {
 
   // Column widths
   deptSheet.setColumnWidth(1, 160); // dept_id
-  deptSheet.setColumnWidth(2, 240); // dept_name
+  deptSheet.setColumnWidth(2, 220); // dept_name
   deptSheet.setColumnWidth(3, 90);  // is_active
   deptSheet.setColumnWidth(4, 140); // branch_id
   deptSheet.setColumnWidth(5, 180); // created_at
@@ -111,7 +109,34 @@ function _createBranchSpreadsheet(branchName, branchCode) {
   adminsSheet.setColumnWidth(8, 180); // created_at
   adminsSheet.setColumnWidth(9, 180); // updated_at
 
-  // ── 3. Bring Departments to front ────────────────────────────
+  // ── 3. LAB SERVICES sheet ───────────────────────────────────
+  const labSheet = ss.insertSheet('Lab Services');
+  const labHeaders = [
+    'lab_id', 'dept_id', 'lab_code', 'lab_name',
+    'description', 'default_fee', 'tat_hours', 'specimen_type',
+    'is_active', 'branch_id', 'created_at', 'updated_at'
+  ];
+  labSheet.appendRow(labHeaders);
+  labSheet.getRange(1, 1, 1, labHeaders.length)
+    .setFontWeight('bold')
+    .setBackground('#1e293b')
+    .setFontColor('#ffffff')
+    .setHorizontalAlignment('center');
+  labSheet.setFrozenRows(1);
+  labSheet.setColumnWidth(1,  160); // lab_id
+  labSheet.setColumnWidth(2,  160); // dept_id
+  labSheet.setColumnWidth(3,  110); // lab_code
+  labSheet.setColumnWidth(4,  200); // lab_name
+  labSheet.setColumnWidth(5,  260); // description
+  labSheet.setColumnWidth(6,  110); // default_fee
+  labSheet.setColumnWidth(7,  100); // tat_hours
+  labSheet.setColumnWidth(8,  150); // specimen_type
+  labSheet.setColumnWidth(9,   90); // is_active
+  labSheet.setColumnWidth(10, 140); // branch_id
+  labSheet.setColumnWidth(11, 180); // created_at
+  labSheet.setColumnWidth(12, 180); // updated_at
+
+  // ── 4. Bring Departments to front ────────────────────────────
   ss.setActiveSheet(deptSheet);
   ss.moveActiveSheet(1);
 

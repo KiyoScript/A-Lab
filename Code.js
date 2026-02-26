@@ -32,6 +32,18 @@ function getScriptUrl() {
   return ScriptApp.getService().getUrl();
 }
 
+// ─── Lab Service requests ────────────────────────────────────────
+function handleLabServiceRequest(action, payload, token) {
+  if (!_getSession(token)) return { success: false, error: 'Session expired. Please log in again.', expired: true };
+  switch (action) {
+    case 'GET_LAB_SERVICES':    return getLabServices(token);
+    case 'CREATE_LAB_SERVICE':  return createLabService(payload, token);
+    case 'UPDATE_LAB_SERVICE':  return updateLabService(payload, token);
+    case 'DELETE_LAB_SERVICE':  return deleteLabService(payload.lab_id, token);
+    default: return { success: false, error: 'Unknown action: ' + action };
+  }
+}
+
 // ─── Branch requests ──────────────────────────────────────────────
 function handleBranchRequest(action, payload, token) {
   // Validate session for all branch actions
@@ -42,6 +54,18 @@ function handleBranchRequest(action, payload, token) {
     case 'UPDATE_BRANCH':  return updateBranch(payload);
     case 'DELETE_BRANCH':  return deleteBranch(payload.branch_id);
     default:               return { success: false, error: 'Unknown action: ' + action };
+  }
+}
+
+// ─── Department requests ─────────────────────────────────────────
+function handleDepartmentRequest(action, payload, token) {
+  if (!_getSession(token)) return { success: false, error: 'Session expired. Please log in again.', expired: true };
+  switch (action) {
+    case 'GET_DEPARTMENTS':    return getDepartments(token);
+    case 'CREATE_DEPARTMENT':  return createDepartment(payload, token);
+    case 'UPDATE_DEPARTMENT':  return updateDepartment(payload, token);
+    case 'DELETE_DEPARTMENT':  return deleteDepartment(payload.dept_id || payload, token);
+    default: return { success: false, error: 'Unknown action: ' + action };
   }
 }
 
@@ -67,46 +91,5 @@ function handleAdminRequest(action, payload, token) {
     case 'UPDATE_BRANCH_ADMIN': return updateBranchAdmin(payload);
     case 'DELETE_BRANCH_ADMIN': return deleteBranchAdmin(payload.admin_id);
     default: return { success: false, error: 'Unknown action: ' + action };
-  }
-}
-
-// ─── Department requests ──────────────────────────────────────────
-function handleDepartmentRequest(action, payload, token) {
-  if (!_getSession(token)) return { success: false, error: 'Session expired. Please log in again.', expired: true };
-  switch (action) {
-    case 'GET_DEPARTMENTS':   return getDepartments(payload, token);
-    case 'CREATE_DEPARTMENT': return createDepartment(payload, token);
-    case 'UPDATE_DEPARTMENT': return updateDepartment(payload, token);
-    case 'DELETE_DEPARTMENT': return deleteDepartment(payload, token);
-    default: return { success: false, error: 'Unknown action: ' + action };
-  }
-}
-// ─── ADD THIS BLOCK to Code.js after handleDepartmentRequest ─────
-
-// ─── Discount requests (super_admin only) ────────────────────────
-function handleDiscountRequest(action, payload, token) {
-  const session = _getSession(token);
-  if (!session) return { success: false, error: 'Session expired. Please log in again.', expired: true };
-  if (session.role !== 'super_admin') return { success: false, error: 'Access denied. Super admin only.' };
-
-  switch (action) {
-    case 'GET_DISCOUNTS':   return getDiscounts(token);
-    case 'CREATE_DISCOUNT': return createDiscount(payload, token);
-    case 'UPDATE_DISCOUNT': return updateDiscount(payload, token);
-    case 'DELETE_DISCOUNT': return deleteDiscount(payload.discount_id, token);
-    default: return { success: false, error: 'Unknown action: ' + action };
-  }
-}
-
-function handleMedTechRequest(action, payload, token) {
-  if (!_getSession(token)) return { success: false, error: 'Session expired. Please log in again.', expired: true };
-
-  switch (action) {
-    case 'GET_MEDTECHS':        return getMedTechs(payload, token);
-    case 'CREATE_MEDTECH':      return createMedTech(payload, token);
-    case 'UPDATE_MEDTECH':      return updateMedTech(payload, token);
-    case 'DELETE_MEDTECH':      return deleteMedTech(payload.medtech_id, token);
-    case 'CHANGE_MT_PASSWORD':  return changeMedTechPassword(payload, token);
-    default:                    return { success: false, error: 'Unknown action: ' + action };
   }
 }
