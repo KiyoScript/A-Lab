@@ -109,9 +109,9 @@ function createMedTech(payload, token) {
     const session = _getSession(token);
     if (!session) return { success: false, error: 'Session expired.', expired: true };
 
-    // Only branch_admin can enroll MedTechs
-    if (session.role !== 'branch_admin')
-      return { success: false, error: 'Only branch admins can enroll Med Techs.' };
+    // Only admin roles can create
+    if (!['super_admin', 'branch_admin'].includes(session.role))
+      return { success: false, error: 'Unauthorized.' };
 
     // Validate required fields
     if (!payload.last_name  || !payload.last_name.trim())  return { success: false, error: 'Last name is required.' };
@@ -184,8 +184,10 @@ function updateMedTech(payload, token) {
     const session = _getSession(token);
     if (!session) return { success: false, error: 'Session expired.', expired: true };
 
-    if (session.role !== 'branch_admin')
-      return { success: false, error: 'Only branch admins can edit Med Techs.' };
+    if (!['super_admin', 'branch_admin'].includes(session.role))
+      return { success: false, error: 'Unauthorized.' };
+
+    if (!payload.medtech_id) return { success: false, error: 'MedTech ID is required.' };
 
     // Find across branch spreadsheets
     const branchSh   = _getRegistrySheet();
@@ -238,8 +240,8 @@ function deleteMedTech(medtechId, token) {
     const session = _getSession(token);
     if (!session) return { success: false, error: 'Session expired.', expired: true };
 
-    if (session.role !== 'branch_admin')
-      return { success: false, error: 'Only branch admins can remove Med Techs.' };
+    if (!['super_admin', 'branch_admin'].includes(session.role))
+      return { success: false, error: 'Unauthorized.' };
 
     const branchSh   = _getRegistrySheet();
     const branchData = branchSh.getDataRange().getValues();
@@ -274,8 +276,8 @@ function changeMedTechPassword(payload, token) {
     const session = _getSession(token);
     if (!session) return { success: false, error: 'Session expired.', expired: true };
 
-    if (session.role !== 'branch_admin')
-      return { success: false, error: 'Only branch admins can change Med Tech passwords.' };
+    if (!['super_admin', 'branch_admin'].includes(session.role))
+      return { success: false, error: 'Unauthorized.' };
 
     if (!payload.medtech_id)  return { success: false, error: 'MedTech ID is required.' };
     if (!payload.new_password || !payload.new_password.trim())
