@@ -222,21 +222,31 @@
   }
   function _checkExpired(res) { if (res && res.expired) { _handleExpired(); return true; } return false; }
 
-  let allBranches = [];
-  let editingId   = null;
-  let deletingId  = null;
-
-  // Determine if current user is super_admin
-  var isSuperAdmin = currentSession && currentSession.role === 'super_admin';
+  let allBranches    = [];
+  let editingId      = null;
+  let deletingId     = null;
+  let currentSession = null;
+  let isSuperAdmin   = false;
 
   document.addEventListener('DOMContentLoaded', function() {
-    // Hide Add Branch button and update subtitle for branch_admin
-    if (!isSuperAdmin) {
-      document.getElementById('add-branch-btn').style.display = 'none';
-      document.getElementById('header-subtitle').textContent = 'View your assigned branch details and spreadsheet.';
-      document.getElementById('empty-subtext').textContent = 'No branch assigned to your account.';
-    }
-    loadBranches();
+    // Fetch session first, THEN apply UI and load branches
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (_checkExpired(res)) return;
+        if (res.success) {
+          currentSession = res.data;
+          isSuperAdmin   = currentSession.role === 'super_admin';
+        }
+        // Apply role-based UI after session is known
+        if (!isSuperAdmin) {
+          document.getElementById('add-branch-btn').style.display = 'none';
+          document.getElementById('header-subtitle').textContent = 'View your assigned branch details and spreadsheet.';
+          document.getElementById('empty-subtext').textContent   = 'No branch assigned to your account.';
+        }
+        loadBranches();
+      })
+      .withFailureHandler(function() { loadBranches(); })
+      .handleAdminRequest('GET_SESSION', {}, alab_token);
   });
 
   function loadBranches() {
