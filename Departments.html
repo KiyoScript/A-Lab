@@ -500,13 +500,11 @@
         }
 
         // Filter to this branch
-        allLabServices = (labRes.data || []).filter(function(l) {
-          return l.branch_id === branchId;
-        });
+        allLabServices = labRes.data || [];
 
         if (!allLabServices.length) {
           showLabListLoading(false);
-          showLabListEmpty('No lab services found for this branch.');
+          showLabListEmpty('No lab services found. Add some from the Lab Services page first.');
           return;
         }
 
