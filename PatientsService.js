@@ -78,13 +78,28 @@ function _getPatientDiscountSheet(spreadsheetId) {
 
 // ─── Row → Object ─────────────────────────────────────────────────
 function _patientRowToObj(row, branchName) {
+  // birth_date: GSheets may return a Date object — normalize to YYYY-MM-DD string
+  var rawDate   = row[5];
+  var birthDate = '';
+  if (rawDate) {
+    try {
+      var d = new Date(rawDate);
+      if (!isNaN(d.getTime())) {
+        var yyyy = d.getFullYear();
+        var mm   = String(d.getMonth() + 1).padStart(2, '0');
+        var dd   = String(d.getDate()).padStart(2, '0');
+        birthDate = yyyy + '-' + mm + '-' + dd;
+      }
+    } catch(_) { birthDate = String(rawDate); }
+  }
+
   return {
     patient_id:      String(row[0]  || ''),
     last_name:       String(row[1]  || ''),
     first_name:      String(row[2]  || ''),
     middle_name:     String(row[3]  || ''),
     sex:             String(row[4]  || ''),
-    birth_date:      String(row[5]  || ''),
+    birth_date:      birthDate,
     contact_number:  String(row[6]  || ''),
     email_address:   String(row[7]  || ''),
     address:         String(row[8]  || ''),

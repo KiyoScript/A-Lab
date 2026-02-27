@@ -487,7 +487,7 @@
         document.getElementById('f-first-name').value  = p.first_name;
         document.getElementById('f-middle-name').value = p.middle_name;
         document.getElementById('f-sex').value         = p.sex;
-        document.getElementById('f-birth-date').value  = p.birth_date ? p.birth_date.split('T')[0] : '';
+        document.getElementById('f-birth-date').value  = formatDateInput(p.birth_date);
         document.getElementById('f-contact').value     = p.contact_number;
         document.getElementById('f-email').value       = p.email_address;
         document.getElementById('f-address').value     = p.address;
@@ -678,6 +678,19 @@
       var d = new Date(val);
       return d.toLocaleDateString('en-PH', { year:'numeric', month:'short', day:'numeric' });
     } catch(_) { return val; }
+  }
+
+  // For <input type="date"> — must be YYYY-MM-DD
+  function formatDateInput(val) {
+    if (!val) return '';
+    try {
+      var d = new Date(val);
+      if (isNaN(d.getTime())) return '';
+      var yyyy = d.getFullYear();
+      var mm   = String(d.getMonth() + 1).padStart(2, '0');
+      var dd   = String(d.getDate()).padStart(2, '0');
+      return yyyy + '-' + mm + '-' + dd;
+    } catch(_) { return ''; }
   }
 
   function showToast(msg, type) {
