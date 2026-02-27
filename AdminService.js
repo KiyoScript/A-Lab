@@ -175,6 +175,12 @@ function login(username, password) {
       } catch(_) { /* skip unreadable branch SS */ }
     }
 
+        // ── 3. Check Doctors ──────────────────────────────────────
+    try {
+      const doctorResult = doctorLogin(username, password);
+      if (doctorResult !== null) return doctorResult;
+    } catch(_) { /* DoctorsService not available — skip */ }
+
     return { success: false, error: 'Invalid username or password.' };
   } catch (e) {
     return { success: false, error: e.message };
