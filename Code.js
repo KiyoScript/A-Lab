@@ -46,7 +46,6 @@ function handleLabServiceRequest(action, payload, token) {
 
 // ─── Branch requests ──────────────────────────────────────────────
 function handleBranchRequest(action, payload, token) {
-  // Validate session for all branch actions
   if (!_getSession(token)) return { success: false, error: 'Session expired. Please log in again.', expired: true };
   switch (action) {
     case 'GET_BRANCHES':   return getBranches();
@@ -61,23 +60,29 @@ function handleBranchRequest(action, payload, token) {
 function handleDepartmentRequest(action, payload, token) {
   if (!_getSession(token)) return { success: false, error: 'Session expired. Please log in again.', expired: true };
   switch (action) {
-    case 'GET_DEPARTMENTS':    return getDepartments(token);
+    case 'GET_DEPARTMENTS':    return getDepartments(payload, token);
     case 'CREATE_DEPARTMENT':  return createDepartment(payload, token);
     case 'UPDATE_DEPARTMENT':  return updateDepartment(payload, token);
-    case 'DELETE_DEPARTMENT':  return deleteDepartment(payload.dept_id || payload, token);
+    case 'DELETE_DEPARTMENT':  return deleteDepartment(payload, token);
+    default: return { success: false, error: 'Unknown action: ' + action };
+  }
+}
+
+// ─── Dept ↔ Lab Service mapping requests ─────────────────────────
+function handleDeptLabRequest(action, payload, token) {
+  if (!_getSession(token)) return { success: false, error: 'Session expired. Please log in again.', expired: true };
+  switch (action) {
+    case 'GET_DEPT_LAB_MAPPINGS':    return getDeptLabMappings(payload, token);
+    case 'SAVE_DEPT_LAB_SERVICES':   return saveDeptLabServices(payload, token);
+    case 'GET_LAB_SERVICES_FOR_DEPT': return getLabServicesForDept(payload, token);
     default: return { success: false, error: 'Unknown action: ' + action };
   }
 }
 
 // ─── Admin requests ───────────────────────────────────────────────
 function handleAdminRequest(action, payload, token) {
-  // LOGIN does not need a token
   if (action === 'LOGIN') return login(payload.username, payload.password);
-
-  // GET_SESSION just validates the token
   if (action === 'GET_SESSION') return getSession(token);
-
-  // All other actions require a valid session
   if (!_getSession(token)) return { success: false, error: 'Session expired. Please log in again.', expired: true };
 
   switch (action) {
