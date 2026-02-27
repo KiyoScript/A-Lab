@@ -7,7 +7,7 @@
 // discount_type: 'percentage' | 'fixed'
 // value: numeric (e.g. 20 means 20% or ₱20.00)
 //
-// Only super_admin may perform any CRUD operation.
+// Only super_admin may perform CRUD; branch_admin can read via GET_DISCOUNTS_ALL.
 // ═══════════════════════════════════════════════════════════════
 
 // ─── Sheet accessor ───────────────────────────────────────────────
@@ -64,9 +64,8 @@ function _requireSuperAdmin(token) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// READ
+// READ — super_admin only
 // ═══════════════════════════════════════════════════════════════
-
 function getDiscounts(token) {
   try {
     const session = _requireSuperAdmin(token);
@@ -77,10 +76,7 @@ function getDiscounts(token) {
     const data = sh.getDataRange().getValues();
     if (data.length <= 1) return { success: true, data: [] };
 
-    const rows = data.slice(1)
-      .filter(r => r[0] !== '')
-      .map(_discountRowToObj);
-
+    const rows = data.slice(1).filter(r => r[0] !== '').map(_discountRowToObj);
     return { success: true, data: rows };
   } catch (e) {
     return { success: false, error: e.message };
@@ -88,9 +84,30 @@ function getDiscounts(token) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// CREATE
+// READ ALL — super_admin AND branch_admin
+// Used by patient form discount checklist
 // ═══════════════════════════════════════════════════════════════
+function getDiscountsAll(token) {
+  try {
+    const session = _getSession(token);
+    if (!session) return { success: false, error: 'Session expired.', expired: true };
+    if (!['super_admin', 'branch_admin'].includes(session.role))
+      return { success: false, error: 'Unauthorized.' };
 
+    const sh   = _getDiscountSheet();
+    const data = sh.getDataRange().getValues();
+    if (data.length <= 1) return { success: true, data: [] };
+
+    const rows = data.slice(1).filter(r => r[0] !== '').map(_discountRowToObj);
+    return { success: true, data: rows };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CREATE — super_admin only
+// ═══════════════════════════════════════════════════════════════
 function createDiscount(payload, token) {
   try {
     const session = _requireSuperAdmin(token);
@@ -107,7 +124,6 @@ function createDiscount(payload, token) {
     if (payload.discount_type === 'percentage' && value > 100)
       return { success: false, error: 'Percentage value cannot exceed 100.' };
 
-    // Duplicate name check
     const sh   = _getDiscountSheet();
     const data = sh.getDataRange().getValues();
     const exists = data.slice(1).some(r =>
@@ -149,9 +165,8 @@ function createDiscount(payload, token) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// UPDATE
+// UPDATE — super_admin only
 // ═══════════════════════════════════════════════════════════════
-
 function updateDiscount(payload, token) {
   try {
     const session = _requireSuperAdmin(token);
@@ -172,7 +187,6 @@ function updateDiscount(payload, token) {
     const sh   = _getDiscountSheet();
     const data = sh.getDataRange().getValues();
 
-    // Duplicate name check (exclude self)
     const duplicate = data.slice(1).some(r =>
       String(r[0]) !== String(payload.discount_id) &&
       String(r[1]).trim().toLowerCase() === payload.discount_name.trim().toLowerCase()
@@ -198,9 +212,8 @@ function updateDiscount(payload, token) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// DELETE
+// DELETE — super_admin only
 // ═══════════════════════════════════════════════════════════════
-
 function deleteDiscount(discountId, token) {
   try {
     const session = _requireSuperAdmin(token);
@@ -224,49 +237,21 @@ function deleteDiscount(discountId, token) {
 // ═══════════════════════════════════════════════════════════════
 // ROUTER
 // ═══════════════════════════════════════════════════════════════
-
 function handleDiscountRequest(action, payload, token) {
   const session = _getSession(token);
   if (!session) return { success: false, error: 'Session expired. Please log in again.', expired: true };
+
+  // GET_DISCOUNTS_ALL — readable by both super_admin and branch_admin
+  if (action === 'GET_DISCOUNTS_ALL') return getDiscountsAll(token);
+
+  // All other actions: super_admin only
   if (session.role !== 'super_admin') return { success: false, error: 'Access denied. Super admin only.' };
 
   switch (action) {
-    case 'GET_DISCOUNTS':    return getDiscounts(token);
-    case 'CREATE_DISCOUNT':  return createDiscount(payload, token);
-    case 'UPDATE_DISCOUNT':  return updateDiscount(payload, token);
-    case 'DELETE_DISCOUNT':  return deleteDiscount(payload.discount_id, token);
+    case 'GET_DISCOUNTS':   return getDiscounts(token);
+    case 'CREATE_DISCOUNT': return createDiscount(payload, token);
+    case 'UPDATE_DISCOUNT': return updateDiscount(payload, token);
+    case 'DELETE_DISCOUNT': return deleteDiscount(payload.discount_id, token);
     default: return { success: false, error: 'Unknown action: ' + action };
-  }
-}
-
-
-// ═══════════════════════════════════════════════════════════════
-// DISCOUNTS SERVICE PATCH
-// Add this function to DiscountsService.js
-// Also add 'GET_DISCOUNTS_ALL' case to handleDiscountRequest()
-//
-// getDiscountsAll() — allows both super_admin and branch_admin
-// to read the global discounts list (needed for patient form checklist)
-// ═══════════════════════════════════════════════════════════════
-
-function getDiscountsAll(token) {
-  try {
-    const session = _getSession(token);
-    if (!session) return { success: false, error: 'Session expired.', expired: true };
-    // Both super_admin and branch_admin can read
-    if (!['super_admin', 'branch_admin'].includes(session.role))
-      return { success: false, error: 'Unauthorized.' };
-
-    const sh   = _getDiscountSheet();
-    const data = sh.getDataRange().getValues();
-    if (data.length <= 1) return { success: true, data: [] };
-
-    const rows = data.slice(1)
-      .filter(function(r) { return r[0] !== ''; })
-      .map(_discountRowToObj);
-
-    return { success: true, data: rows };
-  } catch (e) {
-    return { success: false, error: e.message };
   }
 }
