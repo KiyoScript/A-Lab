@@ -316,16 +316,39 @@
         if (branchRes.success) { allBranches = branchRes.data || []; populateBranchDropdowns(); }
         google.script.run
           .withSuccessHandler(function(deptRes) {
-            showLoading(false);
             if (_checkExpired(deptRes)) return;
-            if (deptRes.success) {
-              allDepts = deptRes.data || [];
-              applySessionUI();
-              renderTable(allDepts);
-              updateStats(allDepts);
-            } else {
+            if (!deptRes.success) {
+              showLoading(false);
               showToast('Failed to load departments: ' + deptRes.error, 'error');
+              return;
             }
+            allDepts = deptRes.data || [];
+
+            // Also load lab service counts per dept from mappings
+            google.script.run
+              .withSuccessHandler(function(mapRes) {
+                showLoading(false);
+                if (mapRes.success && mapRes.data) {
+                  // mapRes.data = { branch_id: { dept_id: [lab_ids] } }
+                  // Merge lab_service_count into each dept
+                  allDepts.forEach(function(d) {
+                    var branchMap = mapRes.data[d.branch_id] || {};
+                    var labIds    = branchMap[d.dept_id] || [];
+                    d.lab_service_count = labIds.length;
+                  });
+                }
+                applySessionUI();
+                renderTable(allDepts);
+                updateStats(allDepts);
+              })
+              .withFailureHandler(function() {
+                // Even if mapping fails, still show depts (just count = 0)
+                showLoading(false);
+                applySessionUI();
+                renderTable(allDepts);
+                updateStats(allDepts);
+              })
+              .handleDeptLabRequest('GET_DEPT_LAB_MAPPINGS', {}, alab_token);
           })
           .withFailureHandler(function(err) { showLoading(false); showToast('Error: ' + err.message, 'error'); })
           .handleDepartmentRequest('GET_DEPARTMENTS', {}, alab_token);
@@ -333,9 +356,25 @@
       .withFailureHandler(function() {
         google.script.run
           .withSuccessHandler(function(deptRes) {
-            showLoading(false);
             if (_checkExpired(deptRes)) return;
-            if (deptRes.success) { allDepts = deptRes.data || []; applySessionUI(); renderTable(allDepts); updateStats(allDepts); }
+            if (!deptRes.success) { showLoading(false); return; }
+            allDepts = deptRes.data || [];
+            google.script.run
+              .withSuccessHandler(function(mapRes) {
+                showLoading(false);
+                if (mapRes.success && mapRes.data) {
+                  allDepts.forEach(function(d) {
+                    var branchMap = mapRes.data[d.branch_id] || {};
+                    d.lab_service_count = (branchMap[d.dept_id] || []).length;
+                  });
+                }
+                applySessionUI(); renderTable(allDepts); updateStats(allDepts);
+              })
+              .withFailureHandler(function() {
+                showLoading(false);
+                applySessionUI(); renderTable(allDepts); updateStats(allDepts);
+              })
+              .handleDeptLabRequest('GET_DEPT_LAB_MAPPINGS', {}, alab_token);
           })
           .withFailureHandler(function(err) { showLoading(false); showToast('Error: ' + err.message, 'error'); })
           .handleDepartmentRequest('GET_DEPARTMENTS', {}, alab_token);
@@ -500,11 +539,13 @@
         }
 
         // Filter to this branch
-        allLabServices = labRes.data || [];
+        allLabServices = (labRes.data || []).filter(function(l) {
+          return l.branch_id === branchId;
+        });
 
         if (!allLabServices.length) {
           showLabListLoading(false);
-          showLabListEmpty('No lab services found. Add some from the Lab Services page first.');
+          showLabListEmpty('No lab services found for this branch.');
           return;
         }
 

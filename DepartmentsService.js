@@ -50,7 +50,8 @@ function _requireSession(token) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// READ
+// getDepartments — updated to include lab_service_count per dept
+// Replace the existing getDepartments() function with this one.
 // ═══════════════════════════════════════════════════════════════
 
 function getDepartments(payload, token) {
@@ -63,30 +64,47 @@ function getDepartments(payload, token) {
     const allDepts   = [];
 
     for (var b = 1; b < branchData.length; b++) {
-      const bRow       = branchData[b];
-      const bId        = String(bRow[0] || '');
-      const bName      = String(bRow[1] || '');
-      const ssId       = String(bRow[7] || '');
+      const bRow  = branchData[b];
+      const bId   = String(bRow[0] || '');
+      const bName = String(bRow[1] || '');
+      const ssId  = String(bRow[7] || '');
 
       if (!ssId) continue;
 
       // Branch admin: only their branch
       if (session.role === 'branch_admin' && bId !== session.branch_id) continue;
 
-      // Super admin with branchId filter
+      // Super admin with branch filter
       if (session.role === 'super_admin' && payload && payload.branch_id && bId !== payload.branch_id) continue;
 
       try {
+        // Build dept_id → lab_count map from Dept_LabServices sheet
+        const labCountMap = {};
+        try {
+          const ss    = SpreadsheetApp.openById(ssId);
+          const mapSh = ss.getSheetByName('Dept_LabServices');
+          if (mapSh) {
+            const mapData = mapSh.getDataRange().getValues();
+            mapData.slice(1).forEach(function(r) {
+              const deptId = String(r[1] || '').trim();
+              const labId  = String(r[2] || '').trim();
+              if (!deptId || !labId) return;
+              labCountMap[deptId] = (labCountMap[deptId] || 0) + 1;
+            });
+          }
+        } catch(_) {}
+
         const sh   = _getDeptSheet(ssId);
         const data = sh.getDataRange().getValues();
-        data.slice(1).filter(r => r[0] !== '').forEach(r => {
-          allDepts.push(_deptRowToObj(r, bId, bName));
+        data.slice(1).filter(function(r) { return r[0] !== ''; }).forEach(function(r) {
+          const dept = _deptRowToObj(r, bId, bName);
+          dept.lab_service_count = labCountMap[dept.dept_id] || 0;
+          allDepts.push(dept);
         });
       } catch(_) {}
     }
 
-    // Sort by branch then sort_order
-    allDepts.sort((a, b) => {
+    allDepts.sort(function(a, b) {
       if (a.branch_id < b.branch_id) return -1;
       if (a.branch_id > b.branch_id) return 1;
       return (a.sort_order || 0) - (b.sort_order || 0);
