@@ -68,6 +68,20 @@ function handleDepartmentRequest(action, payload, token) {
   }
 }
 
+// ─── Package requests ────────────────────────────────────────────
+function handlePackageRequest(action, payload, token) {
+  if (!_getSession(token)) return { success: false, error: 'Session expired. Please log in again.', expired: true };
+  switch (action) {
+    case 'GET_PACKAGES':              return getPackages(token);
+    case 'CREATE_PACKAGE':            return createPackage(payload, token);
+    case 'UPDATE_PACKAGE':            return updatePackage(payload, token);
+    case 'DELETE_PACKAGE':            return deletePackage(payload.package_id, token);
+    case 'GET_LABS_FOR_PACKAGE':      return getLabsForPackage(payload, token);
+    case 'SAVE_PACKAGE_LAB_SERVICES': return savePackageLabServices(payload, token);
+    default: return { success: false, error: 'Unknown action: ' + action };
+  }
+}
+
 // ─── Dept ↔ Lab Service mapping requests ─────────────────────────
 function handleDeptLabRequest(action, payload, token) {
   if (!_getSession(token)) return { success: false, error: 'Session expired. Please log in again.', expired: true };
