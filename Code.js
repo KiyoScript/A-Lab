@@ -112,3 +112,16 @@ function handleAdminRequest(action, payload, token) {
     default: return { success: false, error: 'Unknown action: ' + action };
   }
 }
+
+// ─── Doctor requests ──────────────────────────────────────────────
+function handleDoctorRequest(action, payload, token) {
+  if (!_getSession(token)) return { success: false, error: 'Session expired. Please log in again.', expired: true };
+
+  switch (action) {
+    case 'GET_DOCTORS':    return getDoctors(token);
+    case 'CREATE_DOCTOR':  return createDoctor(payload, token);
+    case 'UPDATE_DOCTOR':  return updateDoctor(payload, token);
+    case 'DELETE_DOCTOR':  return deleteDoctor(payload.doctor_id, token);
+    default: return { success: false, error: 'Unknown action: ' + action };
+  }
+}
