@@ -1,31 +1,25 @@
 // ═══════════════════════════════════════════════════════════════
 // LAB SERVICES SERVICE
-// Stored in each branch's own spreadsheet → "Lab Services" sheet
+// Global lab services — stored in Registry SS → "Lab Services" sheet
+// NOT branch-specific. All roles can read; only super_admin can write.
+//
 // Schema:
-//   A: lab_id       B: dept_id (legacy/kept for migration compat)
-//   C: lab_code     D: lab_name
-//   E: description  F: default_fee  G: tat_hours    H: specimen_type
-//   I: is_active    J: branch_id    K: created_at   L: updated_at
-//
-// Department assignments are now managed via "Dept_LabServices" sheet.
-// dept_id column (B) is kept for backward compatibility / migration source.
-//
-// Access:
-//   super_admin  → CRUD on all branches
-//   branch_admin → CRUD on assigned branch only
+//   A: lab_id       B: lab_code     C: lab_name
+//   D: description  E: default_fee  F: tat_hours
+//   G: specimen_type  H: is_active  I: created_at  J: updated_at
 // ═══════════════════════════════════════════════════════════════
 
-// ─── Get or create Lab Services sheet in a branch SS ─────────────
-function _getLabSheet(spreadsheetId) {
-  const ss = SpreadsheetApp.openById(spreadsheetId);
+// ─── Get or create Lab Services sheet in Registry SS ─────────────
+function _getLabSheet() {
+  const ss = _getOrCreateRegistry();
   let sh = ss.getSheetByName('Lab Services');
 
   if (!sh) {
     sh = ss.insertSheet('Lab Services');
     const headers = [
-      'lab_id', 'dept_id', 'lab_code', 'lab_name',
-      'description', 'default_fee', 'tat_hours', 'specimen_type',
-      'is_active', 'branch_id', 'created_at', 'updated_at'
+      'lab_id', 'lab_code', 'lab_name',
+      'description', 'default_fee', 'tat_hours',
+      'specimen_type', 'is_active', 'created_at', 'updated_at'
     ];
     sh.appendRow(headers);
     sh.getRange(1, 1, 1, headers.length)
@@ -35,186 +29,89 @@ function _getLabSheet(spreadsheetId) {
       .setHorizontalAlignment('center');
     sh.setFrozenRows(1);
     sh.setColumnWidth(1,  160); // lab_id
-    sh.setColumnWidth(2,  160); // dept_id (legacy)
-    sh.setColumnWidth(3,  110); // lab_code
-    sh.setColumnWidth(4,  200); // lab_name
-    sh.setColumnWidth(5,  260); // description
-    sh.setColumnWidth(6,  110); // default_fee
-    sh.setColumnWidth(7,  100); // tat_hours
-    sh.setColumnWidth(8,  150); // specimen_type
-    sh.setColumnWidth(9,   90); // is_active
-    sh.setColumnWidth(10, 140); // branch_id
-    sh.setColumnWidth(11, 180); // created_at
-    sh.setColumnWidth(12, 180); // updated_at
+    sh.setColumnWidth(2,  110); // lab_code
+    sh.setColumnWidth(3,  220); // lab_name
+    sh.setColumnWidth(4,  280); // description
+    sh.setColumnWidth(5,  110); // default_fee
+    sh.setColumnWidth(6,  100); // tat_hours
+    sh.setColumnWidth(7,  160); // specimen_type
+    sh.setColumnWidth(8,   90); // is_active
+    sh.setColumnWidth(9,  180); // created_at
+    sh.setColumnWidth(10, 180); // updated_at
   }
 
   return sh;
 }
 
 // ─── Row → Object ─────────────────────────────────────────────────
-function _labRowToObj(row, branchName, deptNames) {
+function _labRowToObj(row) {
   return {
-    lab_id:        String(row[0]  || ''),
-    dept_id:       String(row[1]  || ''),   // legacy field, kept for compat
-    dept_names:    deptNames || [],          // array of dept names from mapping
-    lab_code:      String(row[2]  || ''),
-    lab_name:      String(row[3]  || ''),
-    description:   String(row[4]  || ''),
-    default_fee:   Number(row[5]) || 0,
-    tat_hours:     Number(row[6]) || 0,
-    specimen_type: String(row[7]  || ''),
-    is_active:     row[8] === true || String(row[8]).toLowerCase() === 'true',
-    branch_id:     String(row[9]  || ''),
-    branch_name:   branchName || '',
-    created_at:    String(row[10] || ''),
-    updated_at:    String(row[11] || '')
+    lab_id:        String(row[0] || ''),
+    lab_code:      String(row[1] || ''),
+    lab_name:      String(row[2] || ''),
+    description:   String(row[3] || ''),
+    default_fee:   Number(row[4]) || 0,
+    tat_hours:     Number(row[5]) || 0,
+    specimen_type: String(row[6] || ''),
+    is_active:     row[7] === true || String(row[7]).toLowerCase() === 'true',
+    created_at:    String(row[8]  || ''),
+    updated_at:    String(row[9]  || '')
   };
 }
 
-// ─── Build dept lookup map: dept_id → dept_name ───────────────────
-function _buildDeptMap(spreadsheetId) {
-  const map = {};
-  try {
-    const ss = SpreadsheetApp.openById(spreadsheetId);
-    const sh = ss.getSheetByName('Departments');
-    if (!sh) return map;
-    const data = sh.getDataRange().getValues();
-    data.slice(1).forEach(function(r) {
-      if (r[0]) map[String(r[0])] = String(r[1] || '');
-    });
-  } catch(_) {}
-  return map;
-}
-
-// ─── Build lab→[deptNames] map from Dept_LabServices sheet ───────
-function _buildLabDeptNamesMap(spreadsheetId) {
-  const labDeptMap = {}; // lab_id → [dept_name, ...]
-  try {
-    const deptMap = _buildDeptMap(spreadsheetId);
-    const ss      = SpreadsheetApp.openById(spreadsheetId);
-    const sh      = ss.getSheetByName('Dept_LabServices');
-    if (!sh) {
-      // Sheet doesn't exist yet — trigger creation via _getDeptLabSheet
-      _getDeptLabSheet(spreadsheetId);
-      // Re-read after migration
-      const sh2   = ss.getSheetByName('Dept_LabServices');
-      if (!sh2) return labDeptMap;
-      const data2 = sh2.getDataRange().getValues();
-      data2.slice(1).forEach(function(r) {
-        const labId  = String(r[2] || '').trim();
-        const deptId = String(r[1] || '').trim();
-        if (!labId || !deptId) return;
-        if (!labDeptMap[labId]) labDeptMap[labId] = [];
-        const deptName = deptMap[deptId] || deptId;
-        if (!labDeptMap[labId].includes(deptName)) labDeptMap[labId].push(deptName);
-      });
-      return labDeptMap;
-    }
-    const data = sh.getDataRange().getValues();
-    data.slice(1).forEach(function(r) {
-      const labId  = String(r[2] || '').trim();
-      const deptId = String(r[1] || '').trim();
-      if (!labId || !deptId) return;
-      if (!labDeptMap[labId]) labDeptMap[labId] = [];
-      const deptName = deptMap[deptId] || deptId;
-      if (!labDeptMap[labId].includes(deptName)) labDeptMap[labId].push(deptName);
-    });
-  } catch(e) {
-    Logger.log('_buildLabDeptNamesMap: ' + e.message);
-  }
-  return labDeptMap;
-}
-
 // ═══════════════════════════════════════════════════════════════
-// READ
+// READ — all roles
 // ═══════════════════════════════════════════════════════════════
-
 function getLabServices(token) {
   try {
     const session = _getSession(token);
     if (!session) return { success: false, error: 'Session expired.', expired: true };
 
-    const branchSh   = _getRegistrySheet();
-    const branchData = branchSh.getDataRange().getValues();
-    const allLabs    = [];
+    const sh   = _getLabSheet();
+    const data = sh.getDataRange().getValues();
+    const labs = data.slice(1)
+      .filter(function(r) { return r[0] !== ''; })
+      .map(function(r)    { return _labRowToObj(r); });
 
-    for (var b = 1; b < branchData.length; b++) {
-      const bRow       = branchData[b];
-      const ssId       = String(bRow[7] || '');
-      const branchId   = String(bRow[0] || '');
-      const branchName = String(bRow[1] || '');
-
-      if (!ssId) continue;
-      if (session.role === 'branch_admin' && branchId !== session.branch_id) continue;
-
-      try {
-        // Build lab → [dept names] map from Dept_LabServices mapping
-        const labDeptNamesMap = _buildLabDeptNamesMap(ssId);
-        const sh   = _getLabSheet(ssId);
-        const data = sh.getDataRange().getValues();
-        data.slice(1).filter(function(r) { return r[0] !== ''; }).forEach(function(r) {
-          const labId    = String(r[0] || '');
-          const deptNames = labDeptNamesMap[labId] || [];
-          allLabs.push(_labRowToObj(r, branchName, deptNames));
-        });
-      } catch(e) {
-        Logger.log('getLabServices branch ' + branchId + ': ' + e.message);
-      }
-    }
-
-    return { success: true, data: allLabs };
+    return { success: true, data: labs };
   } catch (e) {
     return { success: false, error: e.message };
   }
 }
 
 // ═══════════════════════════════════════════════════════════════
-// CREATE
+// CREATE — super_admin only
 // ═══════════════════════════════════════════════════════════════
-
 function createLabService(payload, token) {
   try {
     const session = _getSession(token);
     if (!session) return { success: false, error: 'Session expired.', expired: true };
+    if (session.role !== 'super_admin') return { success: false, error: 'Only super admins can create lab services.' };
 
-    if (!payload.lab_name  || !payload.lab_name.trim())  return { success: false, error: 'Lab name is required.' };
-    if (!payload.lab_code  || !payload.lab_code.trim())  return { success: false, error: 'Lab code is required.' };
-    if (!payload.branch_id)                              return { success: false, error: 'Branch is required.' };
+    if (!payload.lab_name || !payload.lab_name.trim()) return { success: false, error: 'Lab name is required.' };
+    if (!payload.lab_code || !payload.lab_code.trim()) return { success: false, error: 'Lab code is required.' };
 
-    if (session.role === 'branch_admin' && payload.branch_id !== session.branch_id)
-      return { success: false, error: 'You can only manage your own branch lab services.' };
-
-    const branchSh   = _getRegistrySheet();
-    const branchData = branchSh.getDataRange().getValues();
-    const branchRow  = branchData.find(function(r, i) {
-      return i > 0 && String(r[0]) === String(payload.branch_id);
-    });
-    if (!branchRow) return { success: false, error: 'Branch not found.' };
-
-    const ssId = String(branchRow[7]);
-    const sh   = _getLabSheet(ssId);
+    const sh   = _getLabSheet();
     const data = sh.getDataRange().getValues();
 
-    // Check duplicate lab_code within branch
+    // Check duplicate lab_code globally
     const dup = data.slice(1).some(function(r) {
-      return r[0] !== '' && String(r[2]).toLowerCase() === payload.lab_code.trim().toLowerCase();
+      return r[0] !== '' && String(r[1]).toLowerCase() === payload.lab_code.trim().toLowerCase();
     });
-    if (dup) return { success: false, error: 'Lab code already exists in this branch.' };
+    if (dup) return { success: false, error: 'Lab code already exists.' };
 
     const now   = new Date().toISOString();
     const labId = 'LAB-' + Utilities.getUuid().substring(0, 8).toUpperCase();
 
     sh.appendRow([
       labId,
-      '',                                           // dept_id — empty (managed by mapping)
       payload.lab_code.trim().toUpperCase(),
       payload.lab_name.trim(),
       payload.description   || '',
-      Number(payload.default_fee)  || 0,
-      Number(payload.tat_hours)    || 0,
+      Number(payload.default_fee) || 0,
+      Number(payload.tat_hours)   || 0,
       payload.specimen_type || '',
       payload.is_active !== false,
-      payload.branch_id,
       now,
       now
     ]);
@@ -223,17 +120,13 @@ function createLabService(payload, token) {
       success: true,
       data: {
         lab_id:        labId,
-        dept_id:       '',
-        dept_names:    [],
         lab_code:      payload.lab_code.trim().toUpperCase(),
         lab_name:      payload.lab_name.trim(),
         description:   payload.description   || '',
-        default_fee:   Number(payload.default_fee)  || 0,
-        tat_hours:     Number(payload.tat_hours)    || 0,
+        default_fee:   Number(payload.default_fee) || 0,
+        tat_hours:     Number(payload.tat_hours)   || 0,
         specimen_type: payload.specimen_type || '',
         is_active:     payload.is_active !== false,
-        branch_id:     payload.branch_id,
-        branch_name:   String(branchRow[1]),
         created_at:    now,
         updated_at:    now
       }
@@ -244,104 +137,81 @@ function createLabService(payload, token) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// UPDATE
+// UPDATE — super_admin only
 // ═══════════════════════════════════════════════════════════════
-
 function updateLabService(payload, token) {
   try {
     const session = _getSession(token);
     if (!session) return { success: false, error: 'Session expired.', expired: true };
+    if (session.role !== 'super_admin') return { success: false, error: 'Only super admins can update lab services.' };
     if (!payload.lab_id) return { success: false, error: 'lab_id is required.' };
 
-    const branchSh   = _getRegistrySheet();
-    const branchData = branchSh.getDataRange().getValues();
+    const sh   = _getLabSheet();
+    const data = sh.getDataRange().getValues();
+    const idx  = data.findIndex(function(r, i) {
+      return i > 0 && String(r[0]) === String(payload.lab_id);
+    });
+    if (idx === -1) return { success: false, error: 'Lab service not found.' };
 
-    for (var b = 1; b < branchData.length; b++) {
-      const bRow     = branchData[b];
-      const ssId     = String(bRow[7] || '');
-      const branchId = String(bRow[0] || '');
-      if (!ssId) continue;
-      if (session.role === 'branch_admin' && branchId !== session.branch_id) continue;
+    const now = new Date().toISOString();
+    const row = idx + 1;
+    sh.getRange(row, 2).setValue(payload.lab_code.trim().toUpperCase());
+    sh.getRange(row, 3).setValue(payload.lab_name.trim());
+    sh.getRange(row, 4).setValue(payload.description   || '');
+    sh.getRange(row, 5).setValue(Number(payload.default_fee) || 0);
+    sh.getRange(row, 6).setValue(Number(payload.tat_hours)   || 0);
+    sh.getRange(row, 7).setValue(payload.specimen_type || '');
+    sh.getRange(row, 8).setValue(payload.is_active !== false);
+    sh.getRange(row, 10).setValue(now);
 
-      try {
-        const sh   = _getLabSheet(ssId);
-        const data = sh.getDataRange().getValues();
-        const idx  = data.findIndex(function(r, i) {
-          return i > 0 && String(r[0]) === String(payload.lab_id);
-        });
-        if (idx === -1) continue;
-
-        const now = new Date().toISOString();
-        const row = idx + 1;
-
-        // dept_id (col 2) intentionally NOT updated here — managed via Dept_LabServices
-        sh.getRange(row, 3).setValue(payload.lab_code.trim().toUpperCase());
-        sh.getRange(row, 4).setValue(payload.lab_name.trim());
-        sh.getRange(row, 5).setValue(payload.description   || '');
-        sh.getRange(row, 6).setValue(Number(payload.default_fee)  || 0);
-        sh.getRange(row, 7).setValue(Number(payload.tat_hours)    || 0);
-        sh.getRange(row, 8).setValue(payload.specimen_type || '');
-        sh.getRange(row, 9).setValue(payload.is_active !== false);
-        sh.getRange(row, 12).setValue(now);
-
-        return { success: true };
-      } catch(_) {}
-    }
-
-    return { success: false, error: 'Lab service not found.' };
+    return { success: true };
   } catch (e) {
     return { success: false, error: e.message };
   }
 }
 
 // ═══════════════════════════════════════════════════════════════
-// DELETE
+// DELETE — super_admin only
+// Also cleans up all Dept_LabServices mapping entries across all branches
 // ═══════════════════════════════════════════════════════════════
-
 function deleteLabService(labId, token) {
   try {
     const session = _getSession(token);
     if (!session) return { success: false, error: 'Session expired.', expired: true };
+    if (session.role !== 'super_admin') return { success: false, error: 'Only super admins can delete lab services.' };
     if (!labId) return { success: false, error: 'lab_id is required.' };
 
-    const branchSh   = _getRegistrySheet();
-    const branchData = branchSh.getDataRange().getValues();
+    const sh   = _getLabSheet();
+    const data = sh.getDataRange().getValues();
+    const idx  = data.findIndex(function(r, i) {
+      return i > 0 && String(r[0]) === String(labId);
+    });
+    if (idx === -1) return { success: false, error: 'Lab service not found.' };
 
-    for (var b = 1; b < branchData.length; b++) {
-      const bRow     = branchData[b];
-      const ssId     = String(bRow[7] || '');
-      const branchId = String(bRow[0] || '');
-      if (!ssId) continue;
-      if (session.role === 'branch_admin' && branchId !== session.branch_id) continue;
+    sh.deleteRow(idx + 1);
 
-      try {
-        const sh   = _getLabSheet(ssId);
-        const data = sh.getDataRange().getValues();
-        const idx  = data.findIndex(function(r, i) {
-          return i > 0 && String(r[0]) === String(labId);
-        });
-        if (idx === -1) continue;
-
-        sh.deleteRow(idx + 1);
-
-        // Also clean up mapping entries for this lab service
+    // Clean up Dept_LabServices mappings across all branch SSes
+    try {
+      const branchSh   = _getRegistrySheet();
+      const branchData = branchSh.getDataRange().getValues();
+      for (var b = 1; b < branchData.length; b++) {
+        const ssId = String(branchData[b][7] || '');
+        if (!ssId) continue;
         try {
-          const mapSh   = SpreadsheetApp.openById(ssId).getSheetByName('Dept_LabServices');
-          if (mapSh) {
-            const mapData = mapSh.getDataRange().getValues();
-            for (var i = mapData.length - 1; i >= 1; i--) {
-              if (String(mapData[i][2] || '').trim() === String(labId)) {
-                mapSh.deleteRow(i + 1);
-              }
+          const ss    = SpreadsheetApp.openById(ssId);
+          const mapSh = ss.getSheetByName('Dept_LabServices');
+          if (!mapSh) continue;
+          const mapData = mapSh.getDataRange().getValues();
+          for (var i = mapData.length - 1; i >= 1; i--) {
+            if (String(mapData[i][2] || '').trim() === String(labId)) {
+              mapSh.deleteRow(i + 1);
             }
           }
         } catch(_) {}
+      }
+    } catch(_) {}
 
-        return { success: true };
-      } catch(_) {}
-    }
-
-    return { success: false, error: 'Lab service not found.' };
+    return { success: true };
   } catch (e) {
     return { success: false, error: e.message };
   }
