@@ -238,3 +238,35 @@ function handleDiscountRequest(action, payload, token) {
     default: return { success: false, error: 'Unknown action: ' + action };
   }
 }
+
+
+// ═══════════════════════════════════════════════════════════════
+// DISCOUNTS SERVICE PATCH
+// Add this function to DiscountsService.js
+// Also add 'GET_DISCOUNTS_ALL' case to handleDiscountRequest()
+//
+// getDiscountsAll() — allows both super_admin and branch_admin
+// to read the global discounts list (needed for patient form checklist)
+// ═══════════════════════════════════════════════════════════════
+
+function getDiscountsAll(token) {
+  try {
+    const session = _getSession(token);
+    if (!session) return { success: false, error: 'Session expired.', expired: true };
+    // Both super_admin and branch_admin can read
+    if (!['super_admin', 'branch_admin'].includes(session.role))
+      return { success: false, error: 'Unauthorized.' };
+
+    const sh   = _getDiscountSheet();
+    const data = sh.getDataRange().getValues();
+    if (data.length <= 1) return { success: true, data: [] };
+
+    const rows = data.slice(1)
+      .filter(function(r) { return r[0] !== ''; })
+      .map(_discountRowToObj);
+
+    return { success: true, data: rows };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}

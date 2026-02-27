@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Patients — A-Lab</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    * { font-family: 'DM Sans', sans-serif; }
+    body { background: #f8fafc; color: #0f172a; overflow: auto; }
+    .card { background:#fff; border:1px solid #e2e8f0; border-radius:1rem; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
+    .form-input, .form-select, .form-textarea {
+      background:#f8fafc; border:1px solid #e2e8f0; color:#334155;
+      width:100%; border-radius:0.75rem; padding:0.625rem 0.75rem; font-size:0.875rem;
+      outline:none; transition:box-shadow 0.15s, border-color 0.15s;
+    }
+    .form-input::placeholder, .form-textarea::placeholder { color:#94a3b8; }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { box-shadow:0 0 0 2px rgba(47,118,245,0.25); border-color:#2f76f5; }
+    .search-input {
+      background:#fff; border:1px solid #e2e8f0; color:#0f172a;
+      border-radius:0.75rem; padding:0.5rem 0.75rem 0.5rem 2.25rem;
+      font-size:0.875rem; outline:none; width:100%; transition:border-color 0.15s;
+    }
+    .search-input::placeholder { color:#94a3b8; }
+    .search-input:focus { border-color:#2f76f5; box-shadow:0 0 0 2px rgba(47,118,245,0.2); }
+    .filter-select {
+      background:#fff; border:1px solid #e2e8f0; color:#475569;
+      border-radius:0.75rem; padding:0.5rem 0.75rem; font-size:0.875rem; outline:none;
+    }
+    .filter-select:focus { border-color:#2f76f5; }
+    tr.data-row { border-bottom:1px solid #f1f5f9; transition:background 0.12s; }
+    tr.data-row:hover { background:#f8fafc; }
+    .badge { font-size:11px; font-weight:600; padding:2px 10px; border-radius:99px; letter-spacing:0.03em; }
+    .badge-m { background:#dbeafe; color:#1d4ed8; }
+    .badge-f { background:#fce7f3; color:#be185d; }
+    .disc-tag { font-size:11px; font-weight:600; background:#f0fdf4; color:#16a34a; padding:2px 8px; border-radius:6px; white-space:nowrap; }
+    .spinner { width:18px;height:18px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;display:inline-block; }
+    @keyframes spin { to{transform:rotate(360deg)} }
+    #toast { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
+    .toast-item { display:flex; align-items:center; gap:10px; padding:12px 18px; border-radius:12px; font-size:13px; font-weight:500; color:#fff; box-shadow:0 4px 20px rgba(0,0,0,0.15); pointer-events:auto; max-width:320px; animation:toastSlideUp .3s ease; }
+    .toast-success { background:#0f9959; }
+    .toast-error   { background:#ef4444; }
+    .toast-warning { background:#f59e0b; }
+    @keyframes toastSlideUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    .fade-up { animation: fadeUp 0.3s ease both; }
+    /* ── Discount checklist ── */
+    .disc-check-item { display:flex; align-items:flex-start; gap:10px; padding:8px 10px; border-radius:10px; cursor:pointer; transition:background 0.12s; border:1px solid transparent; }
+    .disc-check-item:hover { background:#f1f5f9; }
+    .disc-check-item.checked { background:#f0fdf4; border-color:#bbf7d0; }
+    .disc-check-item input[type=checkbox] { width:15px; height:15px; accent-color:#16a34a; cursor:pointer; flex-shrink:0; margin-top:2px; }
+    ::-webkit-scrollbar { width:5px; }
+    ::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:99px; }
+  </style>
+</head>
+<body>
+<div class="p-6 max-w-7xl mx-auto">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-6 fade-up">
+    <div>
+      <h1 class="text-xl font-bold text-slate-800">Patients</h1>
+      <p class="text-sm text-slate-400 mt-0.5">Manage patient records and their discount assignments.</p>
+    </div>
+    <button onclick="openModal()"
+      class="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-sm">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+      </svg>
+      Add Patient
+    </button>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid grid-cols-3 gap-4 mb-6 fade-up">
+    <div class="card p-4 text-center"><p id="stat-total" class="text-2xl font-bold text-slate-800">—</p><p class="text-xs text-slate-400 mt-0.5 font-medium">Total Patients</p></div>
+    <div class="card p-4 text-center"><p id="stat-male" class="text-2xl font-bold text-blue-500">—</p><p class="text-xs text-slate-400 mt-0.5 font-medium">Male</p></div>
+    <div class="card p-4 text-center"><p id="stat-female" class="text-2xl font-bold text-pink-500">—</p><p class="text-xs text-slate-400 mt-0.5 font-medium">Female</p></div>
+  </div>
+
+  <!-- Search + Filter -->
+  <div class="flex items-center gap-3 mb-4 fade-up flex-wrap">
+    <div class="relative flex-1 min-w-[180px] max-w-sm">
+      <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
+      </svg>
+      <input id="search-input" type="text" placeholder="Search patients…" oninput="filterTable()" class="search-input"/>
+    </div>
+    <select id="branch-filter" onchange="filterTable()" class="filter-select hidden">
+      <option value="">All Branches</option>
+    </select>
+    <select id="sex-filter" onchange="filterTable()" class="filter-select">
+      <option value="">All Sex</option>
+      <option value="Male">Male</option>
+      <option value="Female">Female</option>
+    </select>
+  </div>
+
+  <!-- Table -->
+  <div class="card fade-up">
+    <div id="loading" class="flex flex-col items-center justify-center py-16 gap-3">
+      <div class="w-10 h-10 rounded-full animate-spin" style="border:2px solid #bbd8ff;border-top-color:#2f76f5"></div>
+      <p class="text-sm text-slate-400">Loading patients…</p>
+    </div>
+    <div id="empty-state" class="hidden flex-col items-center justify-center py-16 gap-3 text-center">
+      <div class="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center">
+        <svg class="w-7 h-7 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-1a4 4 0 00-5.196-3.762M9 11a4 4 0 100-8 4 4 0 000 8zm-6 9v-1a4 4 0 014-4h4a4 4 0 014 4v1"/>
+        </svg>
+      </div>
+      <p class="text-slate-500 text-sm font-medium">No patients found</p>
+      <p class="text-slate-400 text-xs">Click "Add Patient" to register one.</p>
+    </div>
+    <div id="table-wrap" class="hidden overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-100">
+            <th class="px-5 py-3 text-left">Patient</th>
+            <th class="px-3 py-3 text-left">Sex</th>
+            <th class="px-3 py-3 text-left hidden md:table-cell">Birth Date</th>
+            <th class="px-3 py-3 text-left hidden md:table-cell">Contact</th>
+            <th class="px-3 py-3 text-left">Discounts</th>
+            <th id="branch-col" class="px-3 py-3 text-left hidden">Branch</th>
+            <th class="px-5 py-3 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="patient-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div id="modal-backdrop" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col" onclick="event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 shrink-0">
+      <div>
+        <h2 id="modal-title" class="text-base font-bold text-slate-800">Add Patient</h2>
+        <p id="modal-subtitle" class="text-xs text-slate-400 mt-0.5">Register a new patient record.</p>
+      </div>
+      <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-1">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Body (scrollable) -->
+    <div class="overflow-y-auto flex-1 px-6 py-5 space-y-4">
+      <input type="hidden" id="f-patient-id"/>
+      <input type="hidden" id="f-branch-id"/>
+
+      <!-- Branch (super admin: select; branch admin: badge) -->
+      <div id="branch-select-wrap">
+        <label class="block text-xs font-semibold text-slate-600 mb-1.5">Branch <span class="text-red-400">*</span></label>
+        <select id="f-branch-select" class="form-select"><option value="">Select branch…</option></select>
+      </div>
+      <div id="branch-badge-wrap" class="hidden">
+        <label class="block text-xs font-semibold text-slate-600 mb-1.5">Branch</label>
+        <div class="px-3 py-2 bg-blue-50 rounded-xl text-xs font-semibold text-blue-700" id="branch-badge-label">—</div>
+      </div>
+
+      <!-- Name row -->
+      <div class="grid grid-cols-3 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1.5">Last Name <span class="text-red-400">*</span></label>
+          <input id="f-last-name" type="text" placeholder="e.g. Dela Cruz" class="form-input"/>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1.5">First Name <span class="text-red-400">*</span></label>
+          <input id="f-first-name" type="text" placeholder="e.g. Juan" class="form-input"/>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1.5">Middle Name</label>
+          <input id="f-middle-name" type="text" placeholder="e.g. Santos" class="form-input"/>
+        </div>
+      </div>
+
+      <!-- Sex + Birth Date -->
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1.5">Sex <span class="text-red-400">*</span></label>
+          <select id="f-sex" class="form-select">
+            <option value="">Select…</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1.5">Birth Date <span class="text-red-400">*</span></label>
+          <input id="f-birth-date" type="date" class="form-input"/>
+        </div>
+      </div>
+
+      <!-- Contact + Email -->
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1.5">Contact Number <span class="text-red-400">*</span></label>
+          <input id="f-contact" type="text" placeholder="e.g. 09171234567" class="form-input"/>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1.5">Email Address <span class="text-slate-400 font-normal">(optional)</span></label>
+          <input id="f-email" type="email" placeholder="e.g. juan@email.com" class="form-input"/>
+        </div>
+      </div>
+
+      <!-- Address -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 mb-1.5">Address <span class="text-red-400">*</span></label>
+        <input id="f-address" type="text" placeholder="e.g. 123 Rizal St., Barangay Poblacion, Ormoc City" class="form-input"/>
+      </div>
+
+      <!-- ── Discounts Checklist ── -->
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <label class="text-xs font-semibold text-slate-600">Discounts</label>
+          <div class="flex items-center gap-2">
+            <span id="disc-check-count" class="text-xs text-slate-400"></span>
+            <button type="button" onclick="clearAllDiscs()" class="text-xs text-slate-400 hover:text-slate-600 font-semibold">Clear</button>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div id="disc-loading" class="hidden py-4 flex items-center gap-2">
+          <div class="w-4 h-4 rounded-full animate-spin" style="border:2px solid #bbd8ff;border-top-color:#2f76f5"></div>
+          <p class="text-xs text-slate-400">Loading discounts…</p>
+        </div>
+
+        <!-- No discounts -->
+        <div id="disc-empty" class="py-4 text-center hidden">
+          <p class="text-xs text-slate-400">No active discounts available. Add some from the Discounts page first.</p>
+        </div>
+
+        <!-- Checklist -->
+        <div id="disc-list-wrap" class="hidden border border-slate-200 rounded-xl overflow-hidden">
+          <div id="disc-checklist" class="divide-y divide-slate-100 p-1.5 space-y-0.5 max-h-44 overflow-y-auto"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 shrink-0">
+      <button onclick="closeModal()" class="px-4 py-2.5 text-sm font-semibold text-slate-600 hover:text-slate-800">Cancel</button>
+      <button id="save-btn" onclick="savePatient()"
+        class="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-sm min-w-[130px] justify-center">
+        <span id="save-label">Save Patient</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE MODAL -->
+<div id="delete-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center" onclick="event.stopPropagation()">
+    <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
+      <svg class="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+      </svg>
+    </div>
+    <h3 class="text-base font-bold text-slate-800 mb-1">Delete Patient?</h3>
+    <p class="text-sm text-slate-500 mb-1">This will permanently delete</p>
+    <p class="text-sm font-semibold text-slate-700 mb-2" id="delete-name">—</p>
+    <p class="text-xs text-slate-400 mb-5">All discount assignments will also be removed.</p>
+    <div class="flex gap-3">
+      <button onclick="closeDeleteModal()" class="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
+      <button id="confirm-delete-btn" onclick="confirmDelete()" class="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  var alab_token     = (new URLSearchParams(window.location.search)).get('token') || localStorage.getItem('alab_token') || '';
+  var allPatients    = [];
+  var allDiscounts   = [];
+  var allBranches    = [];
+  var currentSession = null;
+  var isSuperAdmin   = false;
+  var editingId      = null;
+  var editingBranchId = null;
+  var deletingPayload = null;
+
+  function _handleExpired() {
+    localStorage.removeItem('alab_token');
+    google.script.run.withSuccessHandler(function(url) {
+      window.top.location.href = url + '?page=Login';
+    }).getScriptUrl();
+  }
+  function _checkExpired(res) { if (res && res.expired) { _handleExpired(); return true; } return false; }
+
+  document.addEventListener('DOMContentLoaded', initPage);
+
+  function initPage() {
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (_checkExpired(res)) return;
+        if (res.success) {
+          currentSession = res.data;
+          isSuperAdmin   = currentSession.role === 'super_admin';
+          applySessionUI();
+        }
+        loadData();
+      })
+      .withFailureHandler(function() { loadData(); })
+      .handleAdminRequest('GET_SESSION', {}, alab_token);
+  }
+
+  function applySessionUI() {
+    if (isSuperAdmin) {
+      document.getElementById('branch-filter').classList.remove('hidden');
+      document.getElementById('branch-col').classList.remove('hidden');
+    }
+  }
+
+  // ── Load data ──────────────────────────────────────────────────
+  function loadData() {
+    showLoading(true);
+    var branchDone = false, discDone = false, patDone = false;
+    var branchData = [], discData = [], patData = [];
+
+    function tryRender() {
+      if (!branchDone || !discDone || !patDone) return;
+      allBranches  = branchData;
+      allDiscounts = discData.filter(function(d) { return d.is_active; });
+      allPatients  = patData;
+      populateBranchFilter();
+      showLoading(false);
+      renderTable(allPatients);
+      updateStats(allPatients);
+    }
+
+    // Load branches (for filter + super admin select)
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (res.success) branchData = res.data || [];
+        branchDone = true; tryRender();
+      })
+      .withFailureHandler(function() { branchDone = true; tryRender(); })
+      .handleBranchRequest('GET_BRANCHES', {}, alab_token);
+
+    // Load discounts (all admin roles)
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (_checkExpired(res)) return;
+        if (res.success) discData = res.data || [];
+        discDone = true; tryRender();
+      })
+      .withFailureHandler(function() { discDone = true; tryRender(); })
+      .handleDiscountRequest('GET_DISCOUNTS_ALL', {}, alab_token);
+
+    // Load patients
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (_checkExpired(res)) return;
+        if (res.success) patData = res.data || [];
+        patDone = true; tryRender();
+      })
+      .withFailureHandler(function(err) {
+        patDone = true; tryRender();
+        showToast('Error loading patients: ' + err.message, 'error');
+      })
+      .handlePatientRequest('GET_PATIENTS', {}, alab_token);
+  }
+
+  function populateBranchFilter() {
+    var sel = document.getElementById('branch-filter');
+    sel.innerHTML = '<option value="">All Branches</option>';
+    allBranches.forEach(function(b) {
+      sel.innerHTML += '<option value="' + escHtml(b.branch_id) + '">' + escHtml(b.branch_name) + '</option>';
+    });
+  }
+
+  // ── Render table ──────────────────────────────────────────────
+  function renderTable(data) {
+    var tbody = document.getElementById('patient-tbody');
+    var wrap  = document.getElementById('table-wrap');
+    var empty = document.getElementById('empty-state');
+
+    if (!data.length) {
+      wrap.classList.add('hidden');
+      empty.classList.remove('hidden'); empty.classList.add('flex'); return;
+    }
+    empty.classList.add('hidden'); empty.classList.remove('flex');
+    wrap.classList.remove('hidden');
+
+    tbody.innerHTML = data.map(function(p) {
+      var fullName  = escHtml(p.last_name + ', ' + p.first_name + (p.middle_name ? ' ' + p.middle_name.charAt(0) + '.' : ''));
+      var sexBadge  = p.sex === 'Male'
+        ? '<span class="badge badge-m">M</span>'
+        : '<span class="badge badge-f">F</span>';
+
+      var discCell = p.discount_names && p.discount_names.length
+        ? '<div class="flex flex-wrap gap-1">' + p.discount_names.map(function(n) { return '<span class="disc-tag">' + escHtml(n) + '</span>'; }).join('') + '</div>'
+        : '<span class="text-slate-300 text-xs italic">None</span>';
+
+      var branchCell = isSuperAdmin
+        ? '<td class="px-3 py-3.5 text-xs text-slate-500">' + escHtml(p.branch_name || '—') + '</td>'
+        : '';
+
+      return '<tr class="data-row">' +
+        '<td class="px-5 py-3.5">' +
+          '<p class="font-semibold text-slate-800">' + fullName + '</p>' +
+          '<p class="text-xs text-slate-400">' + escHtml(p.contact_number || '—') + '</p>' +
+        '</td>' +
+        '<td class="px-3 py-3.5">' + sexBadge + '</td>' +
+        '<td class="px-3 py-3.5 text-xs text-slate-500 hidden md:table-cell">' + escHtml(formatDate(p.birth_date)) + '</td>' +
+        '<td class="px-3 py-3.5 text-xs text-slate-500 hidden md:table-cell">' + escHtml(p.contact_number || '—') + '</td>' +
+        '<td class="px-3 py-3.5">' + discCell + '</td>' +
+        branchCell +
+        '<td class="px-5 py-3.5 text-right">' +
+          '<div class="flex items-center justify-end gap-2">' +
+            '<button onclick="openModal(\'' + escHtml(p.patient_id) + '\',\'' + escHtml(p.branch_id) + '\')" class="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors" title="Edit">' +
+              '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>' +
+            '</button>' +
+            '<button onclick="openDeleteModal(\'' + escHtml(p.patient_id) + '\',\'' + escHtml(p.branch_id) + '\',\'' + escHtml(p.last_name + ', ' + p.first_name) + '\')" class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete">' +
+              '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>' +
+            '</button>' +
+          '</div>' +
+        '</td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  function updateStats(data) {
+    document.getElementById('stat-total').textContent  = data.length;
+    document.getElementById('stat-male').textContent   = data.filter(function(p) { return p.sex === 'Male'; }).length;
+    document.getElementById('stat-female').textContent = data.filter(function(p) { return p.sex === 'Female'; }).length;
+  }
+
+  function filterTable() {
+    var q   = document.getElementById('search-input').value.toLowerCase();
+    var sex = document.getElementById('sex-filter').value;
+    var br  = document.getElementById('branch-filter').value;
+    var filtered = allPatients.filter(function(p) {
+      var fullName = (p.last_name + ' ' + p.first_name + ' ' + p.middle_name).toLowerCase();
+      var mq = !q || fullName.includes(q) || (p.contact_number || '').includes(q) || (p.email_address || '').toLowerCase().includes(q);
+      var ms = !sex || p.sex === sex;
+      var mb = !br  || p.branch_id === br;
+      return mq && ms && mb;
+    });
+    renderTable(filtered);
+    updateStats(filtered);
+  }
+
+  // ── Modal ──────────────────────────────────────────────────────
+  function openModal(patientId, branchId) {
+    editingId       = patientId || null;
+    editingBranchId = branchId  || null;
+    clearForm();
+
+    var isEdit = !!patientId;
+    document.getElementById('modal-title').textContent    = isEdit ? 'Edit Patient' : 'Add Patient';
+    document.getElementById('modal-subtitle').textContent = isEdit ? 'Update patient record.' : 'Register a new patient.';
+    document.getElementById('save-label').textContent     = isEdit ? 'Update Patient' : 'Save Patient';
+
+    // Branch field
+    if (isSuperAdmin) {
+      document.getElementById('branch-select-wrap').classList.remove('hidden');
+      document.getElementById('branch-badge-wrap').classList.add('hidden');
+      // Populate branch select
+      var sel = document.getElementById('f-branch-select');
+      sel.innerHTML = '<option value="">Select branch…</option>';
+      allBranches.filter(function(b) { return b.status === 'Active'; }).forEach(function(b) {
+        sel.innerHTML += '<option value="' + escHtml(b.branch_id) + '">' + escHtml(b.branch_name) + '</option>';
+      });
+      if (isEdit) sel.value = branchId;
+    } else {
+      document.getElementById('branch-select-wrap').classList.add('hidden');
+      document.getElementById('branch-badge-wrap').classList.remove('hidden');
+      var myBranch = allBranches.find(function(b) { return b.branch_id === currentSession.branch_id; });
+      document.getElementById('branch-badge-label').textContent = myBranch ? myBranch.branch_name : (currentSession.branch_name || '—');
+      document.getElementById('f-branch-id').value = currentSession.branch_id;
+    }
+
+    // Pre-fill if editing
+    var assignedDiscIds = [];
+    if (isEdit) {
+      var p = allPatients.find(function(x) { return x.patient_id === patientId && x.branch_id === branchId; });
+      if (p) {
+        document.getElementById('f-patient-id').value  = p.patient_id;
+        document.getElementById('f-branch-id').value   = p.branch_id;
+        document.getElementById('f-last-name').value   = p.last_name;
+        document.getElementById('f-first-name').value  = p.first_name;
+        document.getElementById('f-middle-name').value = p.middle_name;
+        document.getElementById('f-sex').value         = p.sex;
+        document.getElementById('f-birth-date').value  = p.birth_date ? p.birth_date.split('T')[0] : '';
+        document.getElementById('f-contact').value     = p.contact_number;
+        document.getElementById('f-email').value       = p.email_address;
+        document.getElementById('f-address').value     = p.address;
+        assignedDiscIds = p.discount_ids || [];
+      }
+    }
+
+    document.getElementById('modal-backdrop').classList.remove('hidden');
+    renderDiscountChecklist(allDiscounts, assignedDiscIds);
+  }
+
+  function closeModal() {
+    document.getElementById('modal-backdrop').classList.add('hidden');
+    clearForm();
+    editingId = null; editingBranchId = null;
+  }
+
+  function clearForm() {
+    ['f-patient-id','f-branch-id','f-last-name','f-first-name','f-middle-name',
+     'f-contact','f-email','f-address'].forEach(function(id) {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('f-sex').value        = '';
+    document.getElementById('f-birth-date').value = '';
+    document.getElementById('disc-checklist').innerHTML = '';
+    document.getElementById('disc-check-count').textContent = '';
+    document.getElementById('disc-list-wrap').classList.add('hidden');
+    document.getElementById('disc-empty').classList.add('hidden');
+    document.getElementById('disc-loading').classList.add('hidden');
+  }
+
+  // ── Discount checklist ─────────────────────────────────────────
+  function renderDiscountChecklist(discounts, assignedIds) {
+    var list  = document.getElementById('disc-checklist');
+    var wrap  = document.getElementById('disc-list-wrap');
+    var empty = document.getElementById('disc-empty');
+
+    list.innerHTML = '';
+    if (!discounts.length) {
+      wrap.classList.add('hidden'); empty.classList.remove('hidden'); return;
+    }
+    empty.classList.add('hidden'); wrap.classList.remove('hidden');
+
+    discounts.forEach(function(d) {
+      var checked = assignedIds.includes(d.discount_id);
+      var valLabel = d.discount_type === 'percentage'
+        ? d.value + '%'
+        : '₱' + Number(d.value).toFixed(2);
+      var item = document.createElement('label');
+      item.className = 'disc-check-item' + (checked ? ' checked' : '');
+      item.innerHTML =
+        '<input type="checkbox" value="' + escHtml(d.discount_id) + '"' + (checked ? ' checked' : '') + ' onchange="onDiscCheck(this)"/>' +
+        '<div class="flex-1 min-w-0">' +
+          '<p class="text-xs font-semibold text-slate-700">' + escHtml(d.discount_name) + ' <span class="font-normal text-emerald-600">(' + escHtml(valLabel) + ')</span></p>' +
+          (d.description ? '<p class="text-[11px] text-slate-400 mt-0.5">' + escHtml(d.description) + '</p>' : '') +
+        '</div>';
+      list.appendChild(item);
+    });
+
+    updateDiscCheckCount();
+  }
+
+  function onDiscCheck(chk) {
+    chk.closest('.disc-check-item').classList.toggle('checked', chk.checked);
+    updateDiscCheckCount();
+  }
+
+  function updateDiscCheckCount() {
+    var checked = document.querySelectorAll('#disc-checklist input[type=checkbox]:checked').length;
+    var total   = document.querySelectorAll('#disc-checklist input[type=checkbox]').length;
+    document.getElementById('disc-check-count').textContent = checked > 0 ? checked + ' selected' : '';
+    // Hide count label if nothing selected and total > 0
+    if (total === 0) document.getElementById('disc-check-count').textContent = '';
+  }
+
+  function clearAllDiscs() {
+    document.querySelectorAll('#disc-checklist input[type=checkbox]').forEach(function(chk) {
+      chk.checked = false;
+      chk.closest('.disc-check-item').classList.remove('checked');
+    });
+    updateDiscCheckCount();
+  }
+
+  // ── Save ───────────────────────────────────────────────────────
+  function savePatient() {
+    var branchId = isSuperAdmin
+      ? (editingId ? editingBranchId : document.getElementById('f-branch-select').value)
+      : document.getElementById('f-branch-id').value;
+
+    var lastName  = document.getElementById('f-last-name').value.trim();
+    var firstName = document.getElementById('f-first-name').value.trim();
+    var sex       = document.getElementById('f-sex').value;
+    var birthDate = document.getElementById('f-birth-date').value;
+    var contact   = document.getElementById('f-contact').value.trim();
+    var address   = document.getElementById('f-address').value.trim();
+
+    if (!branchId)  { showToast('Please select a branch.', 'error'); return; }
+    if (!lastName)  { showToast('Last name is required.', 'error'); return; }
+    if (!firstName) { showToast('First name is required.', 'error'); return; }
+    if (!sex)       { showToast('Sex is required.', 'error'); return; }
+    if (!birthDate) { showToast('Birth date is required.', 'error'); return; }
+    if (!contact)   { showToast('Contact number is required.', 'error'); return; }
+    if (!address)   { showToast('Address is required.', 'error'); return; }
+
+    var discountIds = [];
+    document.querySelectorAll('#disc-checklist input[type=checkbox]:checked').forEach(function(chk) {
+      discountIds.push(chk.value);
+    });
+
+    var payload = {
+      patient_id:     document.getElementById('f-patient-id').value,
+      branch_id:      branchId,
+      last_name:      lastName,
+      first_name:     firstName,
+      middle_name:    document.getElementById('f-middle-name').value.trim(),
+      sex:            sex,
+      birth_date:     birthDate,
+      contact_number: contact,
+      email_address:  document.getElementById('f-email').value.trim(),
+      address:        address,
+      discount_ids:   discountIds
+    };
+
+    setSaving(true);
+    var action = editingId ? 'UPDATE_PATIENT' : 'CREATE_PATIENT';
+    google.script.run
+      .withSuccessHandler(function(res) {
+        setSaving(false);
+        if (_checkExpired(res)) return;
+        if (res.success) {
+          closeModal();
+          showToast(editingId ? 'Patient updated!' : 'Patient registered!', 'success');
+          loadData();
+        } else {
+          showToast(res.error || 'Failed to save.', 'error');
+        }
+      })
+      .withFailureHandler(function(err) { setSaving(false); showToast('Error: ' + err.message, 'error'); })
+      .handlePatientRequest(action, payload, alab_token);
+  }
+
+  function setSaving(v) {
+    var btn = document.getElementById('save-btn');
+    btn.disabled = v;
+    btn.innerHTML = v ? '<span class="spinner"></span>' : '<span id="save-label">' + (editingId ? 'Update Patient' : 'Save Patient') + '</span>';
+  }
+
+  // ── Delete ─────────────────────────────────────────────────────
+  function openDeleteModal(patientId, branchId, name) {
+    deletingPayload = { patient_id: patientId, branch_id: branchId };
+    document.getElementById('delete-name').textContent = name;
+    document.getElementById('delete-modal').classList.remove('hidden');
+  }
+
+  function closeDeleteModal() {
+    deletingPayload = null;
+    document.getElementById('delete-modal').classList.add('hidden');
+  }
+
+  function confirmDelete() {
+    if (!deletingPayload) return;
+    var btn = document.getElementById('confirm-delete-btn');
+    btn.textContent = 'Deleting…'; btn.disabled = true;
+    google.script.run
+      .withSuccessHandler(function(res) {
+        btn.textContent = 'Delete'; btn.disabled = false;
+        closeDeleteModal();
+        if (_checkExpired(res)) return;
+        if (res.success) { showToast('Patient deleted.', 'success'); loadData(); }
+        else showToast(res.error || 'Failed to delete.', 'error');
+      })
+      .withFailureHandler(function(err) { btn.textContent = 'Delete'; btn.disabled = false; showToast('Error: ' + err.message, 'error'); })
+      .handlePatientRequest('DELETE_PATIENT', deletingPayload, alab_token);
+  }
+
+  function showLoading(v) {
+    document.getElementById('loading').classList.toggle('hidden', !v);
+    if (v) {
+      document.getElementById('table-wrap').classList.add('hidden');
+      document.getElementById('empty-state').classList.add('hidden');
+      document.getElementById('empty-state').classList.remove('flex');
+    }
+  }
+
+  function formatDate(val) {
+    if (!val) return '—';
+    try {
+      var d = new Date(val);
+      return d.toLocaleDateString('en-PH', { year:'numeric', month:'short', day:'numeric' });
+    } catch(_) { return val; }
+  }
+
+  function showToast(msg, type) {
+    type = type || 'success';
+    var icons = {
+      success: '<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>',
+      error:   '<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>',
+      warning: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>'
+    };
+    var item = document.createElement('div');
+    item.className = 'toast-item toast-' + type;
+    item.innerHTML =
+      '<svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">' +
+        (icons[type] || icons.success) +
+      '</svg><span>' + escHtml(String(msg)) + '</span>';
+    document.getElementById('toast').appendChild(item);
+    setTimeout(function() { item.remove(); }, 3800);
+  }
+
+  function escHtml(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  document.getElementById('modal-backdrop').addEventListener('click', closeModal);
+  document.getElementById('delete-modal').addEventListener('click', closeDeleteModal);
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closeModal(); closeDeleteModal(); } });
+</script>
+</body>
+</html>

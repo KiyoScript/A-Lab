@@ -68,6 +68,19 @@ function handleDepartmentRequest(action, payload, token) {
   }
 }
 
+// ─── Patient requests ─────────────────────────────────────────────
+function handlePatientRequest(action, payload, token) {
+  if (!_getSession(token)) return { success: false, error: 'Session expired. Please log in again.', expired: true };
+  switch (action) {
+    case 'GET_PATIENTS':              return getPatients(payload, token);
+    case 'CREATE_PATIENT':            return createPatient(payload, token);
+    case 'UPDATE_PATIENT':            return updatePatient(payload, token);
+    case 'DELETE_PATIENT':            return deletePatient(payload, token);
+    case 'GET_DISCOUNTS_FOR_PATIENT': return getDiscountsForPatient(payload, token);
+    default: return { success: false, error: 'Unknown action: ' + action };
+  }
+}
+
 // ─── Package requests ────────────────────────────────────────────
 function handlePackageRequest(action, payload, token) {
   if (!_getSession(token)) return { success: false, error: 'Session expired. Please log in again.', expired: true };
@@ -109,28 +122,6 @@ function handleAdminRequest(action, payload, token) {
     case 'CREATE_BRANCH_ADMIN': return createBranchAdmin(payload);
     case 'UPDATE_BRANCH_ADMIN': return updateBranchAdmin(payload);
     case 'DELETE_BRANCH_ADMIN': return deleteBranchAdmin(payload.admin_id);
-    default: return { success: false, error: 'Unknown action: ' + action };
-  }
-}
-
-// ─── Doctor requests ──────────────────────────────────────────────
-// READ actions: all authenticated roles
-// WRITE actions: super_admin only (enforced inside DoctorsService.js)
-function handleDoctorRequest(action, payload, token) {
-  if (!_getSession(token)) return { success: false, error: 'Session expired. Please log in again.', expired: true };
-
-  switch (action) {
-    // ── CRUD ──
-    case 'GET_DOCTORS':               return getDoctors(token);
-    case 'CREATE_DOCTOR':             return createDoctor(payload, token);
-    case 'UPDATE_DOCTOR':             return updateDoctor(payload, token);
-    case 'DELETE_DOCTOR':             return deleteDoctor(payload.doctor_id, token);
-    // ── Branch assignment ──
-    case 'ASSIGN_DOCTOR_TO_BRANCH':   return assignDoctorToBranch(payload, token);
-    case 'UNASSIGN_DOCTOR':           return unassignDoctor(payload, token);
-    case 'GET_DOCTOR_HISTORY':        return getDoctorAssignmentHistory(payload, token);
-    // ── Password ──
-    case 'CHANGE_DOCTOR_PASSWORD':    return changeDoctorPassword(payload, token);
     default: return { success: false, error: 'Unknown action: ' + action };
   }
 }
