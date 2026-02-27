@@ -55,14 +55,7 @@ function _rowToObj(row) {
   };
 }
 
-
-
 // ─── Auto-create Spreadsheet for a new Branch ────────────────────
-// ─── Auto-create Spreadsheet for a new Branch ────────────────────
-// Replace the existing _createBranchSpreadsheet() in BranchesService.js
-// with this updated version. Only the MedTechs block (step 4) is new.
-// ─────────────────────────────────────────────────────────────────
-
 function _createBranchSpreadsheet(branchName, branchCode) {
   const title = '[A-Lab] ' + branchName + ' (' + branchCode + ')';
   const ss = SpreadsheetApp.create(title);
@@ -79,12 +72,12 @@ function _createBranchSpreadsheet(branchName, branchCode) {
     .setFontColor('#ffffff')
     .setHorizontalAlignment('center');
   deptSheet.setFrozenRows(1);
-  deptSheet.setColumnWidth(1, 160); // dept_id
-  deptSheet.setColumnWidth(2, 220); // dept_name
-  deptSheet.setColumnWidth(3, 90);  // is_active
-  deptSheet.setColumnWidth(4, 140); // branch_id
-  deptSheet.setColumnWidth(5, 180); // created_at
-  deptSheet.setColumnWidth(6, 180); // updated_at
+  deptSheet.setColumnWidth(1, 160);
+  deptSheet.setColumnWidth(2, 220);
+  deptSheet.setColumnWidth(3, 90);
+  deptSheet.setColumnWidth(4, 140);
+  deptSheet.setColumnWidth(5, 180);
+  deptSheet.setColumnWidth(6, 180);
 
   // ── 2. ADMINS sheet ──────────────────────────────────────────
   const adminsSheet = ss.insertSheet('Admins');
@@ -99,15 +92,15 @@ function _createBranchSpreadsheet(branchName, branchCode) {
     .setFontColor('#ffffff')
     .setHorizontalAlignment('center');
   adminsSheet.setFrozenRows(1);
-  adminsSheet.setColumnWidth(1, 160); // admin_id
-  adminsSheet.setColumnWidth(2, 180); // full_name
-  adminsSheet.setColumnWidth(3, 160); // username
-  adminsSheet.setColumnWidth(4, 240); // password_hash
-  adminsSheet.setColumnWidth(5, 140); // branch_id
-  adminsSheet.setColumnWidth(6, 160); // branch_name
-  adminsSheet.setColumnWidth(7, 90);  // status
-  adminsSheet.setColumnWidth(8, 180); // created_at
-  adminsSheet.setColumnWidth(9, 180); // updated_at
+  adminsSheet.setColumnWidth(1, 160);
+  adminsSheet.setColumnWidth(2, 180);
+  adminsSheet.setColumnWidth(3, 160);
+  adminsSheet.setColumnWidth(4, 240);
+  adminsSheet.setColumnWidth(5, 140);
+  adminsSheet.setColumnWidth(6, 160);
+  adminsSheet.setColumnWidth(7, 90);
+  adminsSheet.setColumnWidth(8, 180);
+  adminsSheet.setColumnWidth(9, 180);
 
   // ── 3. LAB SERVICES sheet ───────────────────────────────────
   const labSheet = ss.insertSheet('Lab Services');
@@ -123,18 +116,18 @@ function _createBranchSpreadsheet(branchName, branchCode) {
     .setFontColor('#ffffff')
     .setHorizontalAlignment('center');
   labSheet.setFrozenRows(1);
-  labSheet.setColumnWidth(1,  160); // lab_id
-  labSheet.setColumnWidth(2,  160); // dept_id
-  labSheet.setColumnWidth(3,  110); // lab_code
-  labSheet.setColumnWidth(4,  200); // lab_name
-  labSheet.setColumnWidth(5,  260); // description
-  labSheet.setColumnWidth(6,  110); // default_fee
-  labSheet.setColumnWidth(7,  100); // tat_hours
-  labSheet.setColumnWidth(8,  150); // specimen_type
-  labSheet.setColumnWidth(9,   90); // is_active
-  labSheet.setColumnWidth(10, 140); // branch_id
-  labSheet.setColumnWidth(11, 180); // created_at
-  labSheet.setColumnWidth(12, 180); // updated_at
+  labSheet.setColumnWidth(1,  160);
+  labSheet.setColumnWidth(2,  160);
+  labSheet.setColumnWidth(3,  110);
+  labSheet.setColumnWidth(4,  200);
+  labSheet.setColumnWidth(5,  260);
+  labSheet.setColumnWidth(6,  110);
+  labSheet.setColumnWidth(7,  100);
+  labSheet.setColumnWidth(8,  150);
+  labSheet.setColumnWidth(9,   90);
+  labSheet.setColumnWidth(10, 140);
+  labSheet.setColumnWidth(11, 180);
+  labSheet.setColumnWidth(12, 180);
 
   // ── 4. MEDTECHS sheet ────────────────────────────────────────
   const mtSheet = ss.insertSheet('MedTechs');
@@ -150,18 +143,18 @@ function _createBranchSpreadsheet(branchName, branchCode) {
     .setFontColor('#ffffff')
     .setHorizontalAlignment('center');
   mtSheet.setFrozenRows(1);
-  mtSheet.setColumnWidth(1,  160); // medtech_id
-  mtSheet.setColumnWidth(2,  140); // last_name
-  mtSheet.setColumnWidth(3,  140); // first_name
-  mtSheet.setColumnWidth(4,  140); // middle_name
-  mtSheet.setColumnWidth(5,  220); // email
-  mtSheet.setColumnWidth(6,  260); // password_hash
-  mtSheet.setColumnWidth(7,  180); // role
-  mtSheet.setColumnWidth(8,   90); // status
-  mtSheet.setColumnWidth(9,  140); // branch_id
-  mtSheet.setColumnWidth(10, 170); // branch_name
-  mtSheet.setColumnWidth(11, 180); // created_at
-  mtSheet.setColumnWidth(12, 180); // updated_at
+  mtSheet.setColumnWidth(1,  160);
+  mtSheet.setColumnWidth(2,  140);
+  mtSheet.setColumnWidth(3,  140);
+  mtSheet.setColumnWidth(4,  140);
+  mtSheet.setColumnWidth(5,  220);
+  mtSheet.setColumnWidth(6,  260);
+  mtSheet.setColumnWidth(7,  180);
+  mtSheet.setColumnWidth(8,   90);
+  mtSheet.setColumnWidth(9,  140);
+  mtSheet.setColumnWidth(10, 170);
+  mtSheet.setColumnWidth(11, 180);
+  mtSheet.setColumnWidth(12, 180);
 
   // ── Sample data rows (greyed out — for reference only) ───────
   const sampleBg   = '#f8fafc';
@@ -186,14 +179,13 @@ function _createBranchSpreadsheet(branchName, branchCode) {
 
   sampleRows.forEach((row, i) => {
     mtSheet.appendRow(row);
-    const rowNum = i + 2; // data starts at row 2
+    const rowNum = i + 2;
     mtSheet.getRange(rowNum, 1, 1, mtHeaders.length)
       .setBackground(sampleBg)
       .setFontColor(sampleFont)
       .setFontStyle('italic');
   });
 
-  // Add a note on the header explaining sample rows
   mtSheet.getRange(1, 1).setNote(
     'MedTechs sheet — managed by A-Lab system.\n' +
     'Rows 2–4 are sample/reference rows and will be replaced when real enrollments are made.\n' +
@@ -208,18 +200,28 @@ function _createBranchSpreadsheet(branchName, branchCode) {
 }
 
 // ─── CRUD ─────────────────────────────────────────────────────────
-function getBranches() {
+
+// GET — super_admin sees all; branch_admin sees only their own branch
+function getBranches(token) {
   try {
+    const session = _getSession(token);
     const sh   = _getRegistrySheet();
     const data = sh.getDataRange().getValues();
     if (data.length <= 1) return { success: true, data: [] };
-    const rows = data.slice(1).filter(r => r[0] !== '').map(_rowToObj);
+    let rows = data.slice(1).filter(r => r[0] !== '').map(_rowToObj);
+
+    // Branch admin: filter to only their assigned branch
+    if (session && session.role === 'branch_admin') {
+      rows = rows.filter(b => b.branch_id === session.branch_id);
+    }
+
     return { success: true, data: rows };
   } catch (e) {
     return { success: false, error: e.message };
   }
 }
 
+// CREATE — super_admin only (enforced in Code.js router)
 function createBranch(payload) {
   try {
     if (!payload.branch_name || !payload.branch_name.trim())
@@ -251,17 +253,17 @@ function createBranch(payload) {
     return {
       success: true,
       data: {
-        branch_id: branchId,
-        branch_name: payload.branch_name.trim(),
-        branch_code: payload.branch_code.trim().toUpperCase(),
-        address: payload.address || '',
-        contact: payload.contact || '',
-        email: payload.email || '',
-        status: payload.status || 'Active',
-        spreadsheet_id: ssInfo.id,
+        branch_id:       branchId,
+        branch_name:     payload.branch_name.trim(),
+        branch_code:     payload.branch_code.trim().toUpperCase(),
+        address:         payload.address || '',
+        contact:         payload.contact || '',
+        email:           payload.email   || '',
+        status:          payload.status  || 'Active',
+        spreadsheet_id:  ssInfo.id,
         spreadsheet_url: ssInfo.url,
-        created_at: now,
-        updated_at: now
+        created_at:      now,
+        updated_at:      now
       }
     };
   } catch (e) {
@@ -269,6 +271,7 @@ function createBranch(payload) {
   }
 }
 
+// UPDATE — super_admin only (enforced in Code.js router)
 function updateBranch(payload) {
   try {
     const sh   = _getRegistrySheet();
@@ -290,11 +293,8 @@ function updateBranch(payload) {
       const ssId = String(data[idx][7] || '');
       if (ssId) {
         const branchSs = SpreadsheetApp.openById(ssId);
-
-        // Rename the spreadsheet
         branchSs.rename('[A-Lab] ' + payload.branch_name.trim() + ' (' + payload.branch_code.trim().toUpperCase() + ')');
 
-        // Sync branch_name in all admin rows (col 6 = branch_name)
         const adminSh = branchSs.getSheetByName('Admins');
         if (adminSh && adminSh.getLastRow() > 1) {
           const numRows = adminSh.getLastRow() - 1;
@@ -311,6 +311,7 @@ function updateBranch(payload) {
   }
 }
 
+// DELETE — super_admin only (enforced in Code.js router)
 function deleteBranch(branchId) {
   try {
     const sh   = _getRegistrySheet();

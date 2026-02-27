@@ -46,12 +46,20 @@ function handleLabServiceRequest(action, payload, token) {
 
 // ─── Branch requests ──────────────────────────────────────────────
 function handleBranchRequest(action, payload, token) {
-  if (!_getSession(token)) return { success: false, error: 'Session expired. Please log in again.', expired: true };
+  const session = _getSession(token);
+  if (!session) return { success: false, error: 'Session expired. Please log in again.', expired: true };
+
   switch (action) {
-    case 'GET_BRANCHES':   return getBranches();
-    case 'CREATE_BRANCH':  return createBranch(payload);
-    case 'UPDATE_BRANCH':  return updateBranch(payload);
-    case 'DELETE_BRANCH':  return deleteBranch(payload.branch_id);
+    case 'GET_BRANCHES':   return getBranches(token);
+    case 'CREATE_BRANCH':  return session.role !== 'super_admin'
+                            ? { success: false, error: 'Unauthorized. Only super admins can create branches.' }
+                            : createBranch(payload);
+    case 'UPDATE_BRANCH':  return session.role !== 'super_admin'
+                            ? { success: false, error: 'Unauthorized. Only super admins can update branches.' }
+                            : updateBranch(payload);
+    case 'DELETE_BRANCH':  return session.role !== 'super_admin'
+                            ? { success: false, error: 'Unauthorized. Only super admins can delete branches.' }
+                            : deleteBranch(payload.branch_id);
     default:               return { success: false, error: 'Unknown action: ' + action };
   }
 }
@@ -99,8 +107,8 @@ function handlePackageRequest(action, payload, token) {
 function handleDeptLabRequest(action, payload, token) {
   if (!_getSession(token)) return { success: false, error: 'Session expired. Please log in again.', expired: true };
   switch (action) {
-    case 'GET_DEPT_LAB_MAPPINGS':    return getDeptLabMappings(payload, token);
-    case 'SAVE_DEPT_LAB_SERVICES':   return saveDeptLabServices(payload, token);
+    case 'GET_DEPT_LAB_MAPPINGS':     return getDeptLabMappings(payload, token);
+    case 'SAVE_DEPT_LAB_SERVICES':    return saveDeptLabServices(payload, token);
     case 'GET_LAB_SERVICES_FOR_DEPT': return getLabServicesForDept(payload, token);
     default: return { success: false, error: 'Unknown action: ' + action };
   }
