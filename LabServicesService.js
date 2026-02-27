@@ -89,16 +89,17 @@ function createLabService(payload, token) {
     if (session.role !== 'super_admin') return { success: false, error: 'Only super admins can create lab services.' };
 
     if (!payload.lab_name || !payload.lab_name.trim()) return { success: false, error: 'Lab name is required.' };
-    if (!payload.lab_code || !payload.lab_code.trim()) return { success: false, error: 'Lab code is required.' };
 
     const sh   = _getLabSheet();
     const data = sh.getDataRange().getValues();
 
-    // Check duplicate lab_code globally
-    const dup = data.slice(1).some(function(r) {
-      return r[0] !== '' && String(r[1]).toLowerCase() === payload.lab_code.trim().toLowerCase();
-    });
-    if (dup) return { success: false, error: 'Lab code already exists.' };
+    // Check duplicate lab_code globally (only if lab_code is provided)
+    if (payload.lab_code && payload.lab_code.trim()) {
+      const dup = data.slice(1).some(function(r) {
+        return r[0] !== '' && String(r[1]).toLowerCase() === payload.lab_code.trim().toLowerCase();
+      });
+      if (dup) return { success: false, error: 'Lab code already exists.' };
+    }
 
     const now   = new Date().toISOString();
     const labId = 'LAB-' + Utilities.getUuid().substring(0, 8).toUpperCase();
