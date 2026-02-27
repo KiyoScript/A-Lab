@@ -36,8 +36,18 @@
     .badge-inactive { background:#f1f5f9; color:#64748b; }
     .spinner { width:18px;height:18px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;display:inline-block; }
     @keyframes spin { to{transform:rotate(360deg)} }
-    #toast { transition:all 0.3s ease; transform:translateY(80px); opacity:0; }
-    #toast.show { transform:translateY(0); opacity:1; }
+    /* ── Toast ── */
+    #toast { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
+    .toast-item {
+      display:flex; align-items:center; gap:10px; padding:12px 18px;
+      border-radius:12px; font-size:13px; font-weight:500; color:#fff;
+      box-shadow:0 4px 20px rgba(0,0,0,0.15); pointer-events:auto; max-width:320px;
+      animation:toastSlideUp .3s ease;
+    }
+    .toast-success { background:#0f9959; }
+    .toast-error   { background:#ef4444; }
+    .toast-warning { background:#f59e0b; }
+    @keyframes toastSlideUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
     @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
     .fade-up { animation: fadeUp 0.3s ease both; }
     /* Toggle switch */
@@ -68,7 +78,7 @@
       <h1 class="text-xl font-bold text-slate-800">Departments</h1>
       <p class="text-sm text-slate-400 mt-0.5">Manage departments per branch.</p>
     </div>
-    <button id="add-dept-btn" onclick="openModal()"
+    <button id="add-dept-btn" onclick="openModal(null, null)"
       class="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-sm">
       <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
@@ -84,7 +94,7 @@
     <div class="card p-4 text-center"><p class="text-2xl font-bold text-slate-400" id="stat-inactive">—</p><p class="text-xs text-slate-400 mt-0.5 font-medium">Inactive</p></div>
   </div>
 
-  <!-- Search + Filters -->
+  <!-- Search + Filter -->
   <div class="flex items-center gap-3 mb-4 fade-up flex-wrap">
     <div class="relative flex-1 min-w-[180px] max-w-sm">
       <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -149,22 +159,14 @@
     </div>
     <div class="px-6 py-5 space-y-4">
       <input type="hidden" id="f-dept-id"/>
-      <input type="hidden" id="f-branch-id-hidden"/>
-
-      <!-- Branch selector — super admin only -->
       <div id="branch-select-wrap">
         <label class="block text-xs font-semibold text-slate-600 mb-1.5">Branch <span class="text-red-500">*</span></label>
-        <select id="f-branch-id" class="form-select bg-white">
-          <option value="">— Select Branch —</option>
-        </select>
+        <select id="f-branch-id" class="form-select"><option value="">Select branch…</option></select>
       </div>
-
-      <!-- Branch admin: show static branch badge -->
       <div id="branch-badge-wrap" class="hidden">
         <label class="block text-xs font-semibold text-slate-600 mb-1.5">Branch</label>
-        <div id="branch-badge-label" class="text-sm font-semibold text-blue-600 bg-blue-50 border border-blue-100 rounded-xl px-3 py-2.5"></div>
+        <div class="px-3 py-2 bg-blue-50 rounded-xl text-xs font-semibold text-blue-700" id="branch-badge-label">—</div>
       </div>
-
       <div>
         <label class="block text-xs font-semibold text-slate-600 mb-1.5">Department Name <span class="text-red-500">*</span></label>
         <input id="f-dept-name" type="text" placeholder="e.g. Hematology" class="form-input"/>
@@ -208,12 +210,7 @@
 </div>
 
 <!-- TOAST -->
-<div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-xl text-sm font-semibold text-white shadow-lg flex items-center gap-2 pointer-events-none">
-  <svg id="toast-icon" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-  </svg>
-  <span id="toast-msg"></span>
-</div>
+<div id="toast"></div>
 
 <script>
   var alab_token = (new URLSearchParams(window.location.search)).get('token') || localStorage.getItem('alab_token') || '';
@@ -226,23 +223,21 @@
   }
   function _checkExpired(res) { if (res && res.expired) { _handleExpired(); return true; } return false; }
 
-  let allDepts      = [];
-  let allBranches   = [];
+  let allDepts       = [];
+  let allBranches    = [];
   let currentSession = null;
-  let editingId     = null;
+  let editingId      = null;
   let editingBranchId = null;
-  let deletingId    = null;
+  let deletingId     = null;
   let deletingBranchId = null;
 
-  document.addEventListener('DOMContentLoaded', initPage);
-
-  // ── Toggle label update
   document.addEventListener('DOMContentLoaded', function() {
+    initPage();
     const chk = document.getElementById('f-is-active');
     const lbl = document.getElementById('toggle-label');
     chk.addEventListener('change', function() {
-      lbl.textContent  = chk.checked ? 'Active' : 'Inactive';
-      lbl.className    = 'text-sm font-semibold ' + (chk.checked ? 'text-emerald-600' : 'text-slate-400');
+      lbl.textContent = chk.checked ? 'Active' : 'Inactive';
+      lbl.className   = 'text-sm font-semibold ' + (chk.checked ? 'text-emerald-600' : 'text-slate-400');
     });
   });
 
@@ -258,26 +253,15 @@
 
   function loadData() {
     showLoading(true);
-    // Load branches first (for dropdown + filter)
     google.script.run
       .withSuccessHandler(branchRes => {
-        if (branchRes.success) {
-          allBranches = branchRes.data || [];
-          populateBranchDropdowns();
-        }
-        // Then load departments
+        if (branchRes.success) { allBranches = branchRes.data || []; populateBranchDropdowns(); }
         google.script.run
           .withSuccessHandler(deptRes => {
             showLoading(false);
             if (_checkExpired(deptRes)) return;
-            if (deptRes.success) {
-              allDepts = deptRes.data || [];
-              applySessionUI();
-              renderTable(allDepts);
-              updateStats(allDepts);
-            } else {
-              showToast('Failed to load departments: ' + deptRes.error, 'error');
-            }
+            if (deptRes.success) { allDepts = deptRes.data || []; applySessionUI(); renderTable(allDepts); updateStats(allDepts); }
+            else showToast('Failed to load departments: ' + deptRes.error, 'error');
           })
           .withFailureHandler(err => { showLoading(false); showToast('Error: ' + err.message, 'error'); })
           .handleDepartmentRequest('GET_DEPARTMENTS', {}, alab_token);
@@ -295,28 +279,21 @@
       .handleBranchRequest('GET_BRANCHES', {}, alab_token);
   }
 
-  function applySessionUI() {
-    const isSuperAdmin = currentSession && currentSession.role === 'super_admin';
-
-    // Branch filter dropdown — super admin only
-    const branchFilter = document.getElementById('branch-filter');
-    branchFilter.style.display = isSuperAdmin ? '' : 'none';
-
-    // Branch column header — super admin only
-    document.getElementById('th-branch').style.display = isSuperAdmin ? '' : 'none';
+  function populateBranchDropdowns() {
+    const sel    = document.getElementById('f-branch-id');
+    const filter = document.getElementById('branch-filter');
+    sel.innerHTML    = '<option value="">Select branch…</option>';
+    filter.innerHTML = '<option value="">All Branches</option>';
+    allBranches.filter(b => b.status === 'Active').forEach(b => {
+      sel.insertAdjacentHTML('beforeend',    `<option value="${b.branch_id}">${escHtml(b.branch_name)}</option>`);
+      filter.insertAdjacentHTML('beforeend', `<option value="${b.branch_id}">${escHtml(b.branch_name)}</option>`);
+    });
   }
 
-  function populateBranchDropdowns() {
-    const sel = document.getElementById('f-branch-id');
-    const filter = document.getElementById('branch-filter');
-
-    sel.innerHTML = '<option value="">— Select Branch —</option>';
-    filter.innerHTML = '<option value="">All Branches</option>';
-
-    allBranches.filter(b => b.status === 'Active').forEach(b => {
-      sel.innerHTML += `<option value="${escHtml(b.branch_id)}">${escHtml(b.branch_name)} (${escHtml(b.branch_code)})</option>`;
-      filter.innerHTML += `<option value="${escHtml(b.branch_id)}">${escHtml(b.branch_name)}</option>`;
-    });
+  function applySessionUI() {
+    const isSuperAdmin = currentSession && currentSession.role === 'super_admin';
+    document.getElementById('branch-filter').style.display   = isSuperAdmin ? '' : 'none';
+    document.getElementById('th-branch').style.display       = isSuperAdmin ? '' : 'none';
   }
 
   function renderTable(data) {
@@ -324,42 +301,24 @@
     const wrap  = document.getElementById('table-wrap');
     const empty = document.getElementById('empty-state');
     const isSuperAdmin = currentSession && currentSession.role === 'super_admin';
-
     if (!data.length) {
-      wrap.classList.add('hidden');
-      empty.classList.remove('hidden'); empty.classList.add('flex');
-      return;
+      wrap.classList.add('hidden'); empty.classList.remove('hidden'); empty.classList.add('flex'); return;
     }
-    empty.classList.add('hidden'); empty.classList.remove('flex');
-    wrap.classList.remove('hidden');
-
+    empty.classList.add('hidden'); empty.classList.remove('flex'); wrap.classList.remove('hidden');
     tbody.innerHTML = data.map(d => `
       <tr class="data-row">
-        <td class="px-5 py-3.5">
-          <p class="font-semibold text-sm text-slate-800">${escHtml(d.dept_name)}</p>
-          <p class="text-[11px] text-slate-400 mt-0.5 font-mono">${escHtml(d.dept_id)}</p>
+        <td class="px-5 py-3.5 font-semibold text-slate-800">${escHtml(d.dept_name)}</td>
+        <td class="px-3 py-3.5" ${isSuperAdmin ? '' : 'style="display:none"'}>
+          ${d.branch_name ? `<span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">${escHtml(d.branch_name)}</span>` : '<span class="text-xs text-slate-300">—</span>'}
         </td>
-        <td class="px-3 py-3.5 text-sm text-slate-600" ${!isSuperAdmin ? 'style="display:none"' : ''}>
-          ${d.branch_name
-            ? `<span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">${escHtml(d.branch_name)}</span>`
-            : '<span class="text-xs text-slate-300">—</span>'}
-        </td>
-        <td class="px-3 py-3.5">
-          <span class="badge ${d.is_active ? 'badge-active' : 'badge-inactive'}">${d.is_active ? 'Active' : 'Inactive'}</span>
-        </td>
+        <td class="px-3 py-3.5"><span class="badge ${d.is_active ? 'badge-active' : 'badge-inactive'}">${d.is_active ? 'Active' : 'Inactive'}</span></td>
         <td class="px-5 py-3.5 text-right">
           <div class="flex items-center justify-end gap-2">
-            <button onclick="openModal('${escHtml(d.dept_id)}','${escHtml(d.branch_id)}')"
-              class="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors" title="Edit">
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-              </svg>
+            <button onclick="openModal('${escHtml(d.dept_id)}','${escHtml(d.branch_id)}')" class="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors" title="Edit">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
             </button>
-            <button onclick="openDeleteModal('${escHtml(d.dept_id)}','${escHtml(d.branch_id)}','${escHtml(d.dept_name)}')"
-              class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete">
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-              </svg>
+            <button onclick="openDeleteModal('${escHtml(d.dept_id)}','${escHtml(d.branch_id)}','${escHtml(d.dept_name)}')" class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
             </button>
           </div>
         </td>
@@ -373,18 +332,16 @@
   }
 
   function filterTable() {
-    const q        = document.getElementById('search-input').value.toLowerCase();
-    const st       = document.getElementById('status-filter').value;
-    const branchF  = document.getElementById('branch-filter').value;
-
+    const q       = document.getElementById('search-input').value.toLowerCase();
+    const st      = document.getElementById('status-filter').value;
+    const branchF = document.getElementById('branch-filter').value;
     const filtered = allDepts.filter(d => {
-      const mq = !q || d.dept_name.toLowerCase().includes(q) || d.dept_id.toLowerCase().includes(q) || (d.branch_name||'').toLowerCase().includes(q);
+      const mq = !q || d.dept_name.toLowerCase().includes(q) || (d.branch_name||'').toLowerCase().includes(q);
       const ms = !st || (st === 'active' && d.is_active) || (st === 'inactive' && !d.is_active);
       const mb = !branchF || d.branch_id === branchF;
       return mq && ms && mb;
     });
-    renderTable(filtered);
-    updateStats(filtered);
+    renderTable(filtered); updateStats(filtered);
   }
 
   function openModal(deptId, branchId) {
@@ -396,7 +353,6 @@
     document.getElementById('modal-subtitle').textContent = isEdit ? 'Update department details.' : 'Create a new department for a branch.';
     document.getElementById('save-label').textContent     = isEdit ? 'Update Department' : 'Save Department';
 
-    // Branch field visibility
     if (isSuperAdmin) {
       document.getElementById('branch-select-wrap').classList.remove('hidden');
       document.getElementById('branch-badge-wrap').classList.add('hidden');
@@ -410,8 +366,7 @@
     if (isEdit) {
       const dept = allDepts.find(d => d.dept_id === deptId && d.branch_id === branchId);
       if (!dept) return;
-      editingId = deptId;
-      editingBranchId = branchId;
+      editingId = deptId; editingBranchId = branchId;
       document.getElementById('f-dept-id').value    = dept.dept_id;
       document.getElementById('f-dept-name').value  = dept.dept_name;
       document.getElementById('f-is-active').checked = dept.is_active;
@@ -419,14 +374,10 @@
       document.getElementById('toggle-label').className  = 'text-sm font-semibold ' + (dept.is_active ? 'text-emerald-600' : 'text-slate-400');
       if (isSuperAdmin) document.getElementById('f-branch-id').value = branchId;
     }
-
     document.getElementById('modal-backdrop').classList.remove('hidden');
   }
 
-  function closeModal() {
-    document.getElementById('modal-backdrop').classList.add('hidden');
-    clearForm(); editingId = null; editingBranchId = null;
-  }
+  function closeModal() { document.getElementById('modal-backdrop').classList.add('hidden'); clearForm(); editingId = null; editingBranchId = null; }
 
   function clearForm() {
     document.getElementById('f-dept-id').value    = '';
@@ -439,39 +390,22 @@
 
   function saveDept() {
     const isSuperAdmin = currentSession && currentSession.role === 'super_admin';
-    const deptName  = document.getElementById('f-dept-name').value.trim();
-    const isActive  = document.getElementById('f-is-active').checked;
-
-    let branchId;
-    if (isSuperAdmin) {
-      branchId = editingId ? editingBranchId : document.getElementById('f-branch-id').value;
-    } else {
-      branchId = currentSession && currentSession.branch_id;
-    }
-
-    if (!deptName) { showToast('Department name is required.', 'error'); return; }
-    if (!branchId) { showToast('Please select a branch.', 'error'); return; }
-
-    const payload = {
-      dept_id:   document.getElementById('f-dept-id').value,
-      dept_name: deptName,
-      is_active: isActive,
-      branch_id: branchId
-    };
-
-    const action = editingId ? 'UPDATE_DEPARTMENT' : 'CREATE_DEPARTMENT';
+    const deptName = document.getElementById('f-dept-name').value.trim();
+    const isActive = document.getElementById('f-is-active').checked;
+    let branchId   = isSuperAdmin
+      ? (editingId ? editingBranchId : document.getElementById('f-branch-id').value)
+      : (currentSession && currentSession.branch_id);
+    if (!deptName)  { showToast('Department name is required.', 'error'); return; }
+    if (!branchId)  { showToast('Please select a branch.', 'error'); return; }
+    const payload = { dept_id: document.getElementById('f-dept-id').value, dept_name: deptName, is_active: isActive, branch_id: branchId };
+    const action  = editingId ? 'UPDATE_DEPARTMENT' : 'CREATE_DEPARTMENT';
     setSaving(true);
     google.script.run
       .withSuccessHandler(res => {
         setSaving(false);
         if (_checkExpired(res)) return;
-        if (res.success) {
-          closeModal();
-          showToast(editingId ? 'Department updated!' : 'Department created!', 'success');
-          loadData();
-        } else {
-          showToast('Error: ' + res.error, 'error');
-        }
+        if (res.success) { closeModal(); showToast(editingId ? 'Department updated!' : 'Department created!', 'success'); loadData(); }
+        else showToast('Error: ' + res.error, 'error');
       })
       .withFailureHandler(err => { setSaving(false); showToast('Error: ' + err.message, 'error'); })
       .handleDepartmentRequest(action, payload, alab_token);
@@ -483,16 +417,8 @@
     btn.innerHTML = v ? '<span class="spinner"></span>' : `<span id="save-label">${editingId ? 'Update Department' : 'Save Department'}</span>`;
   }
 
-  function openDeleteModal(id, branchId, name) {
-    deletingId = id; deletingBranchId = branchId;
-    document.getElementById('delete-name').textContent = name;
-    document.getElementById('delete-modal').classList.remove('hidden');
-  }
-
-  function closeDeleteModal() {
-    deletingId = null; deletingBranchId = null;
-    document.getElementById('delete-modal').classList.add('hidden');
-  }
+  function openDeleteModal(id, branchId, name) { deletingId = id; deletingBranchId = branchId; document.getElementById('delete-name').textContent = name; document.getElementById('delete-modal').classList.remove('hidden'); }
+  function closeDeleteModal() { deletingId = null; deletingBranchId = null; document.getElementById('delete-modal').classList.add('hidden'); }
 
   function confirmDelete() {
     if (!deletingId || !deletingBranchId) return;
@@ -511,33 +437,32 @@
 
   function showLoading(v) {
     document.getElementById('loading-state').classList.toggle('hidden', !v);
-    if (v) {
-      document.getElementById('table-wrap').classList.add('hidden');
-      document.getElementById('empty-state').classList.add('hidden');
-      document.getElementById('empty-state').classList.remove('flex');
-    }
+    if (v) { document.getElementById('table-wrap').classList.add('hidden'); document.getElementById('empty-state').classList.add('hidden'); document.getElementById('empty-state').classList.remove('flex'); }
   }
 
-  let toastTimer;
+  // ── Toast ─────────────────────────────────────────────────────────
   function showToast(msg, type = 'success') {
-    const t = document.getElementById('toast');
-    document.getElementById('toast-msg').textContent = msg;
-    t.className = t.className.replace(/bg-\S+/g, '');
-    t.classList.add(type === 'success' ? 'bg-emerald-600' : 'bg-red-500');
-    document.getElementById('toast-icon').innerHTML = type === 'success'
-      ? '<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>'
-      : '<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>';
-    t.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+    const icons = {
+      success: '<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>',
+      error:   '<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>',
+      warning: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>'
+    };
+    const item = document.createElement('div');
+    item.className = `toast-item toast-${type}`;
+    item.innerHTML = `
+      <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        ${icons[type] || icons.success}
+      </svg>
+      <span>${escHtml(String(msg))}</span>`;
+    document.getElementById('toast').appendChild(item);
+    setTimeout(() => item.remove(), 3800);
   }
 
-  function escHtml(str) {
-    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
+  function escHtml(str) { return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
   document.getElementById('modal-backdrop').addEventListener('click', closeModal);
   document.getElementById('delete-modal').addEventListener('click', closeDeleteModal);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeDeleteModal(); } });
 </script>
 </body>
 </html>

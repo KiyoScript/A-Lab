@@ -8,7 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <style>
     * { font-family: 'DM Sans', sans-serif; }
-    body { background: #f8fafc; color: #0f172a; height: 100vh; overflow: auto; }
+    body { background: #f8fafc; color: #0f172a; }
     .card { background:#fff; border:1px solid #e2e8f0; border-radius:1rem; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
     .form-input, .form-select {
       background:#f8fafc; border:1px solid #e2e8f0; color:#334155;
@@ -23,19 +23,18 @@
       font-size:0.875rem; outline:none; width:100%; transition:border-color 0.15s;
     }
     .search-input::placeholder { color:#94a3b8; }
-    .search-input:focus { border-color:#2f76f5; box-shadow:0 0 0 2px rgba(47,118,245,0.2); }
+    .search-input:focus { border-color:#2f76f5; }
     .filter-select {
       background:#fff; border:1px solid #e2e8f0; color:#475569;
       border-radius:0.75rem; padding:0.5rem 0.75rem; font-size:0.875rem; outline:none;
     }
-    .filter-select:focus { border-color:#2f76f5; }
     tr.data-row { border-bottom:1px solid #f1f5f9; transition:background 0.12s; }
     tr.data-row:hover { background:#f8fafc; }
     .badge { font-size:11px; font-weight:600; padding:2px 10px; border-radius:999px; }
     .badge-active   { background:#dcfce7; color:#16a34a; }
     .badge-inactive { background:#f1f5f9; color:#64748b; }
-    .badge-pct  { background:#eff6ff; color:#2563eb; }
-    .badge-fixed { background:#fdf4ff; color:#9333ea; }
+    .badge-pct      { background:#eff6ff; color:#2563eb; }
+    .badge-fixed    { background:#fdf4ff; color:#9333ea; }
     .action-btn { padding:0.3rem 0.6rem; border-radius:0.5rem; font-size:0.75rem; font-weight:600; transition:background 0.12s; }
     .btn-edit   { background:#eff6ff; color:#2563eb; }
     .btn-edit:hover   { background:#dbeafe; }
@@ -55,12 +54,24 @@
     .toggle input:checked + .toggle-slider { background:#22c55e; }
     .toggle input:checked + .toggle-slider:before { transform:translateX(18px); }
     .toggle-wrap { display:flex; align-items:center; gap:0.75rem; }
-    @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
     .fade-up { animation:fadeUp 0.3s ease both; }
-    @keyframes spin { to { transform:rotate(360deg); } }
+    @keyframes spin { to{transform:rotate(360deg)} }
     .spinner { display:inline-block; width:14px; height:14px; border:2px solid rgba(255,255,255,0.4); border-top-color:#fff; border-radius:50%; animation:spin 0.7s linear infinite; vertical-align:middle; }
-    #toast { opacity:0; transition:opacity 0.25s; pointer-events:none; }
-    #toast.show { opacity:1; }
+    ::-webkit-scrollbar { width:5px; }
+    ::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:99px; }
+    /* ── Toast ── */
+    #toast { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
+    .toast-item {
+      display:flex; align-items:center; gap:10px; padding:12px 18px;
+      border-radius:12px; font-size:13px; font-weight:500; color:#fff;
+      box-shadow:0 4px 20px rgba(0,0,0,0.15); pointer-events:auto; max-width:320px;
+      animation:toastSlideUp .3s ease;
+    }
+    .toast-success { background:#0f9959; }
+    .toast-error   { background:#ef4444; }
+    .toast-warning { background:#f59e0b; }
+    @keyframes toastSlideUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
   </style>
 </head>
 <body class="p-6">
@@ -159,12 +170,10 @@
     </div>
     <div class="px-6 py-5 space-y-4">
       <input type="hidden" id="f-discount-id"/>
-
       <div>
         <label class="block text-xs font-semibold text-slate-600 mb-1.5">Discount Name <span class="text-red-500">*</span></label>
         <input id="f-discount-name" type="text" placeholder="e.g. Senior Citizen, PWD" class="form-input"/>
       </div>
-
       <div class="grid grid-cols-2 gap-4">
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1.5">Type <span class="text-red-500">*</span></label>
@@ -178,12 +187,10 @@
           <input id="f-value" type="number" min="0" step="0.01" placeholder="0.00" class="form-input" style="font-family:'DM Mono',monospace"/>
         </div>
       </div>
-
       <div>
         <label class="block text-xs font-semibold text-slate-600 mb-1.5">Description</label>
         <input id="f-description" type="text" placeholder="Optional notes about this discount" class="form-input"/>
       </div>
-
       <div>
         <label class="block text-xs font-semibold text-slate-600 mb-2">Status</label>
         <div class="toggle-wrap">
@@ -223,28 +230,22 @@
 </div>
 
 <!-- TOAST -->
-<div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-xl text-sm font-semibold text-white shadow-lg flex items-center gap-2">
-  <svg id="toast-icon" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"></svg>
-  <span id="toast-msg"></span>
-</div>
+<div id="toast"></div>
 
 <script>
-  // ── Session ──────────────────────────────────────────────────────
-  const alab_token = sessionStorage.getItem('alab_token') || '';
+  const alab_token = (new URLSearchParams(window.location.search)).get('token') || localStorage.getItem('alab_token') || '';
   let allDiscounts = [];
   let editingId    = null;
   let deletingId   = null;
 
-  function _checkExpired(res) {
-    if (res && res.expired) {
-      sessionStorage.clear();
-      window.top.location.href = '<?= ScriptApp.getService().getUrl() ?>?page=Login';
-      return true;
-    }
-    return false;
+  function _handleExpired() {
+    localStorage.removeItem('alab_token');
+    google.script.run.withSuccessHandler(function(url) {
+      window.top.location.href = url + '?page=Login';
+    }).getScriptUrl();
   }
+  function _checkExpired(res) { if (res && res.expired) { _handleExpired(); return true; } return false; }
 
-  // ── Init ─────────────────────────────────────────────────────────
   window.addEventListener('DOMContentLoaded', loadData);
 
   function loadData() {
@@ -253,64 +254,35 @@
       .withSuccessHandler(res => {
         showLoading(false);
         if (_checkExpired(res)) return;
-        if (res.success) {
-          allDiscounts = res.data || [];
-          renderStats();
-          renderTable(allDiscounts);
-        } else {
-          showToast('Error: ' + res.error, 'error');
-          renderTable([]);
-        }
+        if (res.success) { allDiscounts = res.data || []; renderStats(); renderTable(allDiscounts); }
+        else { showToast('Error: ' + res.error, 'error'); renderTable([]); }
       })
-      .withFailureHandler(err => {
-        showLoading(false);
-        showToast('Error: ' + err.message, 'error');
-        renderTable([]);
-      })
+      .withFailureHandler(err => { showLoading(false); showToast('Error: ' + err.message, 'error'); renderTable([]); })
       .handleDiscountRequest('GET_DISCOUNTS', {}, alab_token);
   }
 
-  // ── Stats ────────────────────────────────────────────────────────
   function renderStats() {
-    const active   = allDiscounts.filter(d => d.is_active).length;
-    const inactive = allDiscounts.length - active;
+    const active = allDiscounts.filter(d => d.is_active).length;
     document.getElementById('stat-total').textContent    = allDiscounts.length;
     document.getElementById('stat-active').textContent   = active;
-    document.getElementById('stat-inactive').textContent = inactive;
+    document.getElementById('stat-inactive').textContent = allDiscounts.length - active;
   }
 
-  // ── Table ────────────────────────────────────────────────────────
   function renderTable(data) {
     const tbody = document.getElementById('discount-tbody');
+    const wrap  = document.getElementById('table-wrap');
+    const empty = document.getElementById('empty-state');
     tbody.innerHTML = '';
-
     if (!data.length) {
-      document.getElementById('table-wrap').classList.add('hidden');
-      const es = document.getElementById('empty-state');
-      es.classList.remove('hidden');
-      es.classList.add('flex');
-      return;
+      wrap.classList.add('hidden'); empty.classList.remove('hidden'); empty.classList.add('flex'); return;
     }
-
-    document.getElementById('empty-state').classList.add('hidden');
-    document.getElementById('empty-state').classList.remove('flex');
-    document.getElementById('table-wrap').classList.remove('hidden');
-
+    empty.classList.add('hidden'); empty.classList.remove('flex'); wrap.classList.remove('hidden');
     data.forEach(d => {
-      const typeLabel = d.discount_type === 'percentage' ? 'Percentage' : 'Fixed Amount';
-      const typeBadge = d.discount_type === 'percentage'
-        ? '<span class="badge badge-pct">%</span>'
-        : '<span class="badge badge-fixed">₱</span>';
-      const valueStr  = d.discount_type === 'percentage'
-        ? d.value + '%'
-        : '₱' + Number(d.value).toFixed(2);
-      const statusBadge = d.is_active
-        ? '<span class="badge badge-active">Active</span>'
-        : '<span class="badge badge-inactive">Inactive</span>';
-      const desc = d.description
-        ? `<span class="text-slate-500">${escHtml(d.description)}</span>`
-        : '<span class="text-slate-300 text-xs italic">—</span>';
-
+      const typeLabel   = d.discount_type === 'percentage' ? 'Percentage' : 'Fixed Amount';
+      const typeBadge   = d.discount_type === 'percentage' ? '<span class="badge badge-pct">%</span>' : '<span class="badge badge-fixed">₱</span>';
+      const valueStr    = d.discount_type === 'percentage' ? d.value + '%' : '₱' + Number(d.value).toFixed(2);
+      const statusBadge = d.is_active ? '<span class="badge badge-active">Active</span>' : '<span class="badge badge-inactive">Inactive</span>';
+      const desc        = d.description ? `<span class="text-slate-500">${escHtml(d.description)}</span>` : '<span class="text-slate-300 text-xs italic">—</span>';
       tbody.insertAdjacentHTML('beforeend', `
         <tr class="data-row">
           <td class="px-5 py-3 font-semibold text-slate-800">${escHtml(d.discount_name)}</td>
@@ -324,37 +296,27 @@
               <button class="action-btn btn-delete" onclick="openDeleteModal('${d.discount_id}','${escHtml(d.discount_name)}')">Delete</button>
             </div>
           </td>
-        </tr>
-      `);
+        </tr>`);
     });
   }
 
-  // ── Filter ───────────────────────────────────────────────────────
   function filterTable() {
     const q      = document.getElementById('search-input').value.toLowerCase().trim();
     const type   = document.getElementById('type-filter').value;
     const status = document.getElementById('status-filter').value;
-
-    const filtered = allDiscounts.filter(d => {
-      const matchQ = !q ||
-        d.discount_name.toLowerCase().includes(q) ||
-        d.description.toLowerCase().includes(q);
-      const matchType = !type || d.discount_type === type;
-      const matchStatus = !status ||
-        (status === 'active' && d.is_active) ||
-        (status === 'inactive' && !d.is_active);
-      return matchQ && matchType && matchStatus;
-    });
-    renderTable(filtered);
+    renderTable(allDiscounts.filter(d => {
+      const mq = !q || d.discount_name.toLowerCase().includes(q) || (d.description||'').toLowerCase().includes(q);
+      const mt = !type   || d.discount_type === type;
+      const ms = !status || (status === 'active' && d.is_active) || (status === 'inactive' && !d.is_active);
+      return mq && mt && ms;
+    }));
   }
 
-  // ── Modal helpers ────────────────────────────────────────────────
   function updateValueLabel() {
     const type = document.getElementById('f-discount-type').value;
-    document.getElementById('value-label').innerHTML =
-      type === 'percentage'
-        ? 'Value (%) <span class="text-red-500">*</span>'
-        : 'Value (₱) <span class="text-red-500">*</span>';
+    document.getElementById('value-label').innerHTML = type === 'percentage'
+      ? 'Value (%) <span class="text-red-500">*</span>'
+      : 'Value (₱) <span class="text-red-500">*</span>';
   }
 
   function updateToggleLabel() {
@@ -375,8 +337,7 @@
     document.getElementById('modal-title').textContent    = 'Add Discount';
     document.getElementById('modal-subtitle').textContent = 'Create a new discount type for patient billing.';
     document.getElementById('save-label').textContent     = 'Save Discount';
-    updateValueLabel();
-    updateToggleLabel();
+    updateValueLabel(); updateToggleLabel();
     document.getElementById('modal-backdrop').classList.remove('hidden');
     setTimeout(() => document.getElementById('f-discount-name').focus(), 100);
   }
@@ -392,52 +353,31 @@
     document.getElementById('modal-title').textContent    = 'Edit Discount';
     document.getElementById('modal-subtitle').textContent = 'Update discount information.';
     document.getElementById('save-label').textContent     = 'Update Discount';
-    updateValueLabel();
-    updateToggleLabel();
+    updateValueLabel(); updateToggleLabel();
     document.getElementById('modal-backdrop').classList.remove('hidden');
     setTimeout(() => document.getElementById('f-discount-name').focus(), 100);
   }
 
-  function closeModal() {
-    document.getElementById('modal-backdrop').classList.add('hidden');
-    editingId = null;
-  }
+  function closeModal() { document.getElementById('modal-backdrop').classList.add('hidden'); editingId = null; }
 
-  // ── Save ─────────────────────────────────────────────────────────
   function saveDiscount() {
     const name  = document.getElementById('f-discount-name').value.trim();
     const type  = document.getElementById('f-discount-type').value;
     const value = document.getElementById('f-value').value.trim();
     const desc  = document.getElementById('f-description').value.trim();
     const active = document.getElementById('f-is-active').checked;
-
     if (!name)  { showToast('Discount name is required.', 'error'); return; }
-    if (value === '' || isNaN(Number(value))) { showToast('A valid numeric value is required.', 'error'); return; }
-    if (Number(value) < 0) { showToast('Value cannot be negative.', 'error'); return; }
-    if (type === 'percentage' && Number(value) > 100) { showToast('Percentage cannot exceed 100.', 'error'); return; }
-
-    const payload = {
-      discount_id:   editingId || '',
-      discount_name: name,
-      discount_type: type,
-      value:         Number(value),
-      description:   desc,
-      is_active:     active
-    };
-    const action = editingId ? 'UPDATE_DISCOUNT' : 'CREATE_DISCOUNT';
-
+    if (!value || isNaN(value) || Number(value) < 0) { showToast('Please enter a valid value.', 'error'); return; }
+    if (type === 'percentage' && Number(value) > 100) { showToast('Percentage cannot exceed 100%.', 'error'); return; }
+    const payload = { discount_id: document.getElementById('f-discount-id').value, discount_name: name, discount_type: type, value: Number(value), description: desc, is_active: active };
+    const action  = editingId ? 'UPDATE_DISCOUNT' : 'CREATE_DISCOUNT';
     setSaving(true);
     google.script.run
       .withSuccessHandler(res => {
         setSaving(false);
         if (_checkExpired(res)) return;
-        if (res.success) {
-          closeModal();
-          showToast(editingId ? 'Discount updated!' : 'Discount created!', 'success');
-          loadData();
-        } else {
-          showToast('Error: ' + res.error, 'error');
-        }
+        if (res.success) { closeModal(); showToast(editingId ? 'Discount updated!' : 'Discount created!', 'success'); loadData(); }
+        else showToast('Error: ' + res.error, 'error');
       })
       .withFailureHandler(err => { setSaving(false); showToast('Error: ' + err.message, 'error'); })
       .handleDiscountRequest(action, payload, alab_token);
@@ -446,83 +386,56 @@
   function setSaving(v) {
     const btn = document.getElementById('save-btn');
     btn.disabled = v;
-    btn.innerHTML = v
-      ? '<span class="spinner"></span>'
-      : `<span id="save-label">${editingId ? 'Update Discount' : 'Save Discount'}</span>`;
+    btn.innerHTML = v ? '<span class="spinner"></span>' : `<span id="save-label">${editingId ? 'Update Discount' : 'Save Discount'}</span>`;
   }
 
-  // ── Delete ───────────────────────────────────────────────────────
-  function openDeleteModal(id, name) {
-    deletingId = id;
-    document.getElementById('delete-name').textContent = name;
-    document.getElementById('delete-modal').classList.remove('hidden');
-  }
-
-  function closeDeleteModal() {
-    deletingId = null;
-    document.getElementById('delete-modal').classList.add('hidden');
-  }
+  function openDeleteModal(id, name) { deletingId = id; document.getElementById('delete-name').textContent = name; document.getElementById('delete-modal').classList.remove('hidden'); }
+  function closeDeleteModal() { deletingId = null; document.getElementById('delete-modal').classList.add('hidden'); }
 
   function confirmDelete() {
-    if (!deletingId) return;
     const btn = document.getElementById('confirm-delete-btn');
     btn.textContent = 'Deleting…'; btn.disabled = true;
     google.script.run
       .withSuccessHandler(res => {
-        closeDeleteModal();
-        btn.textContent = 'Delete'; btn.disabled = false;
+        closeDeleteModal(); btn.textContent = 'Delete'; btn.disabled = false;
         if (_checkExpired(res)) return;
         if (res.success) { showToast('Discount deleted.', 'success'); loadData(); }
         else showToast('Error: ' + res.error, 'error');
       })
-      .withFailureHandler(err => {
-        closeDeleteModal();
-        btn.textContent = 'Delete'; btn.disabled = false;
-        showToast('Error: ' + err.message, 'error');
-      })
+      .withFailureHandler(err => { closeDeleteModal(); btn.textContent = 'Delete'; btn.disabled = false; showToast('Error: ' + err.message, 'error'); })
       .handleDiscountRequest('DELETE_DISCOUNT', { discount_id: deletingId }, alab_token);
   }
 
-  // ── Loading ──────────────────────────────────────────────────────
   function showLoading(v) {
     document.getElementById('loading-state').classList.toggle('hidden', !v);
     if (v) {
       document.getElementById('table-wrap').classList.add('hidden');
       const es = document.getElementById('empty-state');
-      es.classList.add('hidden');
-      es.classList.remove('flex');
+      es.classList.add('hidden'); es.classList.remove('flex');
     }
   }
 
-  // ── Toast ────────────────────────────────────────────────────────
-  let toastTimer;
+  // ── Toast ─────────────────────────────────────────────────────────
   function showToast(msg, type = 'success') {
-    const t = document.getElementById('toast');
-    document.getElementById('toast-msg').textContent = msg;
-    t.className = t.className.replace(/bg-\S+/g, '');
-    t.classList.add(type === 'success' ? 'bg-emerald-600' : 'bg-red-500');
-    t.classList.add('fixed','bottom-6','left-1/2','-translate-x-1/2','z-[100]',
-      'px-5','py-3','rounded-xl','text-sm','font-semibold','text-white','shadow-lg',
-      'flex','items-center','gap-2');
-    document.getElementById('toast-icon').innerHTML = type === 'success'
-      ? '<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>'
-      : '<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>';
-    t.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+    const icons = {
+      success: '<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>',
+      error:   '<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>',
+      warning: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>'
+    };
+    const item = document.createElement('div');
+    item.className = `toast-item toast-${type}`;
+    item.innerHTML = `
+      <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        ${icons[type] || icons.success}
+      </svg>
+      <span>${escHtml(String(msg))}</span>`;
+    document.getElementById('toast').appendChild(item);
+    setTimeout(() => item.remove(), 3800);
   }
 
-  // ── Escape HTML ──────────────────────────────────────────────────
-  function escHtml(str) {
-    return String(str)
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
+  function escHtml(str) { return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-  // ── Keyboard close ───────────────────────────────────────────────
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { closeModal(); closeDeleteModal(); }
-  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeDeleteModal(); } });
   document.getElementById('modal-backdrop').addEventListener('click', closeModal);
   document.getElementById('delete-modal').addEventListener('click', closeDeleteModal);
 </script>

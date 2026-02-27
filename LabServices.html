@@ -37,8 +37,18 @@
     .badge-inactive { background:#fee2e2; color:#dc2626; }
     .spinner { width:18px;height:18px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;display:inline-block; }
     @keyframes spin { to{transform:rotate(360deg)} }
-    #toast { transition:all 0.3s ease; transform:translateY(80px); opacity:0; }
-    #toast.show { transform:translateY(0); opacity:1; }
+    /* ── Toast ── */
+    #toast { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
+    .toast-item {
+      display:flex; align-items:center; gap:10px; padding:12px 18px;
+      border-radius:12px; font-size:13px; font-weight:500; color:#fff;
+      box-shadow:0 4px 20px rgba(0,0,0,0.15); pointer-events:auto; max-width:320px;
+      animation:toastSlideUp .3s ease;
+    }
+    .toast-success { background:#0f9959; }
+    .toast-error   { background:#ef4444; }
+    .toast-warning { background:#f59e0b; }
+    @keyframes toastSlideUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
     @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
     .fade-up { animation: fadeUp 0.3s ease both; }
     ::-webkit-scrollbar { width:5px; }
@@ -65,79 +75,68 @@
 
   <!-- Stats -->
   <div class="grid grid-cols-3 gap-4 mb-6 fade-up">
-    <div class="card p-4 text-center">
-      <p id="stat-total" class="text-2xl font-bold text-slate-800">—</p>
-      <p class="text-xs text-slate-400 mt-0.5">Total</p>
-    </div>
-    <div class="card p-4 text-center">
-      <p id="stat-active" class="text-2xl font-bold text-emerald-500">—</p>
-      <p class="text-xs text-slate-400 mt-0.5">Active</p>
-    </div>
-    <div class="card p-4 text-center">
-      <p id="stat-inactive" class="text-2xl font-bold text-red-400">—</p>
-      <p class="text-xs text-slate-400 mt-0.5">Inactive</p>
-    </div>
+    <div class="card p-4 text-center"><p id="stat-total" class="text-2xl font-bold text-slate-800">—</p><p class="text-xs text-slate-400 mt-0.5 font-medium">Total Services</p></div>
+    <div class="card p-4 text-center"><p id="stat-active" class="text-2xl font-bold text-emerald-500">—</p><p class="text-xs text-slate-400 mt-0.5 font-medium">Active</p></div>
+    <div class="card p-4 text-center"><p id="stat-inactive" class="text-2xl font-bold text-red-400">—</p><p class="text-xs text-slate-400 mt-0.5 font-medium">Inactive</p></div>
   </div>
 
-  <!-- Filters -->
-  <div class="card p-4 mb-4 flex flex-wrap gap-3 items-center fade-up">
-    <div class="relative flex-1 min-w-[180px]">
-      <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 111 11a6 6 0 0116 0z"/>
+  <!-- Search + Filter -->
+  <div class="flex items-center gap-3 mb-4 fade-up flex-wrap">
+    <div class="relative flex-1 min-w-[180px] max-w-sm">
+      <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
       </svg>
-      <input id="search-input" type="text" placeholder="Search by name or code…" class="search-input" oninput="filterTable()"/>
+      <input id="search-input" type="text" placeholder="Search lab services…" oninput="filterTable()" class="search-input"/>
     </div>
-    <select id="dept-filter" class="filter-select" onchange="filterTable()">
+    <select id="branch-filter" onchange="filterTable()" class="filter-select hidden">
+      <option value="">All Branches</option>
+    </select>
+    <select id="dept-filter" onchange="filterTable()" class="filter-select">
       <option value="">All Departments</option>
     </select>
-    <select id="status-filter" class="filter-select" onchange="filterTable()">
+    <select id="status-filter" onchange="filterTable()" class="filter-select">
       <option value="">All Status</option>
       <option value="active">Active</option>
       <option value="inactive">Inactive</option>
     </select>
-    <select id="branch-filter" class="filter-select hidden" onchange="filterTable()">
-      <option value="">All Branches</option>
-    </select>
-  </div>
-
-  <!-- Loading -->
-  <div id="loading" class="hidden flex items-center justify-center py-16">
-    <div class="w-7 h-7 rounded-full animate-spin" style="border:2px solid #bbd8ff;border-top-color:#2f76f5"></div>
   </div>
 
   <!-- Table -->
-  <div id="table-wrap" class="card overflow-x-auto fade-up hidden">
-    <table class="w-full text-left">
-      <thead>
-        <tr class="border-b border-slate-100">
-          <th class="px-5 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Lab Service</th>
-          <th class="px-3 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Department</th>
-          <th class="px-3 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Fee</th>
-          <th class="px-3 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider hidden md:table-cell">TAT</th>
-          <th class="px-3 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider hidden lg:table-cell">Specimen</th>
-          <th id="branch-col-header" class="px-3 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider hidden">Branch</th>
-          <th class="px-3 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Status</th>
-          <th class="px-5 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider text-right">Actions</th>
-        </tr>
-      </thead>
-      <tbody id="lab-tbody"></tbody>
-    </table>
-  </div>
-
-  <!-- Empty state -->
-  <div id="empty-state" class="hidden flex-col items-center justify-center py-20 gap-3">
-    <div class="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center">
-      <svg class="w-7 h-7 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/>
-      </svg>
+  <div class="card fade-up">
+    <div id="loading" class="flex flex-col items-center justify-center py-16 gap-3">
+      <div class="w-10 h-10 rounded-full animate-spin" style="border:2px solid #bbd8ff;border-top-color:#2f76f5"></div>
+      <p class="text-sm text-slate-400">Loading lab services…</p>
     </div>
-    <p class="text-slate-500 text-sm font-medium">No lab services found</p>
-    <p class="text-slate-400 text-xs">Click "Add Lab Service" to create one.</p>
+    <div id="empty-state" class="hidden flex-col items-center justify-center py-16 gap-3 text-center">
+      <div class="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center">
+        <svg class="w-7 h-7 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/>
+        </svg>
+      </div>
+      <p class="text-slate-500 text-sm font-medium">No lab services found</p>
+      <p class="text-slate-400 text-xs">Click "Add Lab Service" to create one.</p>
+    </div>
+    <div id="table-wrap" class="hidden overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-100">
+            <th class="px-5 py-3 text-left">Lab Service</th>
+            <th class="px-3 py-3 text-left">Department</th>
+            <th class="px-3 py-3 text-left">Fee</th>
+            <th class="px-3 py-3 text-left hidden md:table-cell">TAT</th>
+            <th class="px-3 py-3 text-left hidden lg:table-cell">Specimen</th>
+            <th id="branch-col-header" class="px-3 py-3 text-left hidden">Branch</th>
+            <th class="px-3 py-3 text-left">Status</th>
+            <th class="px-5 py-3 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="lab-tbody"></tbody>
+      </table>
+    </div>
   </div>
-
 </div>
 
-<!-- ═══ ADD/EDIT MODAL ══════════════════════════════════════════ -->
+<!-- ADD/EDIT MODAL -->
 <div id="modal-backdrop" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
     <div class="flex items-center justify-between px-6 pt-6 pb-4 border-b border-slate-100 sticky top-0 bg-white z-10">
@@ -145,32 +144,21 @@
         <h2 id="modal-title" class="text-base font-bold text-slate-800">Add Lab Service</h2>
         <p id="modal-subtitle" class="text-xs text-slate-400 mt-0.5">Create a new lab test or package.</p>
       </div>
-      <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 transition-colors p-1">
+      <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-1">
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
         </svg>
       </button>
     </div>
-
     <div class="px-6 py-5 space-y-4">
-
-      <!-- Branch (super admin only) -->
       <div id="branch-wrap">
         <label class="block text-xs font-semibold text-slate-600 mb-1.5">Branch <span class="text-red-400">*</span></label>
-        <select id="f-branch-id" class="form-select" onchange="onBranchChange()">
-          <option value="">— Select Branch —</option>
-        </select>
+        <select id="f-branch-id" class="form-select" onchange="onBranchChange()"><option value="">— Select Branch —</option></select>
       </div>
-
-      <!-- Department -->
       <div>
         <label class="block text-xs font-semibold text-slate-600 mb-1.5">Department <span class="text-red-400">*</span></label>
-        <select id="f-dept-id" class="form-select">
-          <option value="">— Select Department —</option>
-        </select>
+        <select id="f-dept-id" class="form-select"><option value="">— Select Department —</option></select>
       </div>
-
-      <!-- Row: Lab Code + Lab Name -->
       <div class="grid grid-cols-2 gap-3">
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1.5">Lab Code <span class="text-red-400">*</span></label>
@@ -181,14 +169,10 @@
           <input id="f-lab-name" type="text" placeholder="Complete Blood Count" class="form-input"/>
         </div>
       </div>
-
-      <!-- Description -->
       <div>
         <label class="block text-xs font-semibold text-slate-600 mb-1.5">Description</label>
         <textarea id="f-description" placeholder="Optional description…" class="form-textarea"></textarea>
       </div>
-
-      <!-- Row: Fee + TAT -->
       <div class="grid grid-cols-2 gap-3">
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1.5">Default Fee (₱)</label>
@@ -199,14 +183,10 @@
           <input id="f-tat-hours" type="number" min="0" step="1" placeholder="0" class="form-input"/>
         </div>
       </div>
-
-      <!-- Specimen Type -->
       <div>
         <label class="block text-xs font-semibold text-slate-600 mb-1.5">Specimen Type</label>
         <input id="f-specimen-type" type="text" placeholder="e.g. Whole Blood, Serum, Urine…" class="form-input"/>
       </div>
-
-      <!-- Status -->
       <div>
         <label class="block text-xs font-semibold text-slate-600 mb-1.5">Status</label>
         <select id="f-is-active" class="form-select">
@@ -214,24 +194,18 @@
           <option value="false">Inactive</option>
         </select>
       </div>
-
       <input type="hidden" id="f-lab-id"/>
     </div>
-
     <div class="px-6 pb-6 flex gap-3 justify-end sticky bottom-0 bg-white pt-4 border-t border-slate-100">
-      <button onclick="closeModal()"
-        class="px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors">
-        Cancel
-      </button>
-      <button id="save-btn" onclick="saveLab()"
-        class="px-5 py-2.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold transition-colors shadow-sm">
+      <button onclick="closeModal()" class="px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
+      <button id="save-btn" onclick="saveLab()" class="px-5 py-2.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold shadow-sm">
         <span id="save-label">Save Lab Service</span>
       </button>
     </div>
   </div>
 </div>
 
-<!-- ═══ DELETE MODAL ═══════════════════════════════════════════ -->
+<!-- DELETE MODAL -->
 <div id="delete-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center" onclick="event.stopPropagation()">
     <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
@@ -243,18 +217,14 @@
     <p class="text-sm text-slate-500 mb-1">This will permanently delete</p>
     <p class="text-sm font-semibold text-slate-700 mb-5" id="delete-name">—</p>
     <div class="flex gap-3">
-      <button onclick="closeDeleteModal()"
-        class="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
-      <button id="confirm-delete-btn" onclick="confirmDelete()"
-        class="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold">Delete</button>
+      <button onclick="closeDeleteModal()" class="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
+      <button id="confirm-delete-btn" onclick="confirmDelete()" class="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold">Delete</button>
     </div>
   </div>
 </div>
 
-<!-- ═══ TOAST ═══════════════════════════════════════════════════ -->
-<div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl text-white text-sm font-semibold shadow-lg">
-  <span id="toast-msg"></span>
-</div>
+<!-- TOAST -->
+<div id="toast"></div>
 
 <script>
   var alab_token = (new URLSearchParams(window.location.search)).get('token') || localStorage.getItem('alab_token') || '';
@@ -269,7 +239,7 @@
 
   var allLabs        = [];
   var allBranches    = [];
-  var allDepts       = [];   // all departments loaded
+  var allDepts       = [];
   var currentSession = null;
   var editingId      = null;
   var deletingId     = null;
@@ -293,32 +263,26 @@
       document.getElementById('branch-col-header').classList.remove('hidden');
       document.getElementById('branch-filter').classList.remove('hidden');
     } else {
-      // Branch admin: hide branch selector in modal
       document.getElementById('branch-wrap').classList.add('hidden');
     }
   }
 
-  // ─── Load all data sequentially ──────────────────────────────────
   function loadData() {
     showLoading(true);
-    // 1. Load branches
     google.script.run
       .withSuccessHandler(function(res) {
         if (_checkExpired(res)) return;
         if (res.success) { allBranches = res.data || []; populateBranchDropdown(); populateBranchFilter(); }
-        // 2. Load departments
         google.script.run
           .withSuccessHandler(function(res2) {
             if (_checkExpired(res2)) return;
             if (res2.success) { allDepts = res2.data || []; populateDeptFilter(); }
-            // 3. Load lab services
             google.script.run
               .withSuccessHandler(function(res3) {
                 showLoading(false);
                 if (_checkExpired(res3)) return;
                 if (res3.success) allLabs = res3.data || [];
-                renderTable(allLabs);
-                updateStats(allLabs);
+                renderTable(allLabs); updateStats(allLabs);
               })
               .withFailureHandler(function(err) { showLoading(false); showToast('Error: ' + err.message, 'error'); })
               .handleLabServiceRequest('GET_LAB_SERVICES', {}, alab_token);
@@ -330,7 +294,7 @@
                 if (res3.success) allLabs = res3.data || [];
                 renderTable(allLabs); updateStats(allLabs);
               })
-              .withFailureHandler(function(err) { showLoading(false); })
+              .withFailureHandler(function(err) { showLoading(false); showToast('Error: ' + err.message, 'error'); })
               .handleLabServiceRequest('GET_LAB_SERVICES', {}, alab_token);
           })
           .handleDepartmentRequest('GET_DEPARTMENTS', {}, alab_token);
@@ -339,7 +303,6 @@
       .handleBranchRequest('GET_BRANCHES', {}, alab_token);
   }
 
-  // ─── Populate dropdowns ──────────────────────────────────────────
   function populateBranchDropdown() {
     const sel = document.getElementById('f-branch-id');
     sel.innerHTML = '<option value="">— Select Branch —</option>';
@@ -359,17 +322,12 @@
   function populateDeptFilter() {
     const sel = document.getElementById('dept-filter');
     sel.innerHTML = '<option value="">All Departments</option>';
-    // Unique depts
     const seen = {};
     allDepts.forEach(d => {
-      if (!seen[d.dept_id]) {
-        seen[d.dept_id] = true;
-        sel.innerHTML += `<option value="${escHtml(d.dept_id)}">${escHtml(d.dept_name)}</option>`;
-      }
+      if (!seen[d.dept_id]) { seen[d.dept_id] = true; sel.innerHTML += `<option value="${escHtml(d.dept_id)}">${escHtml(d.dept_name)}</option>`; }
     });
   }
 
-  // When branch changes in modal, filter dept dropdown
   function onBranchChange() {
     const branchId = document.getElementById('f-branch-id').value;
     const deptSel  = document.getElementById('f-dept-id');
@@ -380,7 +338,6 @@
     });
   }
 
-  // Populate dept dropdown for branch admin (auto branch)
   function populateDeptForBranchAdmin() {
     if (!currentSession || currentSession.role !== 'branch_admin') return;
     const deptSel = document.getElementById('f-dept-id');
@@ -390,29 +347,23 @@
     });
   }
 
-  // ─── Render table ────────────────────────────────────────────────
   function renderTable(data) {
     const tbody = document.getElementById('lab-tbody');
     const wrap  = document.getElementById('table-wrap');
     const empty = document.getElementById('empty-state');
     const isSuperAdmin = currentSession && currentSession.role === 'super_admin';
-
     if (!data.length) {
-      wrap.classList.add('hidden');
-      empty.classList.remove('hidden'); empty.classList.add('flex');
-      return;
+      wrap.classList.add('hidden'); empty.classList.remove('hidden'); empty.classList.add('flex'); return;
     }
-    empty.classList.add('hidden'); empty.classList.remove('flex');
-    wrap.classList.remove('hidden');
-
+    empty.classList.add('hidden'); empty.classList.remove('flex'); wrap.classList.remove('hidden');
     tbody.innerHTML = data.map(l => `
       <tr class="data-row">
         <td class="px-5 py-3.5">
-          <p class="font-semibold text-sm text-slate-800">${escHtml(l.lab_name)}</p>
-          <span class="text-[11px] font-semibold text-blue-500 px-1.5 py-0.5 rounded" style="background:rgba(47,118,245,0.08);font-family:'DM Mono',monospace">${escHtml(l.lab_code)}</span>
+          <p class="font-semibold text-slate-800">${escHtml(l.lab_name)}</p>
+          <p class="text-xs text-slate-400 font-mono">${escHtml(l.lab_code)}</p>
         </td>
         <td class="px-3 py-3.5 text-sm text-slate-500">${escHtml(l.dept_name || '—')}</td>
-        <td class="px-3 py-3.5 text-sm font-semibold text-slate-700">₱${Number(l.default_fee).toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+        <td class="px-3 py-3.5 text-sm font-mono font-semibold text-slate-700">₱${Number(l.default_fee || 0).toFixed(2)}</td>
         <td class="px-3 py-3.5 text-sm text-slate-500 hidden md:table-cell">${l.tat_hours ? l.tat_hours + 'h' : '—'}</td>
         <td class="px-3 py-3.5 text-sm text-slate-500 hidden lg:table-cell">${escHtml(l.specimen_type || '—')}</td>
         ${isSuperAdmin ? `<td class="px-3 py-3.5 text-sm text-slate-500">${escHtml(l.branch_name || '—')}</td>` : ''}
@@ -450,14 +401,12 @@
     }));
   }
 
-  // ─── Modal ───────────────────────────────────────────────────────
   function openModal(labId) {
     editingId = labId || null;
     clearForm();
     document.getElementById('modal-title').textContent    = editingId ? 'Edit Lab Service' : 'Add Lab Service';
     document.getElementById('modal-subtitle').textContent = editingId ? 'Update lab service details.' : 'Create a new lab test or package.';
     document.getElementById('save-label').textContent     = editingId ? 'Update Lab Service' : 'Save Lab Service';
-
     if (editingId) {
       const l = allLabs.find(x => x.lab_id === editingId);
       if (l) {
@@ -479,23 +428,15 @@
         }
       }
     } else {
-      if (currentSession && currentSession.role === 'branch_admin') {
-        populateDeptForBranchAdmin();
-      }
+      if (currentSession && currentSession.role === 'branch_admin') populateDeptForBranchAdmin();
     }
-
     document.getElementById('modal-backdrop').classList.remove('hidden');
   }
 
-  function closeModal() {
-    document.getElementById('modal-backdrop').classList.add('hidden');
-    clearForm(); editingId = null;
-  }
+  function closeModal() { document.getElementById('modal-backdrop').classList.add('hidden'); clearForm(); editingId = null; }
 
   function clearForm() {
-    ['f-lab-id','f-lab-code','f-lab-name','f-description','f-specimen-type'].forEach(id => {
-      document.getElementById(id).value = '';
-    });
+    ['f-lab-id','f-lab-code','f-lab-name','f-description','f-specimen-type'].forEach(id => { document.getElementById(id).value = ''; });
     document.getElementById('f-default-fee').value = '';
     document.getElementById('f-tat-hours').value   = '';
     document.getElementById('f-is-active').value   = 'true';
@@ -507,11 +448,9 @@
     const labCode = document.getElementById('f-lab-code').value.trim().toUpperCase();
     const labName = document.getElementById('f-lab-name').value.trim();
     const deptId  = document.getElementById('f-dept-id').value;
-
     if (!labCode) { showToast('Lab code is required.', 'error'); return; }
     if (!labName) { showToast('Lab name is required.', 'error'); return; }
     if (!deptId)  { showToast('Please select a department.', 'error'); return; }
-
     var branchId = '';
     if (currentSession && currentSession.role === 'super_admin') {
       branchId = document.getElementById('f-branch-id').value;
@@ -519,50 +458,36 @@
     } else {
       branchId = currentSession ? currentSession.branch_id : '';
     }
-
     const payload = {
-      lab_id:        document.getElementById('f-lab-id').value,
-      dept_id:       deptId,
-      lab_code:      labCode,
-      lab_name:      labName,
-      description:   document.getElementById('f-description').value.trim(),
-      default_fee:   parseFloat(document.getElementById('f-default-fee').value) || 0,
-      tat_hours:     parseInt(document.getElementById('f-tat-hours').value) || 0,
+      lab_id: document.getElementById('f-lab-id').value, dept_id: deptId, lab_code: labCode, lab_name: labName,
+      description: document.getElementById('f-description').value.trim(),
+      default_fee: parseFloat(document.getElementById('f-default-fee').value) || 0,
+      tat_hours:   parseInt(document.getElementById('f-tat-hours').value)   || 0,
       specimen_type: document.getElementById('f-specimen-type').value.trim(),
-      is_active:     document.getElementById('f-is-active').value === 'true',
-      branch_id:     branchId
+      is_active: document.getElementById('f-is-active').value === 'true',
+      branch_id: branchId
     };
-
     const action = editingId ? 'UPDATE_LAB_SERVICE' : 'CREATE_LAB_SERVICE';
     setSaving(true);
-
     google.script.run
       .withSuccessHandler(function(res) {
         setSaving(false);
         if (_checkExpired(res)) return;
-        if (res.success) {
-          closeModal();
-          showToast(editingId ? 'Lab service updated!' : 'Lab service created!', 'success');
-          loadData();
-        } else {
-          showToast(res.error || 'Failed to save.', 'error');
-        }
+        if (res.success) { closeModal(); showToast(editingId ? 'Lab service updated!' : 'Lab service created!', 'success'); loadData(); }
+        else showToast(res.error || 'Failed to save.', 'error');
       })
       .withFailureHandler(function(err) { setSaving(false); showToast('Error: ' + err.message, 'error'); })
       .handleLabServiceRequest(action, payload, alab_token);
   }
 
-  // ─── Delete ──────────────────────────────────────────────────────
-  function openDeleteModal(id, name) {
-    deletingId = id;
-    document.getElementById('delete-name').textContent = name;
-    document.getElementById('delete-modal').classList.remove('hidden');
+  function setSaving(v) {
+    const btn = document.getElementById('save-btn');
+    btn.disabled = v;
+    btn.innerHTML = v ? '<span class="spinner"></span>' : `<span id="save-label">${editingId ? 'Update Lab Service' : 'Save Lab Service'}</span>`;
   }
 
-  function closeDeleteModal() {
-    deletingId = null;
-    document.getElementById('delete-modal').classList.add('hidden');
-  }
+  function openDeleteModal(id, name) { deletingId = id; document.getElementById('delete-name').textContent = name; document.getElementById('delete-modal').classList.remove('hidden'); }
+  function closeDeleteModal() { deletingId = null; document.getElementById('delete-modal').classList.add('hidden'); }
 
   function confirmDelete() {
     const btn = document.getElementById('confirm-delete-btn');
@@ -579,7 +504,6 @@
       .handleLabServiceRequest('DELETE_LAB_SERVICE', { lab_id: deletingId }, alab_token);
   }
 
-  // ─── Helpers ─────────────────────────────────────────────────────
   function showLoading(v) {
     document.getElementById('loading').classList.toggle('hidden', !v);
     if (v) {
@@ -589,26 +513,29 @@
     }
   }
 
-  function setSaving(v) {
-    const btn = document.getElementById('save-btn');
-    btn.disabled = v;
-    btn.innerHTML = v ? '<span class="spinner"></span>' : `<span id="save-label">${editingId ? 'Update Lab Service' : 'Save Lab Service'}</span>`;
+  // ── Toast ─────────────────────────────────────────────────────────
+  function showToast(msg, type = 'success') {
+    const icons = {
+      success: '<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>',
+      error:   '<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>',
+      warning: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>'
+    };
+    const item = document.createElement('div');
+    item.className = `toast-item toast-${type}`;
+    item.innerHTML = `
+      <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        ${icons[type] || icons.success}
+      </svg>
+      <span>${escHtml(String(msg))}</span>`;
+    document.getElementById('toast').appendChild(item);
+    setTimeout(() => item.remove(), 3800);
   }
 
-  function showToast(msg, type) {
-    const t = document.getElementById('toast');
-    document.getElementById('toast-msg').textContent = msg;
-    t.style.background = type === 'error' ? '#ef4444' : '#22c55e';
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 3000);
-  }
-
-  function escHtml(s) {
-    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
+  function escHtml(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
   document.getElementById('modal-backdrop').addEventListener('click', closeModal);
   document.getElementById('delete-modal').addEventListener('click', closeDeleteModal);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeDeleteModal(); } });
 </script>
 </body>
 </html>
