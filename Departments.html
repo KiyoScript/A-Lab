@@ -10,24 +10,13 @@
     * { font-family: 'DM Sans', sans-serif; }
     body { background: #f8fafc; color: #0f172a; height: 100vh; overflow: auto; }
     .card { background:#fff; border:1px solid #e2e8f0; border-radius:1rem; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
-    .form-input, .form-select {
-      background:#f8fafc; border:1px solid #e2e8f0; color:#334155;
-      width:100%; border-radius:0.75rem; padding:0.625rem 0.75rem; font-size:0.875rem;
-      outline:none; transition:box-shadow 0.15s, border-color 0.15s;
-    }
+    .form-input { background:#f8fafc; border:1px solid #e2e8f0; color:#334155; width:100%; border-radius:0.75rem; padding:0.625rem 0.75rem; font-size:0.875rem; outline:none; transition:box-shadow 0.15s, border-color 0.15s; }
     .form-input::placeholder { color:#94a3b8; }
-    .form-input:focus, .form-select:focus { box-shadow:0 0 0 2px rgba(47,118,245,0.25); border-color:#2f76f5; }
-    .search-input {
-      background:#fff; border:1px solid #e2e8f0; color:#0f172a;
-      border-radius:0.75rem; padding:0.5rem 0.75rem 0.5rem 2.25rem;
-      font-size:0.875rem; outline:none; width:100%; transition:border-color 0.15s;
-    }
+    .form-input:focus { box-shadow:0 0 0 2px rgba(47,118,245,0.25); border-color:#2f76f5; }
+    .search-input { background:#fff; border:1px solid #e2e8f0; color:#0f172a; border-radius:0.75rem; padding:0.5rem 0.75rem 0.5rem 2.25rem; font-size:0.875rem; outline:none; width:100%; transition:border-color 0.15s; }
     .search-input::placeholder { color:#94a3b8; }
     .search-input:focus { border-color:#2f76f5; box-shadow:0 0 0 2px rgba(47,118,245,0.2); }
-    .filter-select {
-      background:#fff; border:1px solid #e2e8f0; color:#475569;
-      border-radius:0.75rem; padding:0.5rem 0.75rem; font-size:0.875rem; outline:none;
-    }
+    .filter-select { background:#fff; border:1px solid #e2e8f0; color:#475569; border-radius:0.75rem; padding:0.5rem 0.75rem; font-size:0.875rem; outline:none; }
     .filter-select:focus { border-color:#2f76f5; }
     tr.data-row { border-bottom:1px solid #f1f5f9; transition:background 0.12s; }
     tr.data-row:hover { background:#f8fafc; }
@@ -36,7 +25,6 @@
     .badge-inactive { background:#f1f5f9; color:#64748b; }
     .spinner { width:18px;height:18px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;display:inline-block; }
     @keyframes spin { to{transform:rotate(360deg)} }
-    /* ── Toast ── */
     #toast { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
     .toast-item { display:flex; align-items:center; gap:10px; padding:12px 18px; border-radius:12px; font-size:13px; font-weight:500; color:#fff; box-shadow:0 4px 20px rgba(0,0,0,0.15); pointer-events:auto; max-width:320px; animation:toastSlideUp .3s ease; }
     .toast-success { background:#0f9959; }
@@ -45,24 +33,17 @@
     @keyframes toastSlideUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
     @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
     .fade-up { animation: fadeUp 0.3s ease both; }
-    /* ── Toggle switch ── */
-    .toggle-wrap { display:flex; align-items:center; gap:0.75rem; }
     .toggle { position:relative; width:44px; height:24px; }
     .toggle input { opacity:0; width:0; height:0; }
     .toggle-slider { position:absolute; cursor:pointer; inset:0; background:#cbd5e1; border-radius:99px; transition:background 0.2s; }
     .toggle-slider::before { content:''; position:absolute; width:18px; height:18px; left:3px; top:3px; background:#fff; border-radius:50%; transition:transform 0.2s; box-shadow:0 1px 3px rgba(0,0,0,0.18); }
     .toggle input:checked + .toggle-slider { background:#2f76f5; }
     .toggle input:checked + .toggle-slider::before { transform:translateX(20px); }
-    /* ── Lab service checklist ── */
     .lab-check-item { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:10px; cursor:pointer; transition:background 0.12s; border:1px solid transparent; }
     .lab-check-item:hover { background:#f1f5f9; }
     .lab-check-item.checked { background:#eef6ff; border-color:#bbd8ff; }
     .lab-check-item input[type=checkbox] { width:15px; height:15px; accent-color:#2f76f5; cursor:pointer; flex-shrink:0; }
-    .lab-search-input {
-      background:#f8fafc; border:1px solid #e2e8f0; color:#334155;
-      border-radius:0.65rem; padding:0.45rem 0.65rem 0.45rem 2rem;
-      font-size:0.8rem; outline:none; width:100%; transition:border-color 0.15s;
-    }
+    .lab-search-input { background:#f8fafc; border:1px solid #e2e8f0; color:#334155; border-radius:0.65rem; padding:0.45rem 0.65rem 0.45rem 2rem; font-size:0.8rem; outline:none; width:100%; transition:border-color 0.15s; }
     .lab-search-input::placeholder { color:#94a3b8; }
     .lab-search-input:focus { border-color:#2f76f5; }
     ::-webkit-scrollbar { width:5px; }
@@ -76,10 +57,9 @@
   <div class="flex items-center justify-between mb-6 fade-up">
     <div>
       <h1 class="text-xl font-bold text-slate-800">Departments</h1>
-      <p class="text-sm text-slate-400 mt-0.5">Manage departments and their lab service assignments.</p>
+      <p class="text-sm text-slate-400 mt-0.5">Manage global departments and their lab service assignments.</p>
     </div>
-    <button id="add-dept-btn" onclick="openModal(null, null)"
-      class="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-sm">
+    <button id="add-dept-btn" onclick="openModal(null)" class="hidden items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-sm">
       <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
       </svg>
@@ -102,9 +82,6 @@
       </svg>
       <input id="search-input" type="text" placeholder="Search departments…" oninput="filterTable()" class="search-input"/>
     </div>
-    <select id="branch-filter" onchange="filterTable()" class="filter-select" style="display:none">
-      <option value="">All Branches</option>
-    </select>
     <select id="status-filter" onchange="filterTable()" class="filter-select">
       <option value="">All Status</option>
       <option value="active">Active</option>
@@ -132,10 +109,9 @@
         <thead>
           <tr class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-100">
             <th class="text-left px-5 py-3">Department</th>
-            <th id="th-branch" class="text-left px-3 py-3">Branch</th>
             <th class="text-left px-3 py-3">Lab Services</th>
             <th class="text-left px-3 py-3">Status</th>
-            <th class="text-right px-5 py-3">Actions</th>
+            <th id="th-actions" class="text-right px-5 py-3 hidden">Actions</th>
           </tr>
         </thead>
         <tbody id="dept-tbody"></tbody>
@@ -152,7 +128,7 @@
     <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 shrink-0">
       <div>
         <h2 id="modal-title" class="text-base font-bold text-slate-800">Add Department</h2>
-        <p id="modal-subtitle" class="text-xs text-slate-400 mt-0.5">Create a new department for a branch.</p>
+        <p id="modal-subtitle" class="text-xs text-slate-400 mt-0.5">Create a new global department and assign lab services.</p>
       </div>
       <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-1">
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -161,19 +137,9 @@
       </button>
     </div>
 
-    <!-- Modal Body (scrollable) -->
+    <!-- Modal Body -->
     <div class="overflow-y-auto flex-1 px-6 py-5 space-y-5">
       <input type="hidden" id="f-dept-id"/>
-
-      <!-- Branch field (super admin: select; branch admin: badge) -->
-      <div id="branch-select-wrap">
-        <label class="block text-xs font-semibold text-slate-600 mb-1.5">Branch <span class="text-red-500">*</span></label>
-        <select id="f-branch-id" class="form-select" onchange="onBranchChange()"><option value="">Select branch…</option></select>
-      </div>
-      <div id="branch-badge-wrap" class="hidden">
-        <label class="block text-xs font-semibold text-slate-600 mb-1.5">Branch</label>
-        <div class="px-3 py-2 bg-blue-50 rounded-xl text-xs font-semibold text-blue-700" id="branch-badge-label">—</div>
-      </div>
 
       <!-- Department Name -->
       <div>
@@ -184,7 +150,7 @@
       <!-- Status toggle -->
       <div>
         <label class="block text-xs font-semibold text-slate-600 mb-2">Status</label>
-        <div class="toggle-wrap">
+        <div class="flex items-center gap-3">
           <label class="toggle">
             <input type="checkbox" id="f-is-active" checked/>
             <span class="toggle-slider"></span>
@@ -193,7 +159,7 @@
         </div>
       </div>
 
-      <!-- ── Lab Services Checklist ─────────────────────────── -->
+      <!-- Lab Services Checklist -->
       <div>
         <div class="flex items-center justify-between mb-2">
           <label class="text-xs font-semibold text-slate-600">Lab Services</label>
@@ -213,22 +179,20 @@
           <input id="lab-search" type="text" placeholder="Search lab services…" oninput="filterLabList()" class="lab-search-input"/>
         </div>
 
-        <!-- Loading state -->
+        <!-- Loading -->
         <div id="lab-list-loading" class="hidden py-6 flex flex-col items-center gap-2">
           <div class="w-6 h-6 rounded-full animate-spin" style="border:2px solid #bbd8ff;border-top-color:#2f76f5"></div>
           <p class="text-xs text-slate-400">Loading lab services…</p>
         </div>
 
-        <!-- Empty/no branch selected -->
-        <div id="lab-list-empty" class="py-6 text-center">
-          <p class="text-xs text-slate-400">Select a branch first to load lab services.</p>
+        <!-- Empty -->
+        <div id="lab-list-empty" class="hidden py-6 text-center">
+          <p class="text-xs text-slate-400">No lab services available.</p>
         </div>
 
-        <!-- Lab items list -->
+        <!-- Lab list -->
         <div id="lab-list-wrap" class="hidden border border-slate-200 rounded-xl overflow-hidden">
-          <div id="lab-checklist" class="max-h-52 overflow-y-auto divide-y divide-slate-100 p-1.5 space-y-0.5">
-            <!-- items injected here -->
-          </div>
+          <div id="lab-checklist" class="max-h-52 overflow-y-auto divide-y divide-slate-100 p-1.5 space-y-0.5"></div>
           <div id="lab-list-no-results" class="hidden py-4 text-center text-xs text-slate-400">No lab services match your search.</div>
         </div>
       </div>
@@ -277,128 +241,82 @@
   function _checkExpired(res) { if (res && res.expired) { _handleExpired(); return true; } return false; }
 
   // ── State ──────────────────────────────────────────────────────
-  var allDepts        = [];
-  var allBranches     = [];
-  var allLabServices  = [];   // all loaded lab services (filtered by session)
-  var currentSession  = null;
-  var editingId       = null;
-  var editingBranchId = null;
-  var deletingId      = null;
-  var deletingBranchId = null;
-  var currentLabBranchId = null;  // branch whose labs are currently loaded
+  var allDepts       = [];
+  var allLabServices = [];
+  var currentSession = null;
+  var isSuperAdmin   = false;
+  var editingId      = null;
+  var deletingId     = null;
 
   // ── Init ───────────────────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', function() {
     initPage();
     document.getElementById('f-is-active').addEventListener('change', function() {
-      var chk = this;
       var lbl = document.getElementById('toggle-label');
-      lbl.textContent = chk.checked ? 'Active' : 'Inactive';
-      lbl.className   = 'text-sm font-semibold ' + (chk.checked ? 'text-emerald-600' : 'text-slate-400');
+      lbl.textContent = this.checked ? 'Active' : 'Inactive';
+      lbl.className   = 'text-sm font-semibold ' + (this.checked ? 'text-emerald-600' : 'text-slate-400');
     });
   });
 
   function initPage() {
     google.script.run
       .withSuccessHandler(function(res) {
-        if (res.success) currentSession = res.data;
+        if (res.success) {
+          currentSession = res.data;
+          isSuperAdmin   = currentSession && currentSession.role === 'super_admin';
+        }
+        applySessionUI();
         loadData();
       })
       .withFailureHandler(function() { loadData(); })
       .handleAdminRequest('GET_SESSION', {}, alab_token);
   }
 
+  function applySessionUI() {
+    // Only super admins can add/edit/delete
+    if (isSuperAdmin) {
+      document.getElementById('add-dept-btn').classList.remove('hidden');
+      document.getElementById('add-dept-btn').classList.add('flex');
+      document.getElementById('th-actions').classList.remove('hidden');
+    }
+  }
+
   // ── Load data ──────────────────────────────────────────────────
   function loadData() {
     showLoading(true);
+
+    // Load lab services + departments in parallel
+    var labDone  = false, deptDone = false;
+    var labData  = [], deptData  = [];
+
+    function tryRender() {
+      if (!labDone || !deptDone) return;
+      allLabServices = labData;
+      allDepts       = deptData;
+      showLoading(false);
+      renderTable(allDepts);
+      updateStats(allDepts);
+    }
+
     google.script.run
-      .withSuccessHandler(function(branchRes) {
-        if (branchRes.success) { allBranches = branchRes.data || []; populateBranchDropdowns(); }
-        google.script.run
-          .withSuccessHandler(function(deptRes) {
-            if (_checkExpired(deptRes)) return;
-            if (!deptRes.success) {
-              showLoading(false);
-              showToast('Failed to load departments: ' + deptRes.error, 'error');
-              return;
-            }
-            allDepts = deptRes.data || [];
-
-            // Also load lab service counts per dept from mappings
-            google.script.run
-              .withSuccessHandler(function(mapRes) {
-                showLoading(false);
-                if (mapRes.success && mapRes.data) {
-                  // mapRes.data = { branch_id: { dept_id: [lab_ids] } }
-                  // Merge lab_service_count into each dept
-                  allDepts.forEach(function(d) {
-                    var branchMap = mapRes.data[d.branch_id] || {};
-                    var labIds    = branchMap[d.dept_id] || [];
-                    d.lab_service_count = labIds.length;
-                  });
-                }
-                applySessionUI();
-                renderTable(allDepts);
-                updateStats(allDepts);
-              })
-              .withFailureHandler(function() {
-                // Even if mapping fails, still show depts (just count = 0)
-                showLoading(false);
-                applySessionUI();
-                renderTable(allDepts);
-                updateStats(allDepts);
-              })
-              .handleDeptLabRequest('GET_DEPT_LAB_MAPPINGS', {}, alab_token);
-          })
-          .withFailureHandler(function(err) { showLoading(false); showToast('Error: ' + err.message, 'error'); })
-          .handleDepartmentRequest('GET_DEPARTMENTS', {}, alab_token);
+      .withSuccessHandler(function(res) {
+        if (res.success) labData = res.data || [];
+        labDone = true; tryRender();
       })
-      .withFailureHandler(function() {
-        google.script.run
-          .withSuccessHandler(function(deptRes) {
-            if (_checkExpired(deptRes)) return;
-            if (!deptRes.success) { showLoading(false); return; }
-            allDepts = deptRes.data || [];
-            google.script.run
-              .withSuccessHandler(function(mapRes) {
-                showLoading(false);
-                if (mapRes.success && mapRes.data) {
-                  allDepts.forEach(function(d) {
-                    var branchMap = mapRes.data[d.branch_id] || {};
-                    d.lab_service_count = (branchMap[d.dept_id] || []).length;
-                  });
-                }
-                applySessionUI(); renderTable(allDepts); updateStats(allDepts);
-              })
-              .withFailureHandler(function() {
-                showLoading(false);
-                applySessionUI(); renderTable(allDepts); updateStats(allDepts);
-              })
-              .handleDeptLabRequest('GET_DEPT_LAB_MAPPINGS', {}, alab_token);
-          })
-          .withFailureHandler(function(err) { showLoading(false); showToast('Error: ' + err.message, 'error'); })
-          .handleDepartmentRequest('GET_DEPARTMENTS', {}, alab_token);
+      .withFailureHandler(function() { labDone = true; tryRender(); })
+      .handleLabServiceRequest('GET_LAB_SERVICES', {}, alab_token);
+
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (_checkExpired(res)) return;
+        if (res.success) deptData = res.data || [];
+        deptDone = true; tryRender();
       })
-      .handleBranchRequest('GET_BRANCHES', {}, alab_token);
-  }
-
-  // ── Branch dropdowns ───────────────────────────────────────────
-  function populateBranchDropdowns() {
-    var sel    = document.getElementById('f-branch-id');
-    var filter = document.getElementById('branch-filter');
-    sel.innerHTML    = '<option value="">Select branch…</option>';
-    filter.innerHTML = '<option value="">All Branches</option>';
-    allBranches.filter(function(b) { return b.status === 'Active'; }).forEach(function(b) {
-      sel.insertAdjacentHTML('beforeend',    '<option value="' + escHtml(b.branch_id) + '">' + escHtml(b.branch_name) + '</option>');
-      filter.insertAdjacentHTML('beforeend', '<option value="' + escHtml(b.branch_id) + '">' + escHtml(b.branch_name) + '</option>');
-    });
-  }
-
-  // ── Session-based UI ──────────────────────────────────────────
-  function applySessionUI() {
-    var isSuperAdmin = currentSession && currentSession.role === 'super_admin';
-    document.getElementById('branch-filter').style.display = isSuperAdmin ? '' : 'none';
-    document.getElementById('th-branch').style.display     = isSuperAdmin ? '' : 'none';
+      .withFailureHandler(function(err) {
+        showLoading(false);
+        showToast('Error: ' + err.message, 'error');
+      })
+      .handleDepartmentRequest('GET_DEPARTMENTS', {}, alab_token);
   }
 
   // ── Render table ──────────────────────────────────────────────
@@ -406,38 +324,38 @@
     var tbody = document.getElementById('dept-tbody');
     var wrap  = document.getElementById('table-wrap');
     var empty = document.getElementById('empty-state');
-    var isSuperAdmin = currentSession && currentSession.role === 'super_admin';
 
     if (!data.length) {
-      wrap.classList.add('hidden'); empty.classList.remove('hidden'); empty.classList.add('flex'); return;
+      wrap.classList.add('hidden');
+      empty.classList.remove('hidden'); empty.classList.add('flex'); return;
     }
-    empty.classList.add('hidden'); empty.classList.remove('flex'); wrap.classList.remove('hidden');
+    empty.classList.add('hidden'); empty.classList.remove('flex');
+    wrap.classList.remove('hidden');
 
     tbody.innerHTML = data.map(function(d) {
-      var branchCell = isSuperAdmin
-        ? '<td class="px-3 py-3.5">' + (d.branch_name ? '<span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">' + escHtml(d.branch_name) + '</span>' : '<span class="text-slate-300 text-xs">—</span>') + '</td>'
-        : '<td class="px-3 py-3.5" style="display:none"></td>';
-
       var labCount = d.lab_service_count || 0;
       var labBadge = labCount > 0
         ? '<span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">' + labCount + ' service' + (labCount !== 1 ? 's' : '') + '</span>'
         : '<span class="text-xs text-slate-300">None assigned</span>';
 
+      var actionsCell = isSuperAdmin
+        ? '<td class="px-5 py-3.5 text-right">' +
+            '<div class="flex items-center justify-end gap-2">' +
+              '<button onclick="openModal(\'' + escHtml(d.dept_id) + '\')" class="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors" title="Edit">' +
+                '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>' +
+              '</button>' +
+              '<button onclick="openDeleteModal(\'' + escHtml(d.dept_id) + '\',\'' + escHtml(d.dept_name) + '\')" class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete">' +
+                '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>' +
+              '</button>' +
+            '</div>' +
+          '</td>'
+        : '';
+
       return '<tr class="data-row">' +
         '<td class="px-5 py-3.5 font-semibold text-slate-800">' + escHtml(d.dept_name) + '</td>' +
-        branchCell +
         '<td class="px-3 py-3.5">' + labBadge + '</td>' +
         '<td class="px-3 py-3.5"><span class="badge ' + (d.is_active ? 'badge-active' : 'badge-inactive') + '">' + (d.is_active ? 'Active' : 'Inactive') + '</span></td>' +
-        '<td class="px-5 py-3.5 text-right">' +
-          '<div class="flex items-center justify-end gap-2">' +
-            '<button onclick="openModal(\'' + escHtml(d.dept_id) + '\',\'' + escHtml(d.branch_id) + '\')" class="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors" title="Edit">' +
-              '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>' +
-            '</button>' +
-            '<button onclick="openDeleteModal(\'' + escHtml(d.dept_id) + '\',\'' + escHtml(d.branch_id) + '\',\'' + escHtml(d.dept_name) + '\')" class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete">' +
-              '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>' +
-            '</button>' +
-          '</div>' +
-        '</td>' +
+        actionsCell +
       '</tr>';
     }).join('');
   }
@@ -449,137 +367,76 @@
   }
 
   function filterTable() {
-    var q       = document.getElementById('search-input').value.toLowerCase();
-    var st      = document.getElementById('status-filter').value;
-    var branchF = document.getElementById('branch-filter').value;
+    var q  = document.getElementById('search-input').value.toLowerCase();
+    var st = document.getElementById('status-filter').value;
     var filtered = allDepts.filter(function(d) {
-      var mq = !q || d.dept_name.toLowerCase().includes(q) || (d.branch_name||'').toLowerCase().includes(q);
+      var mq = !q || d.dept_name.toLowerCase().includes(q);
       var ms = !st || (st === 'active' && d.is_active) || (st === 'inactive' && !d.is_active);
-      var mb = !branchF || d.branch_id === branchF;
-      return mq && ms && mb;
+      return mq && ms;
     });
     renderTable(filtered);
     updateStats(filtered);
   }
 
   // ── Modal ──────────────────────────────────────────────────────
-  function openModal(deptId, branchId) {
-    editingId = null; editingBranchId = null;
+  function openModal(deptId) {
+    editingId = null;
     clearForm();
 
     var isEdit = !!deptId;
-    var isSuperAdmin = currentSession && currentSession.role === 'super_admin';
-
     document.getElementById('modal-title').textContent    = isEdit ? 'Edit Department' : 'Add Department';
-    document.getElementById('modal-subtitle').textContent = isEdit ? 'Update department details and lab service assignments.' : 'Create a new department and assign lab services.';
+    document.getElementById('modal-subtitle').textContent = isEdit ? 'Update department details and lab service assignments.' : 'Create a new global department and assign lab services.';
     document.getElementById('save-label').textContent     = isEdit ? 'Update Department' : 'Save Department';
 
-    // Branch field
-    if (isSuperAdmin) {
-      document.getElementById('branch-select-wrap').classList.remove('hidden');
-      document.getElementById('branch-badge-wrap').classList.add('hidden');
-    } else {
-      document.getElementById('branch-select-wrap').classList.add('hidden');
-      document.getElementById('branch-badge-wrap').classList.remove('hidden');
-      var myBranch = allBranches.find(function(b) { return b.branch_id === (currentSession && currentSession.branch_id); });
-      document.getElementById('branch-badge-label').textContent = myBranch
-        ? myBranch.branch_name + ' (' + myBranch.branch_code + ')'
-        : (currentSession && currentSession.branch_name) || '—';
-    }
-
     if (isEdit) {
-      var dept = allDepts.find(function(d) { return d.dept_id === deptId && d.branch_id === branchId; });
+      var dept = allDepts.find(function(d) { return d.dept_id === deptId; });
       if (!dept) return;
-      editingId       = deptId;
-      editingBranchId = branchId;
-      document.getElementById('f-dept-id').value    = dept.dept_id;
-      document.getElementById('f-dept-name').value  = dept.dept_name;
+      editingId = deptId;
+      document.getElementById('f-dept-id').value     = dept.dept_id;
+      document.getElementById('f-dept-name').value   = dept.dept_name;
       document.getElementById('f-is-active').checked = dept.is_active;
       document.getElementById('toggle-label').textContent = dept.is_active ? 'Active' : 'Inactive';
-      document.getElementById('toggle-label').className  = 'text-sm font-semibold ' + (dept.is_active ? 'text-emerald-600' : 'text-slate-400');
-      if (isSuperAdmin) document.getElementById('f-branch-id').value = branchId;
+      document.getElementById('toggle-label').className   = 'text-sm font-semibold ' + (dept.is_active ? 'text-emerald-600' : 'text-slate-400');
     }
 
     document.getElementById('modal-backdrop').classList.remove('hidden');
-
-    // Load lab services for the branch
-    var targetBranchId = isEdit ? branchId : (isSuperAdmin ? '' : (currentSession && currentSession.branch_id));
-    if (targetBranchId) {
-      loadLabServicesForBranch(targetBranchId, isEdit ? deptId : null);
-    } else {
-      // Super admin + new dept: wait for branch selection
-      showLabListEmpty('Select a branch first to load lab services.');
-    }
+    loadLabChecklist(isEdit ? deptId : null);
   }
 
-  // Called when super admin changes branch select in modal
-  function onBranchChange() {
-    var branchId = document.getElementById('f-branch-id').value;
-    if (!branchId) {
-      showLabListEmpty('Select a branch first to load lab services.');
-      allLabServices = [];
+  // ── Load global lab services + existing assignments ────────────
+  function loadLabChecklist(deptId) {
+    document.getElementById('lab-list-loading').classList.remove('hidden');
+    document.getElementById('lab-list-wrap').classList.add('hidden');
+    document.getElementById('lab-list-empty').classList.add('hidden');
+
+    var activeLabs = allLabServices.filter(function(l) { return l.is_active; });
+
+    if (!activeLabs.length) {
+      document.getElementById('lab-list-loading').classList.add('hidden');
+      document.getElementById('lab-list-empty').classList.remove('hidden');
       return;
     }
-    loadLabServicesForBranch(branchId, null);
+
+    if (deptId) {
+      google.script.run
+        .withSuccessHandler(function(mapRes) {
+          document.getElementById('lab-list-loading').classList.add('hidden');
+          var assignedIds = (mapRes.success && mapRes.data) ? mapRes.data : [];
+          renderLabChecklist(activeLabs, assignedIds);
+        })
+        .withFailureHandler(function() {
+          document.getElementById('lab-list-loading').classList.add('hidden');
+          renderLabChecklist(activeLabs, []);
+        })
+        .handleDeptLabRequest('GET_LAB_SERVICES_FOR_DEPT', { dept_id: deptId }, alab_token);
+    } else {
+      document.getElementById('lab-list-loading').classList.add('hidden');
+      renderLabChecklist(activeLabs, []);
+    }
   }
 
-  // ── Load lab services + existing assignments for a branch ──────
-  function loadLabServicesForBranch(branchId, deptId) {
-    currentLabBranchId = branchId;
-    showLabListLoading(true);
-
-    // Load lab services
-    google.script.run
-      .withSuccessHandler(function(labRes) {
-        if (_checkExpired(labRes)) return;
-        if (!labRes.success) {
-          showLabListLoading(false);
-          showLabListEmpty('Failed to load lab services.');
-          return;
-        }
-
-        // Filter to this branch
-        allLabServices = (labRes.data || []).filter(function(l) {
-          return l.branch_id === branchId;
-        });
-
-        if (!allLabServices.length) {
-          showLabListLoading(false);
-          showLabListEmpty('No lab services found for this branch.');
-          return;
-        }
-
-        // Now load existing assignments (if editing)
-        if (deptId) {
-          google.script.run
-            .withSuccessHandler(function(mapRes) {
-              showLabListLoading(false);
-              var assignedIds = (mapRes.success && mapRes.data) ? mapRes.data : [];
-              renderLabChecklist(allLabServices, assignedIds);
-            })
-            .withFailureHandler(function() {
-              showLabListLoading(false);
-              renderLabChecklist(allLabServices, []);
-            })
-            .handleDeptLabRequest('GET_LAB_SERVICES_FOR_DEPT', { dept_id: deptId, branch_id: branchId }, alab_token);
-        } else {
-          showLabListLoading(false);
-          renderLabChecklist(allLabServices, []);
-        }
-      })
-      .withFailureHandler(function(err) {
-        showLabListLoading(false);
-        showLabListEmpty('Error: ' + err.message);
-      })
-      .handleLabServiceRequest('GET_LAB_SERVICES', {}, alab_token);
-  }
-
-  // ── Render the lab checklist ───────────────────────────────────
   function renderLabChecklist(labs, assignedIds) {
     var list = document.getElementById('lab-checklist');
-    var wrap = document.getElementById('lab-list-wrap');
-    var empty = document.getElementById('lab-list-empty');
-
     list.innerHTML = '';
     labs.forEach(function(l) {
       var checked = assignedIds.includes(l.lab_id);
@@ -594,15 +451,12 @@
         '</div>';
       list.appendChild(item);
     });
-
-    wrap.classList.remove('hidden');
-    empty.classList.add('hidden');
+    document.getElementById('lab-list-wrap').classList.remove('hidden');
     updateLabCheckCount();
   }
 
   function onLabCheck(chk) {
-    var item = chk.closest('.lab-check-item');
-    item.classList.toggle('checked', chk.checked);
+    chk.closest('.lab-check-item').classList.toggle('checked', chk.checked);
     updateLabCheckCount();
   }
 
@@ -617,8 +471,7 @@
     var items = document.querySelectorAll('#lab-checklist .lab-check-item');
     var visible = 0;
     items.forEach(function(item) {
-      var name = item.getAttribute('data-lab-name') || '';
-      var show = !q || name.includes(q);
+      var show = !q || (item.getAttribute('data-lab-name') || '').includes(q);
       item.style.display = show ? '' : 'none';
       if (show) visible++;
     });
@@ -629,8 +482,7 @@
     document.querySelectorAll('#lab-checklist .lab-check-item').forEach(function(item) {
       if (item.style.display === 'none') return;
       var chk = item.querySelector('input[type=checkbox]');
-      chk.checked = true;
-      item.classList.add('checked');
+      chk.checked = true; item.classList.add('checked');
     });
     updateLabCheckCount();
   }
@@ -639,66 +491,39 @@
     document.querySelectorAll('#lab-checklist .lab-check-item').forEach(function(item) {
       if (item.style.display === 'none') return;
       var chk = item.querySelector('input[type=checkbox]');
-      chk.checked = false;
-      item.classList.remove('checked');
+      chk.checked = false; item.classList.remove('checked');
     });
     updateLabCheckCount();
   }
 
-  // ── Lab list UI state helpers ──────────────────────────────────
-  function showLabListLoading(v) {
-    document.getElementById('lab-list-loading').classList.toggle('hidden', !v);
-    document.getElementById('lab-list-wrap').classList.toggle('hidden', v);
-    document.getElementById('lab-list-empty').classList.toggle('hidden', v);
-  }
-
-  function showLabListEmpty(msg) {
-    document.getElementById('lab-list-empty').textContent = msg;
-    document.getElementById('lab-list-empty').classList.remove('hidden');
-    document.getElementById('lab-list-wrap').classList.add('hidden');
-    document.getElementById('lab-list-loading').classList.add('hidden');
-  }
-
-  // ── Close modal ────────────────────────────────────────────────
   function closeModal() {
     document.getElementById('modal-backdrop').classList.add('hidden');
     clearForm();
     editingId = null;
-    editingBranchId = null;
-    currentLabBranchId = null;
   }
 
   function clearForm() {
-    document.getElementById('f-dept-id').value    = '';
-    document.getElementById('f-dept-name').value  = '';
-    document.getElementById('f-branch-id').value  = '';
+    document.getElementById('f-dept-id').value     = '';
+    document.getElementById('f-dept-name').value   = '';
     document.getElementById('f-is-active').checked = true;
     document.getElementById('toggle-label').textContent = 'Active';
-    document.getElementById('toggle-label').className  = 'text-sm font-semibold text-emerald-600';
-    document.getElementById('lab-search').value   = '';
-    document.getElementById('lab-checklist').innerHTML = '';
+    document.getElementById('toggle-label').className   = 'text-sm font-semibold text-emerald-600';
+    document.getElementById('lab-search').value         = '';
+    document.getElementById('lab-checklist').innerHTML  = '';
     document.getElementById('lab-check-count').textContent = '';
     document.getElementById('lab-list-no-results').classList.add('hidden');
     document.getElementById('lab-list-wrap').classList.add('hidden');
     document.getElementById('lab-list-loading').classList.add('hidden');
-    document.getElementById('lab-list-empty').classList.remove('hidden');
-    document.getElementById('lab-list-empty').textContent = 'Select a branch first to load lab services.';
-    allLabServices = [];
+    document.getElementById('lab-list-empty').classList.add('hidden');
   }
 
   // ── Save ───────────────────────────────────────────────────────
   function saveDept() {
-    var isSuperAdmin = currentSession && currentSession.role === 'super_admin';
     var deptName = document.getElementById('f-dept-name').value.trim();
     var isActive = document.getElementById('f-is-active').checked;
-    var branchId = isSuperAdmin
-      ? (editingId ? editingBranchId : document.getElementById('f-branch-id').value)
-      : (currentSession && currentSession.branch_id);
 
-    if (!deptName)  { showToast('Department name is required.', 'error'); return; }
-    if (!branchId)  { showToast('Please select a branch.', 'error'); return; }
+    if (!deptName) { showToast('Department name is required.', 'error'); return; }
 
-    // Collect checked lab IDs
     var checkedLabIds = [];
     document.querySelectorAll('#lab-checklist input[type=checkbox]:checked').forEach(function(chk) {
       checkedLabIds.push(chk.value);
@@ -707,8 +532,7 @@
     var payload = {
       dept_id:   document.getElementById('f-dept-id').value,
       dept_name: deptName,
-      is_active: isActive,
-      branch_id: branchId
+      is_active: isActive
     };
     var action = editingId ? 'UPDATE_DEPARTMENT' : 'CREATE_DEPARTMENT';
     setSaving(true);
@@ -716,14 +540,10 @@
     google.script.run
       .withSuccessHandler(function(res) {
         if (_checkExpired(res)) return;
-        if (!res.success) {
-          setSaving(false);
-          showToast('Error: ' + res.error, 'error');
-          return;
-        }
+        if (!res.success) { setSaving(false); showToast('Error: ' + res.error, 'error'); return; }
 
-        // Now save lab service assignments
-        var savedDeptId = editingId || (res.data && res.data.dept_id) || payload.dept_id;
+        var savedDeptId = editingId || (res.data && res.data.dept_id);
+
         google.script.run
           .withSuccessHandler(function(mapRes) {
             setSaving(false);
@@ -739,13 +559,11 @@
           .withFailureHandler(function(err) {
             setSaving(false);
             showToast('Dept saved but lab assignments failed: ' + err.message, 'warning');
-            closeModal();
-            loadData();
+            closeModal(); loadData();
           })
           .handleDeptLabRequest('SAVE_DEPT_LAB_SERVICES', {
-            dept_id:   savedDeptId,
-            branch_id: branchId,
-            lab_ids:   checkedLabIds
+            dept_id: savedDeptId,
+            lab_ids: checkedLabIds
           }, alab_token);
       })
       .withFailureHandler(function(err) { setSaving(false); showToast('Error: ' + err.message, 'error'); })
@@ -759,29 +577,21 @@
   }
 
   // ── Delete ─────────────────────────────────────────────────────
-  function openDeleteModal(id, branchId, name) {
-    deletingId = id; deletingBranchId = branchId;
+  function openDeleteModal(id, name) {
+    deletingId = id;
     document.getElementById('delete-name').textContent = name;
     document.getElementById('delete-modal').classList.remove('hidden');
   }
 
   function closeDeleteModal() {
-    deletingId = null; deletingBranchId = null;
+    deletingId = null;
     document.getElementById('delete-modal').classList.add('hidden');
   }
 
   function confirmDelete() {
-    if (!deletingId || !deletingBranchId) return;
+    if (!deletingId) return;
     var btn = document.getElementById('confirm-delete-btn');
     btn.textContent = 'Deleting…'; btn.disabled = true;
-
-    // Also clear mapping entries for this dept (save empty array)
-    google.script.run
-      .withSuccessHandler(function() {}) // fire and forget
-      .withFailureHandler(function() {})
-      .handleDeptLabRequest('SAVE_DEPT_LAB_SERVICES', {
-        dept_id: deletingId, branch_id: deletingBranchId, lab_ids: []
-      }, alab_token);
 
     google.script.run
       .withSuccessHandler(function(res) {
@@ -790,8 +600,11 @@
         if (res.success) { showToast('Department deleted.', 'success'); loadData(); }
         else showToast('Error: ' + res.error, 'error');
       })
-      .withFailureHandler(function(err) { closeDeleteModal(); btn.textContent = 'Delete'; btn.disabled = false; showToast('Error: ' + err.message, 'error'); })
-      .handleDepartmentRequest('DELETE_DEPARTMENT', { dept_id: deletingId, branch_id: deletingBranchId }, alab_token);
+      .withFailureHandler(function(err) {
+        closeDeleteModal(); btn.textContent = 'Delete'; btn.disabled = false;
+        showToast('Error: ' + err.message, 'error');
+      })
+      .handleDepartmentRequest('DELETE_DEPARTMENT', { dept_id: deletingId }, alab_token);
   }
 
   // ── UI helpers ─────────────────────────────────────────────────
@@ -804,7 +617,6 @@
     }
   }
 
-  // ── Toast ──────────────────────────────────────────────────────
   function showToast(msg, type) {
     type = type || 'success';
     var icons = {
@@ -814,11 +626,7 @@
     };
     var item = document.createElement('div');
     item.className = 'toast-item toast-' + type;
-    item.innerHTML =
-      '<svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">' +
-        (icons[type] || icons.success) +
-      '</svg>' +
-      '<span>' + escHtml(String(msg)) + '</span>';
+    item.innerHTML = '<svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">' + (icons[type] || icons.success) + '</svg><span>' + escHtml(String(msg)) + '</span>';
     document.getElementById('toast').appendChild(item);
     setTimeout(function() { item.remove(); }, 3800);
   }
