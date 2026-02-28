@@ -56,31 +56,16 @@ function _rowToObj(row) {
 }
 
 // ─── Auto-create Spreadsheet for a new Branch ────────────────────
+// NOTE: Departments and Lab Services are now GLOBAL (stored in Registry SS).
+// Branch SS only contains branch-specific data: Admins, MedTechs, Patients, Patient_Discounts.
 function _createBranchSpreadsheet(branchName, branchCode) {
   const title = '[A-Lab] ' + branchName + ' (' + branchCode + ')';
   const ss = SpreadsheetApp.create(title);
 
-  // ── 1. DEPARTMENTS sheet ──────────────────────────────────────
-  const deptSheet = ss.getActiveSheet();
-  deptSheet.setName('Departments');
+  // ── 1. ADMINS sheet ───────────────────────────────────────────
+  const adminsSheet = ss.getActiveSheet();
+  adminsSheet.setName('Admins');
 
-  const deptHeaders = ['dept_id', 'dept_name', 'is_active', 'branch_id', 'created_at', 'updated_at'];
-  deptSheet.appendRow(deptHeaders);
-  deptSheet.getRange(1, 1, 1, deptHeaders.length)
-    .setFontWeight('bold')
-    .setBackground('#1e293b')
-    .setFontColor('#ffffff')
-    .setHorizontalAlignment('center');
-  deptSheet.setFrozenRows(1);
-  deptSheet.setColumnWidth(1, 160);
-  deptSheet.setColumnWidth(2, 220);
-  deptSheet.setColumnWidth(3, 90);
-  deptSheet.setColumnWidth(4, 140);
-  deptSheet.setColumnWidth(5, 180);
-  deptSheet.setColumnWidth(6, 180);
-
-  // ── 2. ADMINS sheet ──────────────────────────────────────────
-  const adminsSheet = ss.insertSheet('Admins');
   const adminHeaders = [
     'admin_id', 'full_name', 'username', 'password_hash',
     'branch_id', 'branch_name', 'status', 'created_at', 'updated_at'
@@ -102,34 +87,7 @@ function _createBranchSpreadsheet(branchName, branchCode) {
   adminsSheet.setColumnWidth(8, 180);
   adminsSheet.setColumnWidth(9, 180);
 
-  // ── 3. LAB SERVICES sheet ───────────────────────────────────
-  const labSheet = ss.insertSheet('Lab Services');
-  const labHeaders = [
-    'lab_id', 'dept_id', 'lab_code', 'lab_name',
-    'description', 'default_fee', 'tat_hours', 'specimen_type',
-    'is_active', 'branch_id', 'created_at', 'updated_at'
-  ];
-  labSheet.appendRow(labHeaders);
-  labSheet.getRange(1, 1, 1, labHeaders.length)
-    .setFontWeight('bold')
-    .setBackground('#1e293b')
-    .setFontColor('#ffffff')
-    .setHorizontalAlignment('center');
-  labSheet.setFrozenRows(1);
-  labSheet.setColumnWidth(1,  160);
-  labSheet.setColumnWidth(2,  160);
-  labSheet.setColumnWidth(3,  110);
-  labSheet.setColumnWidth(4,  200);
-  labSheet.setColumnWidth(5,  260);
-  labSheet.setColumnWidth(6,  110);
-  labSheet.setColumnWidth(7,  100);
-  labSheet.setColumnWidth(8,  150);
-  labSheet.setColumnWidth(9,   90);
-  labSheet.setColumnWidth(10, 140);
-  labSheet.setColumnWidth(11, 180);
-  labSheet.setColumnWidth(12, 180);
-
-  // ── 4. MEDTECHS sheet ────────────────────────────────────────
+  // ── 2. MEDTECHS sheet ─────────────────────────────────────────
   const mtSheet = ss.insertSheet('MedTechs');
   const mtHeaders = [
     'medtech_id', 'last_name', 'first_name', 'middle_name',
@@ -156,7 +114,7 @@ function _createBranchSpreadsheet(branchName, branchCode) {
   mtSheet.setColumnWidth(11, 180);
   mtSheet.setColumnWidth(12, 180);
 
-  // ── Sample data rows (greyed out — for reference only) ───────
+  // ── Sample data rows for MedTechs (greyed out — for reference only) ──
   const sampleBg   = '#f8fafc';
   const sampleFont = '#94a3b8';
   const sampleRows = [
@@ -192,8 +150,50 @@ function _createBranchSpreadsheet(branchName, branchCode) {
     'Do NOT manually edit this sheet.'
   );
 
-  // ── 5. Bring Departments to front ────────────────────────────
-  ss.setActiveSheet(deptSheet);
+  // ── 3. PATIENTS sheet ─────────────────────────────────────────
+  const patSheet = ss.insertSheet('Patients');
+  const patHeaders = [
+    'patient_id', 'last_name', 'first_name', 'middle_name',
+    'sex', 'birth_date', 'contact_number', 'email_address',
+    'address', 'branch_id', 'created_at', 'updated_at'
+  ];
+  patSheet.appendRow(patHeaders);
+  patSheet.getRange(1, 1, 1, patHeaders.length)
+    .setFontWeight('bold')
+    .setBackground('#1e293b')
+    .setFontColor('#ffffff')
+    .setHorizontalAlignment('center');
+  patSheet.setFrozenRows(1);
+  patSheet.setColumnWidth(1,  160);
+  patSheet.setColumnWidth(2,  140);
+  patSheet.setColumnWidth(3,  140);
+  patSheet.setColumnWidth(4,  140);
+  patSheet.setColumnWidth(5,   80);
+  patSheet.setColumnWidth(6,  110);
+  patSheet.setColumnWidth(7,  130);
+  patSheet.setColumnWidth(8,  200);
+  patSheet.setColumnWidth(9,  250);
+  patSheet.setColumnWidth(10, 140);
+  patSheet.setColumnWidth(11, 180);
+  patSheet.setColumnWidth(12, 180);
+
+  // ── 4. PATIENT_DISCOUNTS sheet ────────────────────────────────
+  const pdSheet = ss.insertSheet('Patient_Discounts');
+  const pdHeaders = ['mapping_id', 'patient_id', 'discount_id', 'created_at'];
+  pdSheet.appendRow(pdHeaders);
+  pdSheet.getRange(1, 1, 1, pdHeaders.length)
+    .setFontWeight('bold')
+    .setBackground('#1e293b')
+    .setFontColor('#ffffff')
+    .setHorizontalAlignment('center');
+  pdSheet.setFrozenRows(1);
+  pdSheet.setColumnWidth(1, 200);
+  pdSheet.setColumnWidth(2, 180);
+  pdSheet.setColumnWidth(3, 180);
+  pdSheet.setColumnWidth(4, 200);
+
+  // ── Bring Admins to front ─────────────────────────────────────
+  ss.setActiveSheet(adminsSheet);
   ss.moveActiveSheet(1);
 
   return { id: ss.getId(), url: ss.getUrl() };
@@ -210,7 +210,6 @@ function getBranches(token) {
     if (data.length <= 1) return { success: true, data: [] };
     let rows = data.slice(1).filter(r => r[0] !== '').map(_rowToObj);
 
-    // Branch admin: filter to only their assigned branch
     if (session && session.role === 'branch_admin') {
       rows = rows.filter(b => b.branch_id === session.branch_id);
     }
@@ -297,9 +296,9 @@ function updateBranch(payload) {
 
         const adminSh = branchSs.getSheetByName('Admins');
         if (adminSh && adminSh.getLastRow() > 1) {
-          const numRows = adminSh.getLastRow() - 1;
+          const numRows       = adminSh.getLastRow() - 1;
           const branchNameCol = adminSh.getRange(2, 6, numRows, 1);
-          const vals = branchNameCol.getValues().map(() => [payload.branch_name.trim()]);
+          const vals          = branchNameCol.getValues().map(() => [payload.branch_name.trim()]);
           branchNameCol.setValues(vals);
         }
       }
