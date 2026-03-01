@@ -381,7 +381,7 @@
 
   // ── State ────────────────────────────────────────────────────────
   const params     = new URLSearchParams(window.location.search);
-  const alab_token = params.get('token') || '';
+  const alab_token = params.get('token') || localStorage.getItem('alab_token') || '';
 
   let allMedTechs  = [];
   let allBranches  = [];
