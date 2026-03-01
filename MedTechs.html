@@ -403,9 +403,10 @@
           } else {
             document.getElementById('branch-filter').classList.remove('hidden');
           }
-          loadBranches();
         }
+        loadBranches();
       })
+      .withFailureHandler(() => loadBranches())
       .handleAdminRequest('GET_SESSION', {}, alab_token);
   });
 
