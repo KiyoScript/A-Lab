@@ -275,7 +275,7 @@
         showLoading(false);
         if (_checkExpired(res)) return;
         if (res.success) { allDiscounts = res.data || []; renderStats(); renderTable(allDiscounts); }
-        else { showToast('Error: ' + res.error, 'error'); renderTable([]); }
+        else { renderTable([]); }
       })
       .withFailureHandler(err => { showLoading(false); showToast('Error: ' + err.message, 'error'); renderTable([]); })
       .handleDiscountRequest(isSuperAdmin ? 'GET_DISCOUNTS' : 'GET_DISCOUNTS_ALL', {}, alab_token);
