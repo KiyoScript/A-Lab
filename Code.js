@@ -114,6 +114,35 @@ function handleDeptLabRequest(action, payload, token) {
   }
 }
 
+// ─── MedTech requests ────────────────────────────────────────────
+function handleMedTechRequest(action, payload, token) {
+  if (!_getSession(token)) return { success: false, error: 'Session expired. Please log in again.', expired: true };
+  switch (action) {
+    case 'GET_MEDTECHS':       return getMedTechs(payload, token);
+    case 'CREATE_MEDTECH':     return createMedTech(payload, token);
+    case 'UPDATE_MEDTECH':     return updateMedTech(payload, token);
+    case 'DELETE_MEDTECH':     return deleteMedTech(payload.medtech_id, token);
+    case 'CHANGE_MT_PASSWORD': return changeMedTechPassword(payload, token);
+    default: return { success: false, error: 'Unknown action: ' + action };
+  }
+}
+
+// ─── Doctor requests ──────────────────────────────────────────────
+function handleDoctorRequest(action, payload, token) {
+  if (!_getSession(token)) return { success: false, error: 'Session expired. Please log in again.', expired: true };
+  switch (action) {
+    case 'GET_DOCTORS':             return getDoctors(token);
+    case 'CREATE_DOCTOR':           return createDoctor(payload, token);
+    case 'UPDATE_DOCTOR':           return updateDoctor(payload, token);
+    case 'DELETE_DOCTOR':           return deleteDoctor(payload.doctor_id, token);
+    case 'ASSIGN_DOCTOR_TO_BRANCH': return assignDoctorToBranch(payload, token);
+    case 'UNASSIGN_DOCTOR':         return unassignDoctor(payload, token);
+    case 'GET_DOCTOR_HISTORY':      return getDoctorAssignmentHistory(payload, token);
+    case 'CHANGE_DOCTOR_PASSWORD':  return changeDoctorPassword(payload, token);
+    default: return { success: false, error: 'Unknown action: ' + action };
+  }
+}
+
 // ─── Admin requests ───────────────────────────────────────────────
 function handleAdminRequest(action, payload, token) {
   if (action === 'LOGIN') return login(payload.username, payload.password);

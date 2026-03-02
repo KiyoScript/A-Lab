@@ -331,13 +331,10 @@
         currentSession = res.data;
         isSuperAdmin   = currentSession.role === 'super_admin';
         applyRoleUI();
-        loadBranches();
-      } else {
-        showToast('Session expired. Please log in again.', 'error');
-        showLoading(false);
       }
+      loadBranches();
     })
-    .withFailureHandler(function() { showLoading(false); })
+    .withFailureHandler(function() { loadBranches(); })
     .handleAdminRequest('GET_SESSION', {}, alab_token);
 
   function applyRoleUI() {
