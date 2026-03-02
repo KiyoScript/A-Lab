@@ -1,11 +1,14 @@
 name: Deploy to Apps Script
+
 on:
   push:
     branches:
       - '**'
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -19,25 +22,15 @@ jobs:
         run: npm install -g @google/clasp
 
       - name: Create clasp credentials
-        run: echo '${{ secrets.CLASP_CREDENTIALS }}' > ~/.clasprc.json
-
-      - name: Install dependencies
-        run: npm install || true
-
-      - name: Set environment config based on branch
-        id: set_env
         run: |
-          if [[ "${{ github.ref_name }}" == "master" || "${{ github.ref_name }}" == "main" ]]; then
-            echo "script_id=${{ secrets.SCRIPT_ID_PROD }}" >> $GITHUB_OUTPUT
-            echo "deployment_id=${{ secrets.DEPLOYMENT_ID_PROD }}" >> $GITHUB_OUTPUT
-          else
-            echo "script_id=${{ secrets.SCRIPT_ID_DEV }}" >> $GITHUB_OUTPUT
-            echo "deployment_id=${{ secrets.DEPLOYMENT_ID_DEV }}" >> $GITHUB_OUTPUT
-          fi
+          echo '${{ secrets.CLASP_CREDENTIALS }}' > ~/.clasprc.json
 
       - name: Create clasp config
         run: |
-          echo '{ "scriptId": "${{ steps.set_env.outputs.script_id }}", "rootDir": "./" }' > .clasp.json
+          echo '{ "scriptId": "${{ secrets.SCRIPT_ID_MAIN }}", "rootDir": "./" }' > .clasp.json
+
+      - name: Install dependencies
+        run: npm install || true
 
       - name: Push to Apps Script
         run: clasp push --force
@@ -53,6 +46,6 @@ jobs:
       - name: Deploy Web App
         run: |
           clasp deploy \
-            --deploymentId ${{ steps.set_env.outputs.deployment_id }} \
+            --deploymentId ${{ secrets.DEPLOYMENT_ID }} \
             --versionNumber ${{ steps.version.outputs.version }} \
             --description "Auto deploy from ${{ github.ref_name }} by ${{ github.actor }}"
