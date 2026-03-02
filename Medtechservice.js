@@ -2,10 +2,17 @@
 // MEDTECH SERVICE
 // MedTech accounts are stored per-branch in each branch's SS
 // under a "MedTechs" sheet.
+//
 // Schema: medtech_id | last_name | first_name | middle_name |
 //         email | password_hash | role | status | branch_id |
 //         branch_name | created_at | updated_at
-// Only admin (super_admin or branch_admin) can manage MedTechs.
+//
+// Access rules:
+//   READ  → super_admin + branch_admin (both can view)
+//   WRITE → branch_admin ONLY (create / update / delete / change pw)
+//           Technologist is automatically assigned to the branch
+//           admin's own branch — no manual branch selection needed.
+//   BLOCKED → super_admin cannot create / edit / delete MedTechs
 // ═══════════════════════════════════════════════════════════════
 
 // ─── MedTech Sheet helper ─────────────────────────────────────────
@@ -61,71 +68,89 @@ function _medtechRowToObj(row) {
   };
 }
 
+// ─── Auth guards ──────────────────────────────────────────────────
+// Returns session or null if expired
+function _requireReadAccess(token) {
+  const s = _getSession(token);
+  if (!s) return null;
+  // Both super_admin and branch_admin can read
+  if (!['super_admin', 'branch_admin'].includes(s.role)) return null;
+  return s;
+}
+
+// Returns session only if caller is branch_admin; null otherwise
+function _requireBranchAdmin(token) {
+  const s = _getSession(token);
+  if (!s) return null;
+  if (s.role !== 'branch_admin') return null;
+  return s;
+}
+
 // ═══════════════════════════════════════════════════════════════
-// READ — Get all MedTechs (admin sees all branches or filtered)
+// READ — super_admin + branch_admin
+// super_admin sees all branches; branch_admin sees only theirs
 // ═══════════════════════════════════════════════════════════════
 function getMedTechs(payload, token) {
   try {
-    const session = _getSession(token);
-    if (!session) return { success: false, error: 'Session expired.', expired: true };
+    const session = _requireReadAccess(token);
+    if (!session) return { success: false, error: 'Session expired. Please log in again.', expired: true };
 
     const branchSh   = _getRegistrySheet();
     const branchData = branchSh.getDataRange().getValues();
-    const allMedTechs = [];
+    const result     = [];
 
     for (var b = 1; b < branchData.length; b++) {
-      const bRow  = branchData[b];
-      const bId   = String(bRow[0] || '');
-      const bName = String(bRow[1] || '');
-      const ssId  = String(bRow[7] || '');
+      const branchRow = branchData[b];
+      const ssId      = String(branchRow[7] || '');
       if (!ssId) continue;
 
-      // Branch admin sees only their branch
-      if (session.role === 'branch_admin' && bId !== session.branch_id) continue;
-
-      // Optional branch filter for super_admin
-      if (session.role === 'super_admin' && payload && payload.branch_id && bId !== payload.branch_id) continue;
+      // branch_admin: only their own branch
+      if (session.role === 'branch_admin' && String(branchRow[0]) !== session.branch_id) continue;
 
       try {
         const sh   = _getMedTechSheet(ssId);
         const data = sh.getDataRange().getValues();
-        data.slice(1).filter(r => r[0] !== '').forEach(r => {
-          allMedTechs.push(_medtechRowToObj(r));
-        });
-      } catch(_) {}
+        data.slice(1)
+          .filter(r => r[0] !== '')
+          .forEach(r => result.push(_medtechRowToObj(r)));
+      } catch (_) { /* skip unreadable SS */ }
     }
 
-    return { success: true, data: allMedTechs };
+    return { success: true, data: result };
   } catch (e) {
     return { success: false, error: e.message };
   }
 }
 
 // ═══════════════════════════════════════════════════════════════
-// CREATE
+// CREATE — branch_admin ONLY
+// Technologist is auto-assigned to the branch admin's branch.
+// Super admin is blocked.
 // ═══════════════════════════════════════════════════════════════
 function createMedTech(payload, token) {
   try {
-    const session = _getSession(token);
-    if (!session) return { success: false, error: 'Session expired.', expired: true };
+    const session = _requireBranchAdmin(token);
 
-    // Only admin roles can create
-    if (!['super_admin', 'branch_admin'].includes(session.role))
-      return { success: false, error: 'Unauthorized.' };
+    // Distinguish expired vs unauthorised
+    if (!session) {
+      const raw = _getSession(token);
+      if (!raw) return { success: false, error: 'Session expired. Please log in again.', expired: true };
+      return { success: false, error: 'Only Branch Admins can enroll technologists.' };
+    }
 
     // Validate required fields
     if (!payload.last_name  || !payload.last_name.trim())  return { success: false, error: 'Last name is required.' };
     if (!payload.first_name || !payload.first_name.trim()) return { success: false, error: 'First name is required.' };
     if (!payload.email      || !payload.email.trim())      return { success: false, error: 'Email is required.' };
     if (!payload.password   || !payload.password.trim())   return { success: false, error: 'Password is required.' };
+    if (payload.password.trim().length < 6)                return { success: false, error: 'Password must be at least 6 characters.' };
     if (!payload.role       || !payload.role.trim())       return { success: false, error: 'Role is required.' };
 
-    // Determine target branch
-    let targetBranchId = payload.branch_id;
-    if (session.role === 'branch_admin') targetBranchId = session.branch_id;
-    if (!targetBranchId) return { success: false, error: 'Branch is required.' };
+    // Always use the branch admin's own branch — ignore any client-supplied branch_id
+    const targetBranchId = session.branch_id;
+    if (!targetBranchId) return { success: false, error: 'Your session has no branch assigned. Contact a super admin.' };
 
-    // Find branch spreadsheet
+    // Look up the branch spreadsheet
     const branchSh   = _getRegistrySheet();
     const branchData = branchSh.getDataRange().getValues();
     const branchRow  = branchData.find((r, i) => i > 0 && String(r[0]) === String(targetBranchId));
@@ -137,10 +162,10 @@ function createMedTech(payload, token) {
 
     // Check duplicate email within branch
     const exists = data.slice(1).some(r => String(r[4]).toLowerCase() === payload.email.trim().toLowerCase());
-    if (exists) return { success: false, error: 'Email already exists in this branch.' };
+    if (exists) return { success: false, error: 'An account with this email already exists in your branch.' };
 
-    const now        = new Date().toISOString();
-    const medtechId  = 'MT-' + Utilities.getUuid().substring(0, 8).toUpperCase();
+    const now       = new Date().toISOString();
+    const medtechId = 'MT-' + Utilities.getUuid().substring(0, 8).toUpperCase();
 
     sh.appendRow([
       medtechId,
@@ -148,11 +173,11 @@ function createMedTech(payload, token) {
       payload.first_name.trim(),
       (payload.middle_name || '').trim(),
       payload.email.trim().toLowerCase(),
-      _hashPassword(payload.password),
+      _hashPassword(payload.password.trim()),
       payload.role.trim(),
       payload.status || 'Active',
       targetBranchId,
-      String(branchRow[1]),
+      String(branchRow[1]),   // branch_name from registry
       now, now
     ]);
 
@@ -168,7 +193,8 @@ function createMedTech(payload, token) {
         status:      payload.status || 'Active',
         branch_id:   targetBranchId,
         branch_name: String(branchRow[1]),
-        created_at:  now, updated_at: now
+        created_at:  now,
+        updated_at:  now
       }
     };
   } catch (e) {
@@ -177,19 +203,22 @@ function createMedTech(payload, token) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// UPDATE
+// UPDATE — branch_admin ONLY
+// Branch admin can only edit technologists in their own branch.
 // ═══════════════════════════════════════════════════════════════
 function updateMedTech(payload, token) {
   try {
-    const session = _getSession(token);
-    if (!session) return { success: false, error: 'Session expired.', expired: true };
+    const session = _requireBranchAdmin(token);
 
-    if (!['super_admin', 'branch_admin'].includes(session.role))
-      return { success: false, error: 'Unauthorized.' };
+    if (!session) {
+      const raw = _getSession(token);
+      if (!raw) return { success: false, error: 'Session expired. Please log in again.', expired: true };
+      return { success: false, error: 'Only Branch Admins can update technologist accounts.' };
+    }
 
     if (!payload.medtech_id) return { success: false, error: 'MedTech ID is required.' };
 
-    // Find across branch spreadsheets
+    // Find the record — only within the branch admin's own branch SS
     const branchSh   = _getRegistrySheet();
     const branchData = branchSh.getDataRange().getValues();
 
@@ -199,19 +228,19 @@ function updateMedTech(payload, token) {
     for (var b = 1; b < branchData.length; b++) {
       const ssId = String(branchData[b][7] || '');
       if (!ssId) continue;
-
-      // Branch admin can only manage their branch
-      if (session.role === 'branch_admin' && String(branchData[b][0]) !== session.branch_id) continue;
+      // Only search within the branch admin's own branch
+      if (String(branchData[b][0]) !== session.branch_id) continue;
 
       try {
         const sh   = _getMedTechSheet(ssId);
         const data = sh.getDataRange().getValues();
         const idx  = data.findIndex((r, i) => i > 0 && String(r[0]) === String(payload.medtech_id));
         if (idx !== -1) { foundSh = sh; foundIdx = idx; break; }
-      } catch(_) {}
+      } catch (_) {}
     }
 
-    if (!foundSh || foundIdx === -1) return { success: false, error: 'MedTech not found.' };
+    if (!foundSh || foundIdx === -1)
+      return { success: false, error: 'Technologist not found in your branch.' };
 
     const now = new Date().toISOString();
     const row = foundIdx + 1;
@@ -233,15 +262,19 @@ function updateMedTech(payload, token) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// DELETE
+// DELETE — branch_admin ONLY (own branch only)
 // ═══════════════════════════════════════════════════════════════
 function deleteMedTech(medtechId, token) {
   try {
-    const session = _getSession(token);
-    if (!session) return { success: false, error: 'Session expired.', expired: true };
+    const session = _requireBranchAdmin(token);
 
-    if (!['super_admin', 'branch_admin'].includes(session.role))
-      return { success: false, error: 'Unauthorized.' };
+    if (!session) {
+      const raw = _getSession(token);
+      if (!raw) return { success: false, error: 'Session expired. Please log in again.', expired: true };
+      return { success: false, error: 'Only Branch Admins can remove technologist accounts.' };
+    }
+
+    if (!medtechId) return { success: false, error: 'MedTech ID is required.' };
 
     const branchSh   = _getRegistrySheet();
     const branchData = branchSh.getDataRange().getValues();
@@ -249,7 +282,8 @@ function deleteMedTech(medtechId, token) {
     for (var b = 1; b < branchData.length; b++) {
       const ssId = String(branchData[b][7] || '');
       if (!ssId) continue;
-      if (session.role === 'branch_admin' && String(branchData[b][0]) !== session.branch_id) continue;
+      // Only within the branch admin's own branch
+      if (String(branchData[b][0]) !== session.branch_id) continue;
 
       try {
         const sh   = _getMedTechSheet(ssId);
@@ -259,29 +293,33 @@ function deleteMedTech(medtechId, token) {
           sh.deleteRow(idx + 1);
           return { success: true };
         }
-      } catch(_) {}
+      } catch (_) {}
     }
 
-    return { success: false, error: 'MedTech not found.' };
+    return { success: false, error: 'Technologist not found in your branch.' };
   } catch (e) {
     return { success: false, error: e.message };
   }
 }
 
 // ═══════════════════════════════════════════════════════════════
-// CHANGE PASSWORD (admin resets for a MedTech)
+// CHANGE PASSWORD — branch_admin ONLY (own branch only)
 // ═══════════════════════════════════════════════════════════════
 function changeMedTechPassword(payload, token) {
   try {
-    const session = _getSession(token);
-    if (!session) return { success: false, error: 'Session expired.', expired: true };
+    const session = _requireBranchAdmin(token);
 
-    if (!['super_admin', 'branch_admin'].includes(session.role))
-      return { success: false, error: 'Unauthorized.' };
+    if (!session) {
+      const raw = _getSession(token);
+      if (!raw) return { success: false, error: 'Session expired. Please log in again.', expired: true };
+      return { success: false, error: 'Only Branch Admins can change technologist passwords.' };
+    }
 
     if (!payload.medtech_id)  return { success: false, error: 'MedTech ID is required.' };
     if (!payload.new_password || !payload.new_password.trim())
       return { success: false, error: 'New password is required.' };
+    if (payload.new_password.trim().length < 6)
+      return { success: false, error: 'Password must be at least 6 characters.' };
 
     const branchSh   = _getRegistrySheet();
     const branchData = branchSh.getDataRange().getValues();
@@ -289,7 +327,7 @@ function changeMedTechPassword(payload, token) {
     for (var b = 1; b < branchData.length; b++) {
       const ssId = String(branchData[b][7] || '');
       if (!ssId) continue;
-      if (session.role === 'branch_admin' && String(branchData[b][0]) !== session.branch_id) continue;
+      if (String(branchData[b][0]) !== session.branch_id) continue;
 
       try {
         const sh   = _getMedTechSheet(ssId);
@@ -301,10 +339,10 @@ function changeMedTechPassword(payload, token) {
           sh.getRange(row, 12).setValue(new Date().toISOString());
           return { success: true };
         }
-      } catch(_) {}
+      } catch (_) {}
     }
 
-    return { success: false, error: 'MedTech not found.' };
+    return { success: false, error: 'Technologist not found in your branch.' };
   } catch (e) {
     return { success: false, error: e.message };
   }
