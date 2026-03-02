@@ -90,7 +90,7 @@
         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
       </svg>
       Add Discount
-    </button>
+  </button>
   </div>
 
   <!-- Stats -->
@@ -278,7 +278,7 @@
         else { showToast('Error: ' + res.error, 'error'); renderTable([]); }
       })
       .withFailureHandler(err => { showLoading(false); showToast('Error: ' + err.message, 'error'); renderTable([]); })
-      .handleDiscountRequest('GET_DISCOUNTS', {}, alab_token);
+      .handleDiscountRequest(isSuperAdmin ? 'GET_DISCOUNTS' : 'GET_DISCOUNTS_ALL', {}, alab_token);
   }
 
   function renderStats() {
