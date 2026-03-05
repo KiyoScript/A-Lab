@@ -549,7 +549,7 @@
 
   // ── Save ───────────────────────────────────────────────────────
   function savePackage() {
-    if (!isSuperAdmin) return;
+    if (!isSuperAdmin && !isBranchAdmin) return;
     var pkgName = document.getElementById('f-pkg-name').value.trim();
     var fee     = parseFloat(document.getElementById('f-default-fee').value) || 0;
     if (!pkgName) { showToast('Package name is required.', 'error'); return; }
@@ -595,7 +595,7 @@
 
   // ── Delete ─────────────────────────────────────────────────────
   function openDeleteModal(id, name) {
-    if (!isSuperAdmin) return;
+    if (!isSuperAdmin && !isBranchAdmin) return;
     deletingId = id;
     document.getElementById('delete-name').textContent = name;
     document.getElementById('delete-modal').classList.remove('hidden');
