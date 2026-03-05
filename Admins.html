@@ -259,8 +259,10 @@
     if (isBranchAdmin) {
       // Hide Super Admin tab
       document.getElementById('tab-super').style.display = 'none';
-      // Hide role selector in modal (branch admin can only create branch admins)
-      // Hide Add Admin button branch selector — auto-uses their branch
+      // Hide branch filter — branch admin only sees their own branch
+      document.getElementById('branch-filter').style.display = 'none';
+      // Hide branch column header — not needed for single branch view
+      document.getElementById('branch-col-header').style.display = 'none';
     }
   }
 
@@ -380,17 +382,28 @@
     editingRole = admin ? (admin.role || currentTab + '_admin') : null;
     document.getElementById('modal-title').textContent    = admin ? 'Edit Admin' : 'Add Admin';
     document.getElementById('modal-subtitle').textContent = admin ? 'Update admin details below.' : 'Fill in the details below.';
-    document.getElementById('role-selector').style.display = admin ? 'none' : '';
-    document.getElementById('f-admin-id').value   = admin?.admin_id   || '';
-    document.getElementById('f-full-name').value  = admin?.full_name  || '';
-    document.getElementById('f-username').value   = admin?.username   || '';
-    document.getElementById('f-password').value   = '';
-    document.getElementById('f-status').value     = admin?.status     || 'Active';
+    document.getElementById('f-admin-id').value  = admin?.admin_id  || '';
+    document.getElementById('f-full-name').value = admin?.full_name || '';
+    document.getElementById('f-username').value  = admin?.username  || '';
+    document.getElementById('f-password').value  = '';
+    document.getElementById('f-status').value    = admin?.status    || 'Active';
     document.getElementById('pw-note').classList.toggle('hidden', !admin);
     document.getElementById('pw-hint').classList.toggle('hidden', !!admin);
-    if (admin && admin.branch_id) document.getElementById('f-branch-id').value = admin.branch_id;
-    if (!admin) setRole('branch_admin');
-    else document.getElementById('branch-field').style.display = (admin.role || '') === 'super_admin' ? 'none' : '';
+
+    if (isBranchAdmin) {
+      // Branch admin: always creating/editing branch admins for their own branch
+      // Hide role selector and branch field entirely
+      document.getElementById('role-selector').style.display = 'none';
+      document.getElementById('branch-field').style.display  = 'none';
+      editingRole = 'branch_admin';
+    } else {
+      // Super admin: show role selector when adding new
+      document.getElementById('role-selector').style.display = admin ? 'none' : '';
+      if (admin && admin.branch_id) document.getElementById('f-branch-id').value = admin.branch_id;
+      if (!admin) setRole('branch_admin');
+      else document.getElementById('branch-field').style.display = (admin.role || '') === 'super_admin' ? 'none' : '';
+    }
+
     document.getElementById('modal-backdrop').classList.remove('hidden');
   }
 
