@@ -69,9 +69,19 @@ function getLabServices(token) {
 
     const sh   = _getLabSheet();
     const data = sh.getDataRange().getValues();
-    const labs = data.slice(1)
+    var labs = data.slice(1)
       .filter(function(r) { return r[0] !== ''; })
       .map(function(r)    { return _labRowToObj(r); });
+
+    // Branch admin: filter out services disabled at their branch
+    if (session.role === 'branch_admin' && session.branch_id) {
+      const disabledIds = getDisabledLabsForBranch(session.branch_id);
+      if (disabledIds.length > 0) {
+        labs = labs.filter(function(l) {
+          return !disabledIds.includes(l.lab_id);
+        });
+      }
+    }
 
     return { success: true, data: labs };
   } catch (e) {

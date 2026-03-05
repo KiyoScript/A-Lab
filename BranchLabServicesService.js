@@ -63,9 +63,9 @@ function getBranchLabServices(payload, token) {
     const brData = brSh.getDataRange().getValues();
     const disabledMap = {}; // lab_id → true if disabled
     brData.slice(1).forEach(function(r) {
-      if (String(r[0]) === String(payload.branch_id)) {
-        const isEnabled = r[2] === true || String(r[2]).toLowerCase() === 'true';
-        if (!isEnabled) disabledMap[String(r[1])] = true;
+      if (!r[0] || !r[1]) return;
+      if (String(r[0]).trim() === String(payload.branch_id).trim()) {
+        if (!_readBool(r[2])) disabledMap[String(r[1]).trim()] = true;
       }
     });
 
@@ -144,7 +144,7 @@ function updateBranchLabService(payload, token) {
     const data    = sh.getDataRange().getValues();
     const now     = new Date().toISOString();
     const updater = session.full_name || session.username || 'super_admin';
-    const isEnabled = payload.is_enabled !== false;
+    const isEnabled = _readBool(payload.is_enabled !== false ? payload.is_enabled : false);
 
     // Find existing row for this branch + lab combo
     const idx = data.findIndex(function(r, i) {
@@ -188,15 +188,24 @@ function updateBranchLabService(payload, token) {
 // GET DISABLED LAB IDS FOR A BRANCH (lightweight — used by packages)
 // Returns just the array of disabled lab_ids for a given branch
 // ═══════════════════════════════════════════════════════════════
+// ─── Normalize boolean from sheet (handles bool, string, number) ──
+function _readBool(val) {
+  if (val === true)  return true;
+  if (val === false) return false;
+  if (val === 1)     return true;
+  if (val === 0)     return false;
+  return String(val).trim().toLowerCase() === 'true';
+}
+
 function getDisabledLabsForBranch(branchId) {
   try {
     const sh   = _getBranchLabSheet();
     const data = sh.getDataRange().getValues();
     const disabled = [];
     data.slice(1).forEach(function(r) {
-      if (String(r[0]) === String(branchId)) {
-        const isEnabled = r[2] === true || String(r[2]).toLowerCase() === 'true';
-        if (!isEnabled) disabled.push(String(r[1]));
+      if (!r[0] || !r[1]) return; // skip blank rows
+      if (String(r[0]).trim() === String(branchId).trim()) {
+        if (!_readBool(r[2])) disabled.push(String(r[1]).trim());
       }
     });
     return disabled;
