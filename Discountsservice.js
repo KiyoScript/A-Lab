@@ -244,6 +244,9 @@ function handleDiscountRequest(action, payload, token) {
   // GET_DISCOUNTS_ALL — readable by both super_admin and branch_admin
   if (action === 'GET_DISCOUNTS_ALL') return getDiscountsAll(token);
 
+  // GET_DISCOUNTS — readable by branch_admin (read-only page access)
+  if (action === 'GET_DISCOUNTS' && session.role === 'branch_admin') return getDiscountsAll(token);
+
   // All other actions: super_admin only
   if (session.role !== 'super_admin') return { success: false, error: 'Access denied. Super admin only.' };
 
