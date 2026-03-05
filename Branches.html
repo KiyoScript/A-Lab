@@ -571,7 +571,7 @@
           <label class="relative inline-flex items-center cursor-pointer ml-3" title="${allOn ? 'All enabled — click to disable all' : (mixed ? 'Partially enabled — click to enable all' : 'All disabled — click to enable all')}">
             <input type="checkbox" id="dept-toggle-${deptKey}"
               ${(allOn || mixed) ? 'checked' : ''}
-              onchange="toggleDeptServices('${deptKey}', ${JSON.stringify(dept.labs.map(function(l){return l.lab_id;}))}, this.checked, this)"
+              onchange="toggleDeptServices('${deptKey}', ${JSON.stringify(dept.labs.map(function(l){return l.lab_id;}))}, this.checked, this, ${JSON.stringify(dept.labs.map(function(l){return l.is_enabled;}))})"
               class="sr-only peer"/>
             <div class="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer
               peer-checked:bg-emerald-500 transition-colors after:content-[''] after:absolute
@@ -602,34 +602,42 @@
   }
 
   // Bulk toggle all services in a department
-  function toggleDeptServices(deptKey, labIds, isEnabled, deptCheckbox) {
+  function toggleDeptServices(deptKey, labIds, isEnabled, deptCheckbox, prevStates) {
     if (!labIds || labIds.length === 0) return;
     deptCheckbox.disabled = true;
 
-    // Optimistically update individual toggles in UI
+    // Optimistically update each individual service toggle in the UI
     labIds.forEach(function(labId) {
       const chk = document.getElementById('svc-' + labId);
-      if (chk) chk.checked = isEnabled;
+      if (chk) {
+        chk.checked = isEnabled;
+        // Force the peer CSS to re-evaluate by dispatching a change event
+        chk.dispatchEvent(new Event('change', { bubbles: false }));
+        // Re-attach without firing the actual save — just visual
+        chk.checked = isEnabled;
+      }
     });
 
-    // Fire all updates — track completion
+    // Fire all backend updates — track completion
     var pending  = labIds.length;
     var anyError = false;
 
-    labIds.forEach(function(labId) {
+    labIds.forEach(function(labId, idx) {
       google.script.run
         .withSuccessHandler(function(res) {
           pending--;
           if (!res.success) anyError = true;
           if (pending === 0) {
             deptCheckbox.disabled = false;
-            // Refresh dept toggle background (no longer mixed)
-            var deptToggleDiv = deptCheckbox.nextElementSibling;
-            if (deptToggleDiv) {
-              deptToggleDiv.classList.remove('bg-amber-300', 'bg-slate-200');
-              deptToggleDiv.classList.add(isEnabled ? 'bg-slate-200' : 'bg-slate-200');
+            if (anyError) {
+              // Revert UI on partial failure
+              labIds.forEach(function(id, i) {
+                const chk = document.getElementById('svc-' + id);
+                if (chk) chk.checked = prevStates ? prevStates[i] : !isEnabled;
+              });
+              deptCheckbox.checked = !isEnabled;
+              showToast('Some services failed to update.', 'warning');
             }
-            if (anyError) showToast('Some services failed to update.', 'warning');
           }
         })
         .withFailureHandler(function() {
@@ -637,11 +645,12 @@
           anyError = true;
           if (pending === 0) {
             deptCheckbox.disabled = false;
-            // Revert UI on failure
-            labIds.forEach(function(id) {
+            // Revert all toggles on full failure
+            labIds.forEach(function(id, i) {
               const chk = document.getElementById('svc-' + id);
-              if (chk) chk.checked = !isEnabled;
+              if (chk) chk.checked = prevStates ? prevStates[i] : !isEnabled;
             });
+            deptCheckbox.checked = !isEnabled;
             showToast('Failed to update department services.', 'error');
           }
         })
