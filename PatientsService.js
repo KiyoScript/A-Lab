@@ -264,7 +264,9 @@ function createPatient(payload, token) {
   try {
     const session = _getSession(token);
     if (!session) return { success: false, error: 'Session expired.', expired: true };
-    if (!['super_admin', 'branch_admin'].includes(session.role))
+    if (session.role === 'super_admin')
+      return { success: false, error: 'Access denied. Super admins cannot create patients.' };
+    if (session.role !== 'branch_admin')
       return { success: false, error: 'Unauthorized.' };
 
     if (!payload.last_name  || !payload.last_name.trim())  return { success: false, error: 'Last name is required.' };
@@ -339,14 +341,15 @@ function updatePatient(payload, token) {
   try {
     const session = _getSession(token);
     if (!session) return { success: false, error: 'Session expired.', expired: true };
-    if (!['super_admin', 'branch_admin'].includes(session.role))
+    if (session.role === 'super_admin')
+      return { success: false, error: 'Access denied. Super admins cannot edit patients.' };
+    if (session.role !== 'branch_admin')
       return { success: false, error: 'Unauthorized.' };
 
     if (!payload.patient_id) return { success: false, error: 'patient_id is required.' };
     if (!payload.branch_id)  return { success: false, error: 'branch_id is required.' };
 
-    // Branch admin scope enforcement
-    if (session.role === 'branch_admin' && payload.branch_id !== session.branch_id)
+    if (payload.branch_id !== session.branch_id)
       return { success: false, error: 'Access denied: not your branch.' };
 
     const branchInfo = _getBranchSsId(payload.branch_id);
@@ -389,13 +392,15 @@ function deletePatient(payload, token) {
   try {
     const session = _getSession(token);
     if (!session) return { success: false, error: 'Session expired.', expired: true };
-    if (!['super_admin', 'branch_admin'].includes(session.role))
+    if (session.role === 'super_admin')
+      return { success: false, error: 'Access denied. Super admins cannot delete patients.' };
+    if (session.role !== 'branch_admin')
       return { success: false, error: 'Unauthorized.' };
 
     if (!payload.patient_id) return { success: false, error: 'patient_id is required.' };
     if (!payload.branch_id)  return { success: false, error: 'branch_id is required.' };
 
-    if (session.role === 'branch_admin' && payload.branch_id !== session.branch_id)
+    if (payload.branch_id !== session.branch_id)
       return { success: false, error: 'Access denied: not your branch.' };
 
     const branchInfo = _getBranchSsId(payload.branch_id);
