@@ -139,6 +139,76 @@
   </div>
 </div>
 
+<!-- VIEW PATIENT MODAL (super admin only) -->
+<div id="view-modal-backdrop" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden" onclick="closeViewModal()">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+      <div>
+        <h2 class="text-base font-bold text-slate-800">Patient Info</h2>
+        <p class="text-xs text-slate-400 mt-0.5">Viewing record — read only.</p>
+      </div>
+      <button onclick="closeViewModal()" class="text-slate-400 hover:text-slate-600 p-1">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <div class="px-6 py-5 space-y-3">
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Last Name</p>
+          <p id="view-last-name" class="text-sm font-semibold text-slate-800">—</p>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">First Name</p>
+          <p id="view-first-name" class="text-sm font-semibold text-slate-800">—</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Middle Name</p>
+          <p id="view-middle-name" class="text-sm text-slate-700">—</p>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Sex</p>
+          <p id="view-sex" class="text-sm text-slate-700">—</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Birth Date</p>
+          <p id="view-birth-date" class="text-sm text-slate-700">—</p>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Contact</p>
+          <p id="view-contact" class="text-sm text-slate-700">—</p>
+        </div>
+      </div>
+      <div>
+        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Email</p>
+        <p id="view-email" class="text-sm text-slate-700">—</p>
+      </div>
+      <div>
+        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Address</p>
+        <p id="view-address" class="text-sm text-slate-700">—</p>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Branch</p>
+          <p id="view-branch" class="text-sm text-slate-700">—</p>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Discounts</p>
+          <p id="view-discounts" class="text-sm text-slate-700">—</p>
+        </div>
+      </div>
+    </div>
+    <div class="px-6 py-4 border-t border-slate-100">
+      <button onclick="closeViewModal()" class="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-sm font-semibold text-slate-600 transition-colors">Close</button>
+    </div>
+  </div>
+</div>
+
 <!-- ADD/EDIT MODAL -->
 <div id="modal-backdrop" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col" onclick="event.stopPropagation()">
@@ -413,6 +483,23 @@
         ? '<td class="px-3 py-3.5 text-xs text-slate-500">' + escHtml(p.branch_name || '—') + '</td>'
         : '';
 
+      var actionsCell = isSuperAdmin
+        ? '<td class="px-5 py-3.5 text-right">' +
+            '<button onclick="openViewModal(\'' + escHtml(p.patient_id) + '\')" class="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors" title="View">' +
+              '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>' +
+            '</button>' +
+          '</td>'
+        : '<td class="px-5 py-3.5 text-right">' +
+            '<div class="flex items-center justify-end gap-2">' +
+              '<button onclick="openModal(\'' + escHtml(p.patient_id) + '\',\'' + escHtml(p.branch_id) + '\')" class="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors" title="Edit">' +
+                '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>' +
+              '</button>' +
+              '<button onclick="openDeleteModal(\'' + escHtml(p.patient_id) + '\',\'' + escHtml(p.branch_id) + '\',\'' + escHtml(p.last_name + ', ' + p.first_name) + '\')" class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete">' +
+                '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>' +
+              '</button>' +
+            '</div>' +
+          '</td>';
+
       return '<tr class="data-row">' +
         '<td class="px-5 py-3.5">' +
           '<p class="font-semibold text-slate-800">' + fullName + '</p>' +
@@ -423,18 +510,31 @@
         '<td class="px-3 py-3.5 text-xs text-slate-500 hidden md:table-cell">' + escHtml(p.contact_number || '—') + '</td>' +
         '<td class="px-3 py-3.5">' + discCell + '</td>' +
         branchCell +
-        '<td class="px-5 py-3.5 text-right">' +
-          '<div class="flex items-center justify-end gap-2">' +
-            '<button onclick="openModal(\'' + escHtml(p.patient_id) + '\',\'' + escHtml(p.branch_id) + '\')" class="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors" title="Edit">' +
-              '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>' +
-            '</button>' +
-            '<button onclick="openDeleteModal(\'' + escHtml(p.patient_id) + '\',\'' + escHtml(p.branch_id) + '\',\'' + escHtml(p.last_name + ', ' + p.first_name) + '\')" class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete">' +
-              '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>' +
-            '</button>' +
-          '</div>' +
-        '</td>' +
+        actionsCell +
       '</tr>';
     }).join('');
+  }
+
+  // ── View Patient Modal (super admin) ───────────────────────────
+  function openViewModal(patientId) {
+    var p = allPatients.find(function(x) { return x.patient_id === patientId; });
+    if (!p) return;
+    document.getElementById('view-last-name').textContent  = p.last_name  || '—';
+    document.getElementById('view-first-name').textContent = p.first_name || '—';
+    document.getElementById('view-middle-name').textContent= p.middle_name|| '—';
+    document.getElementById('view-sex').textContent        = p.sex        || '—';
+    document.getElementById('view-birth-date').textContent = formatDate(p.birth_date) || '—';
+    document.getElementById('view-contact').textContent    = p.contact_number  || '—';
+    document.getElementById('view-email').textContent      = p.email_address   || '—';
+    document.getElementById('view-address').textContent    = p.address         || '—';
+    document.getElementById('view-branch').textContent     = p.branch_name     || '—';
+    document.getElementById('view-discounts').textContent  = (p.discount_names && p.discount_names.length)
+      ? p.discount_names.join(', ') : 'None';
+    document.getElementById('view-modal-backdrop').classList.remove('hidden');
+  }
+
+  function closeViewModal() {
+    document.getElementById('view-modal-backdrop').classList.add('hidden');
   }
 
   function updateStats(data) {
