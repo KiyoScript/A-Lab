@@ -6,7 +6,9 @@
 // Packages sheet schema:
 //   A: package_id   B: package_code   C: package_name
 //   D: description  E: default_fee    F: is_active
-//   G: created_at   H: updated_at
+//   G: branch_id    H: created_at     I: updated_at
+//
+// branch_id: empty/null = global (super_admin); value = branch-exclusive package
 //
 // Package_LabServices sheet schema (many-to-many):
 //   A: mapping_id   B: package_id   C: lab_id   D: created_at
@@ -77,8 +79,9 @@ function _packageRowToObj(row) {
     description:  String(row[3] || ''),
     default_fee:  Number(row[4]) || 0,
     is_active:    row[5] === true || String(row[5]).toLowerCase() === 'true',
-    created_at:   String(row[6] || ''),
-    updated_at:   String(row[7] || '')
+    branch_id:    String(row[6] || ''),
+    created_at:   String(row[7] || ''),
+    updated_at:   String(row[8] || '')
   };
 }
 
@@ -108,7 +111,7 @@ function getPackages(token) {
       });
     } catch(_) {}
 
-    const packages = data.slice(1)
+    var packages = data.slice(1)
       .filter(function(r) { return r[0] !== ''; })
       .map(function(r) {
         const pkg = _packageRowToObj(r);
@@ -116,6 +119,13 @@ function getPackages(token) {
         pkg.lab_count = pkg.lab_ids.length;
         return pkg;
       });
+
+    // Branch admin: sees global packages + their own branch packages only
+    if (session.role === 'branch_admin') {
+      packages = packages.filter(function(p) {
+        return !p.branch_id || p.branch_id === session.branch_id;
+      });
+    }
 
     return { success: true, data: packages };
   } catch (e) {
@@ -156,14 +166,18 @@ function createPackage(payload, token) {
   try {
     const session = _getSession(token);
     if (!session) return { success: false, error: 'Session expired.', expired: true };
-    if (session.role !== 'super_admin') return { success: false, error: 'Only super admins can create packages.' };
+    if (!['super_admin', 'branch_admin'].includes(session.role))
+      return { success: false, error: 'Unauthorized.' };
 
     if (!payload.package_name || !payload.package_name.trim())
       return { success: false, error: 'Package name is required.' };
 
-    const sh  = _getPackageSheet();
-    const now = new Date().toISOString();
+    const sh    = _getPackageSheet();
+    const now   = new Date().toISOString();
     const pkgId = 'PKG-' + Utilities.getUuid().substring(0, 8).toUpperCase();
+
+    // Branch admin packages are tied to their branch; super admin packages are global
+    const branchId = session.role === 'branch_admin' ? (session.branch_id || '') : '';
 
     sh.appendRow([
       pkgId,
@@ -172,6 +186,7 @@ function createPackage(payload, token) {
       payload.description  || '',
       Number(payload.default_fee) || 0,
       payload.is_active !== false,
+      branchId,
       now,
       now
     ]);
@@ -209,7 +224,8 @@ function updatePackage(payload, token) {
   try {
     const session = _getSession(token);
     if (!session) return { success: false, error: 'Session expired.', expired: true };
-    if (session.role !== 'super_admin') return { success: false, error: 'Only super admins can update packages.' };
+    if (!['super_admin', 'branch_admin'].includes(session.role))
+      return { success: false, error: 'Unauthorized.' };
     if (!payload.package_id) return { success: false, error: 'package_id is required.' };
 
     const sh   = _getPackageSheet();
@@ -219,6 +235,13 @@ function updatePackage(payload, token) {
     });
     if (idx === -1) return { success: false, error: 'Package not found.' };
 
+    // Branch admin can only edit their own branch packages
+    if (session.role === 'branch_admin') {
+      const pkgBranchId = String(data[idx][6] || '');
+      if (pkgBranchId !== session.branch_id)
+        return { success: false, error: 'Access denied. You can only edit your own branch packages.' };
+    }
+
     const now = new Date().toISOString();
     const row = idx + 1;
     sh.getRange(row, 2).setValue((payload.package_code || '').trim().toUpperCase());
@@ -226,7 +249,7 @@ function updatePackage(payload, token) {
     sh.getRange(row, 4).setValue(payload.description  || '');
     sh.getRange(row, 5).setValue(Number(payload.default_fee) || 0);
     sh.getRange(row, 6).setValue(payload.is_active !== false);
-    sh.getRange(row, 8).setValue(now);
+    sh.getRange(row, 9).setValue(now);
 
     // Replace lab service assignments
     if (payload.lab_ids !== undefined) {
@@ -246,7 +269,8 @@ function deletePackage(packageId, token) {
   try {
     const session = _getSession(token);
     if (!session) return { success: false, error: 'Session expired.', expired: true };
-    if (session.role !== 'super_admin') return { success: false, error: 'Only super admins can delete packages.' };
+    if (!['super_admin', 'branch_admin'].includes(session.role))
+      return { success: false, error: 'Unauthorized.' };
     if (!packageId) return { success: false, error: 'package_id is required.' };
 
     const sh   = _getPackageSheet();
@@ -255,6 +279,13 @@ function deletePackage(packageId, token) {
       return i > 0 && String(r[0]) === String(packageId);
     });
     if (idx === -1) return { success: false, error: 'Package not found.' };
+
+    // Branch admin can only delete their own branch packages
+    if (session.role === 'branch_admin') {
+      const pkgBranchId = String(data[idx][6] || '');
+      if (pkgBranchId !== session.branch_id)
+        return { success: false, error: 'Access denied. You can only delete your own branch packages.' };
+    }
 
     sh.deleteRow(idx + 1);
 
