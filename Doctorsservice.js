@@ -113,6 +113,14 @@ function _requireSuperAdminDoctor(token) {
   return s;
 }
 
+// Branch admin guard — allows branch_admin and super_admin
+function _requireDoctorAccess(token) {
+  const s = _getSession(token);
+  if (!s) return { expired: true };
+  if (!['super_admin', 'branch_admin'].includes(s.role)) return { denied: true };
+  return s;
+}
+
 // ─── Build { doctor_id → current assignment } map ────────────────
 function _buildCurrentBranchMap() {
   const map = {};
@@ -151,7 +159,7 @@ function getDoctors(token) {
 
     const branchMap = _buildCurrentBranchMap();
 
-    const doctors = data.slice(1)
+    let doctors = data.slice(1)
       .filter(function(r) { return r[0] !== ''; })
       .map(function(r) {
         const doc        = _doctorRowToObj(r);
@@ -161,6 +169,13 @@ function getDoctors(token) {
         doc.assigned_at  = assignment ? assignment.assigned_at : '';
         return doc;
       });
+
+    // Branch admin only sees doctors assigned to their branch
+    if (session.role === 'branch_admin') {
+      doctors = doctors.filter(function(d) {
+        return d.branch_id === session.branch_id;
+      });
+    }
 
     return { success: true, data: doctors };
   } catch (e) {
@@ -172,11 +187,20 @@ function getDoctors(token) {
 // CREATE — super_admin only
 // Required: last_name, first_name, username, password
 // ═══════════════════════════════════════════════════════════════
-function createDoctor(payload, token) {
+function updateDoctor(payload, token) {
   try {
-    const session = _requireSuperAdminDoctor(token);
-    if (session.expired) return { success: false, error: 'Session expired.', expired: true };
-    if (session.denied)  return { success: false, error: 'Access denied. Super admin only.' };
+    const session = _getSession(token);
+    if (!session) return { success: false, error: 'Session expired.', expired: true };
+    if (!['super_admin', 'branch_admin'].includes(session.role))
+      return { success: false, error: 'Unauthorized.' };
+
+    // Branch admin: verify doctor belongs to their branch
+    if (session.role === 'branch_admin') {
+      const branchMap  = _buildCurrentBranchMap();
+      const assignment = branchMap[payload.doctor_id];
+      if (!assignment || assignment.branch_id !== session.branch_id)
+        return { success: false, error: 'Access denied. This doctor is not in your branch.' };
+    }
 
     if (!payload.last_name  || !payload.last_name.trim())
       return { success: false, error: 'Last name is required.' };
@@ -317,9 +341,18 @@ function updateDoctor(payload, token) {
 // ═══════════════════════════════════════════════════════════════
 function deleteDoctor(doctorId, token) {
   try {
-    const session = _requireSuperAdminDoctor(token);
-    if (session.expired) return { success: false, error: 'Session expired.', expired: true };
-    if (session.denied)  return { success: false, error: 'Access denied. Super admin only.' };
+    const session = _getSession(token);
+    if (!session) return { success: false, error: 'Session expired.', expired: true };
+    if (!['super_admin', 'branch_admin'].includes(session.role))
+      return { success: false, error: 'Unauthorized.' };
+
+    // Branch admin: verify doctor belongs to their branch
+    if (session.role === 'branch_admin') {
+      const branchMap  = _buildCurrentBranchMap();
+      const assignment = branchMap[doctorId];
+      if (!assignment || assignment.branch_id !== session.branch_id)
+        return { success: false, error: 'Access denied. This doctor is not in your branch.' };
+    }
 
     if (!doctorId) return { success: false, error: 'Doctor ID is required.' };
 
