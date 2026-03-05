@@ -190,6 +190,45 @@
   </div>
 </div>
 
+<!-- BRANCH SERVICES MODAL -->
+<div id="services-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col" onclick="event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 shrink-0">
+      <div>
+        <h2 id="services-modal-title" class="text-base font-bold text-slate-800">Branch Services</h2>
+        <p id="services-modal-sub" class="text-xs text-slate-400 mt-0.5">Toggle which lab services are available at this branch.</p>
+      </div>
+      <button onclick="closeServicesModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Search -->
+    <div class="px-6 py-3 border-b border-slate-100 shrink-0">
+      <input id="services-search" type="text" placeholder="Search lab services…"
+        oninput="filterServices()"
+        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-blue-400"/>
+    </div>
+
+    <!-- Body — scrollable -->
+    <div id="services-body" class="overflow-y-auto flex-1 px-6 py-4 space-y-5">
+      <div id="services-loading" class="flex items-center justify-center py-12">
+        <div class="w-7 h-7 rounded-full animate-spin" style="border:2px solid #bbd8ff;border-top-color:#2f76f5"></div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="px-6 py-4 border-t border-slate-100 shrink-0 flex items-center justify-between">
+      <p class="text-xs text-slate-400">Changes are saved instantly when you toggle a service.</p>
+      <button onclick="closeServicesModal()" class="px-4 py-2 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">Done</button>
+    </div>
+  </div>
+</div>
+
 <!-- DELETE CONFIRM (super_admin only) -->
 <div id="delete-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center" onclick="event.stopPropagation()">
@@ -299,7 +338,9 @@
 
       // Actions: super_admin gets Edit + Delete; branch_admin gets View Only label
       const actions = isSuperAdmin
-        ? `<button onclick='openModal("edit", ${JSON.stringify(b).replace(/'/g,"&#39;")})' 
+        ? `<button onclick="openServicesModal('${b.branch_id}','${escHtml(b.branch_name)}')"
+              class="text-xs font-semibold text-emerald-600 hover:text-emerald-700 px-3 py-1.5 rounded-lg hover:bg-emerald-50 transition-colors">Services</button>
+            <button onclick='openModal("edit", ${JSON.stringify(b).replace(/'/g,"&#39;")})' 
               class="text-xs font-semibold text-blue-600 hover:text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors">Edit</button>
             <button onclick="openDeleteModal('${b.branch_id}','${escHtml(b.branch_name)}')" 
               class="text-xs font-semibold text-red-500 hover:text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors">Delete</button>`
@@ -436,7 +477,118 @@
 
   document.getElementById('modal-backdrop').addEventListener('click', closeModal);
   document.getElementById('delete-modal').addEventListener('click', closeDeleteModal);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeDeleteModal(); } });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeDeleteModal(); closeServicesModal(); } });
+
+  // ── Branch Services Modal ─────────────────────────────────────
+  var servicesData    = [];   // grouped dept array from backend
+  var servicesBranchId = null;
+
+  function openServicesModal(branchId, branchName) {
+    servicesBranchId = branchId;
+    document.getElementById('services-modal-title').textContent = branchName + ' — Services';
+    document.getElementById('services-modal-sub').textContent   = 'Toggle which lab services are available at this branch.';
+    document.getElementById('services-search').value            = '';
+    document.getElementById('services-body').innerHTML =
+      '<div id="services-loading" class="flex items-center justify-center py-12">' +
+        '<div class="w-7 h-7 rounded-full animate-spin" style="border:2px solid #bbd8ff;border-top-color:#2f76f5"></div>' +
+      '</div>';
+    document.getElementById('services-modal').classList.remove('hidden');
+
+    // Load services for this branch
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (_checkExpired(res)) return;
+        if (res.success) {
+          servicesData = res.data || [];
+          renderServices(servicesData);
+        } else {
+          document.getElementById('services-body').innerHTML =
+            '<p class="text-sm text-red-500 text-center py-8">' + escHtml(res.error || 'Failed to load.') + '</p>';
+        }
+      })
+      .withFailureHandler(function(err) {
+        document.getElementById('services-body').innerHTML =
+          '<p class="text-sm text-red-500 text-center py-8">Error: ' + escHtml(err.message) + '</p>';
+      })
+      .handleBranchLabRequest('GET_BRANCH_LAB_SERVICES', { branch_id: branchId }, alab_token);
+  }
+
+  function closeServicesModal() {
+    servicesBranchId = null;
+    servicesData     = [];
+    document.getElementById('services-modal').classList.add('hidden');
+  }
+
+  function renderServices(groups) {
+    const body = document.getElementById('services-body');
+    if (!groups.length) {
+      body.innerHTML = '<p class="text-sm text-slate-400 text-center py-8">No lab services found. Add global lab services first.</p>';
+      return;
+    }
+    body.innerHTML = groups.map(function(dept) {
+      const labRows = dept.labs.map(function(lab) {
+        const toggleId = 'svc-' + lab.lab_id;
+        return `<div class="svc-item flex items-center justify-between py-2.5 border-b border-slate-50 last:border-0" data-name="${escHtml((lab.lab_name + ' ' + (lab.lab_code || '')).toLowerCase())}">
+          <div>
+            <p class="text-sm font-medium text-slate-700">${escHtml(lab.lab_name)}</p>
+            ${lab.lab_code ? `<p class="text-xs text-slate-400 font-mono">${escHtml(lab.lab_code)}${lab.default_fee ? ' · ₱' + Number(lab.default_fee).toFixed(2) : ''}</p>` : ''}
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="${toggleId}" ${lab.is_enabled ? 'checked' : ''}
+              onchange="toggleService('${lab.lab_id}', this.checked, this)"
+              class="sr-only peer"/>
+            <div class="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer
+              peer-checked:bg-emerald-500 transition-colors after:content-[''] after:absolute
+              after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4
+              after:w-4 after:transition-all peer-checked:after:translate-x-5"></div>
+          </label>
+        </div>`;
+      }).join('');
+
+      return `<div class="dept-group" data-dept="${escHtml(dept.dept_name.toLowerCase())}">
+        <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">${escHtml(dept.dept_name)}</h3>
+        <div class="bg-slate-50 rounded-xl px-4">${labRows}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function toggleService(labId, isEnabled, checkbox) {
+    // Optimistic UI — disable checkbox during save
+    checkbox.disabled = true;
+    google.script.run
+      .withSuccessHandler(function(res) {
+        checkbox.disabled = false;
+        if (_checkExpired(res)) return;
+        if (!res.success) {
+          // Revert toggle on failure
+          checkbox.checked = !isEnabled;
+          showToast(res.error || 'Failed to update.', 'error');
+        }
+      })
+      .withFailureHandler(function(err) {
+        checkbox.disabled = false;
+        checkbox.checked  = !isEnabled;
+        showToast('Error: ' + err.message, 'error');
+      })
+      .handleBranchLabRequest('UPDATE_BRANCH_LAB_SERVICE', {
+        branch_id:  servicesBranchId,
+        lab_id:     labId,
+        is_enabled: isEnabled
+      }, alab_token);
+  }
+
+  function filterServices() {
+    const q = document.getElementById('services-search').value.toLowerCase().trim();
+    document.querySelectorAll('.dept-group').forEach(function(group) {
+      var anyVisible = false;
+      group.querySelectorAll('.svc-item').forEach(function(item) {
+        const match = !q || (item.getAttribute('data-name') || '').includes(q);
+        item.style.display = match ? '' : 'none';
+        if (match) anyVisible = true;
+      });
+      group.style.display = anyVisible ? '' : 'none';
+    });
+  }
 </script>
 </body>
 </html>

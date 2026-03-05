@@ -103,6 +103,17 @@ function handlePackageRequest(action, payload, token) {
   }
 }
 
+// ─── Branch Lab Services requests ────────────────────────────────
+function handleBranchLabRequest(action, payload, token) {
+  const session = _getSession(token);
+  if (!session) return { success: false, error: 'Session expired. Please log in again.', expired: true };
+  switch (action) {
+    case 'GET_BRANCH_LAB_SERVICES':   return getBranchLabServices(payload, token);
+    case 'UPDATE_BRANCH_LAB_SERVICE': return updateBranchLabService(payload, token);
+    default: return { success: false, error: 'Unknown action: ' + action };
+  }
+}
+
 // ─── Dept ↔ Lab Service mapping requests ─────────────────────────
 function handleDeptLabRequest(action, payload, token) {
   if (!_getSession(token)) return { success: false, error: 'Session expired. Please log in again.', expired: true };
