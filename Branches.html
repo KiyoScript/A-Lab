@@ -552,18 +552,33 @@
         </div>`;
       }).join('');
 
+      // Dept toggle state: all on = checked, all off = unchecked, mixed = indeterminate
+      const allOn  = dept.labs.every(function(l)  { return l.is_enabled; });
+      const allOff = dept.labs.every(function(l)  { return !l.is_enabled; });
+      const mixed  = !allOn && !allOff;
+
       return `<div class="dept-group" data-dept="${escHtml(dept.dept_name.toLowerCase())}">
-        <button onclick="toggleDeptGroup('${deptKey}')"
-          class="w-full flex items-center justify-between py-2 px-1 mb-1 hover:bg-slate-50 rounded-lg transition-colors group">
-          <div class="flex items-center gap-1.5">
+        <div class="w-full flex items-center justify-between py-2 px-1 mb-1">
+          <button onclick="toggleDeptGroup('${deptKey}')"
+            class="flex items-center gap-1.5 flex-1 hover:bg-slate-50 rounded-lg transition-colors group py-1 px-1">
             <svg id="arrow-${deptKey}" class="w-3.5 h-3.5 text-slate-400 transition-transform duration-200"
               fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
             </svg>
             <span class="text-[11px] font-bold text-slate-500 uppercase tracking-widest group-hover:text-slate-700">${escHtml(dept.dept_name)}</span>
             ${countLabel}
-          </div>
-        </button>
+          </button>
+          <label class="relative inline-flex items-center cursor-pointer ml-3" title="${mixed ? 'Partially enabled — click to enable all' : (allOn ? 'All enabled — click to disable all' : 'All disabled — click to enable all')}">
+            <input type="checkbox" id="dept-toggle-${deptKey}"
+              ${allOn ? 'checked' : ''}
+              onchange="toggleDeptServices('${deptKey}', ${JSON.stringify(dept.labs.map(function(l){return l.lab_id;}))}, this.checked, this)"
+              class="sr-only peer"/>
+            <div class="w-10 h-5 ${mixed ? 'bg-amber-300' : 'bg-slate-200'} peer-focus:outline-none rounded-full peer
+              peer-checked:bg-emerald-500 transition-colors after:content-[''] after:absolute
+              after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4
+              after:w-4 after:transition-all peer-checked:after:translate-x-5"></div>
+          </label>
+        </div>
         <div id="${deptKey}" class="bg-slate-50 rounded-xl px-4 overflow-hidden transition-all duration-200">${labRows}</div>
       </div>`;
     }).join('');
@@ -584,6 +599,58 @@
       panel.style.paddingBottom = '';
       arrow.style.transform = 'rotate(0deg)';
     }
+  }
+
+  // Bulk toggle all services in a department
+  function toggleDeptServices(deptKey, labIds, isEnabled, deptCheckbox) {
+    if (!labIds || labIds.length === 0) return;
+    deptCheckbox.disabled = true;
+
+    // Optimistically update individual toggles in UI
+    labIds.forEach(function(labId) {
+      const chk = document.getElementById('svc-' + labId);
+      if (chk) chk.checked = isEnabled;
+    });
+
+    // Fire all updates — track completion
+    var pending  = labIds.length;
+    var anyError = false;
+
+    labIds.forEach(function(labId) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          pending--;
+          if (!res.success) anyError = true;
+          if (pending === 0) {
+            deptCheckbox.disabled = false;
+            // Refresh dept toggle background (no longer mixed)
+            var deptToggleDiv = deptCheckbox.nextElementSibling;
+            if (deptToggleDiv) {
+              deptToggleDiv.classList.remove('bg-amber-300', 'bg-slate-200');
+              deptToggleDiv.classList.add(isEnabled ? 'bg-slate-200' : 'bg-slate-200');
+            }
+            if (anyError) showToast('Some services failed to update.', 'warning');
+          }
+        })
+        .withFailureHandler(function() {
+          pending--;
+          anyError = true;
+          if (pending === 0) {
+            deptCheckbox.disabled = false;
+            // Revert UI on failure
+            labIds.forEach(function(id) {
+              const chk = document.getElementById('svc-' + id);
+              if (chk) chk.checked = !isEnabled;
+            });
+            showToast('Failed to update department services.', 'error');
+          }
+        })
+        .handleBranchLabRequest('UPDATE_BRANCH_LAB_SERVICE', {
+          branch_id:  servicesBranchId,
+          lab_id:     labId,
+          is_enabled: isEnabled
+        }, alab_token);
+    });
   }
 
   function toggleService(labId, isEnabled, checkbox) {

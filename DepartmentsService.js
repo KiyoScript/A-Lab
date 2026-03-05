@@ -69,24 +69,35 @@ function getDepartments(payload, token) {
     const data = sh.getDataRange().getValues();
     if (data.length <= 1) return { success: true, data: [] };
 
-    // Build dept_id → lab_count from global Dept_LabServices sheet
-    const labCountMap = {};
+    // Build dept_id → [lab_ids] from global Dept_LabServices sheet
+    const labIdsMap = {}; // dept_id → [lab_id, ...]
     try {
-      const mapSh = _getDeptLabSheet();
+      const mapSh   = _getDeptLabSheet();
       const mapData = mapSh.getDataRange().getValues();
       mapData.slice(1).forEach(function(r) {
         const deptId = String(r[1] || '').trim();
         const labId  = String(r[2] || '').trim();
         if (!deptId || !labId) return;
-        labCountMap[deptId] = (labCountMap[deptId] || 0) + 1;
+        if (!labIdsMap[deptId]) labIdsMap[deptId] = [];
+        if (!labIdsMap[deptId].includes(labId)) labIdsMap[deptId].push(labId);
       });
     } catch(_) {}
+
+    // For branch_admin: get their disabled labs to adjust counts
+    var disabledIds = [];
+    if (session && session.role === 'branch_admin' && session.branch_id) {
+      try { disabledIds = getDisabledLabsForBranch(session.branch_id); } catch(_) {}
+    }
 
     const depts = data.slice(1)
       .filter(function(r) { return r[0] !== ''; })
       .map(function(r) {
-        const dept = _deptRowToObj(r);
-        dept.lab_service_count = labCountMap[dept.dept_id] || 0;
+        const dept       = _deptRowToObj(r);
+        const allLabIds  = labIdsMap[dept.dept_id] || [];
+        const available  = allLabIds.filter(function(id) { return !disabledIds.includes(id); });
+        dept.lab_service_count          = allLabIds.length;
+        dept.lab_service_available      = available.length;
+        dept.lab_service_has_disabled   = available.length < allLabIds.length;
         return dept;
       });
 
