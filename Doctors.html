@@ -322,6 +322,7 @@
   var allDoctors     = [];
   var allBranches    = [];
   var isSuperAdmin   = false;
+  var isBranchAdmin  = false;
   var deletingId     = null;
 
   // ── Bootstrap ─────────────────────────────────────────────
@@ -330,6 +331,7 @@
       if (res && res.success) {
         currentSession = res.data;
         isSuperAdmin   = currentSession.role === 'super_admin';
+        isBranchAdmin  = currentSession.role === 'branch_admin';
         applyRoleUI();
       }
       loadBranches();
@@ -342,6 +344,12 @@
       document.getElementById('add-btn').classList.remove('hidden');
       document.getElementById('add-btn').classList.add('flex');
       document.getElementById('th-actions').classList.remove('hidden');
+    } else if (isBranchAdmin) {
+      document.getElementById('add-btn').classList.remove('hidden');
+      document.getElementById('add-btn').classList.add('flex');
+      document.getElementById('th-actions').classList.remove('hidden');
+      // Hide branch filter — branch admin only sees their own branch doctors
+      document.getElementById('branch-filter').classList.add('hidden');
     }
   }
 
@@ -467,24 +475,31 @@
         ? '<span class="badge badge-assigned">' + escHtml(d.branch_name) + '</span>'
         : '<span class="badge badge-none">Unassigned</span>';
 
-      var actionsCell = isSuperAdmin
-        ? '<td class="px-5 py-3.5 text-right"><div class="flex items-center justify-end gap-1">' +
-            // Edit
-            '<button onclick=\'openModal(' + JSON.stringify(d) + ')\' title="Edit" class="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition">' +
-              '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 11l6-6 3 3-6 6H9v-3z"/></svg>' +
-            '</button>' +
-            // Assign / Reassign
-            '<button onclick=\'openAssignModal(' + JSON.stringify({id:d.doctor_id, name:'Dr. '+d.last_name+', '+d.first_name, branch_id:d.branch_id, branch_name:d.branch_name}) + ')\' title="' + (d.branch_id ? 'Reassign Branch' : 'Assign Branch') + '" class="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition">' +
+      // Edit + Change Password + Delete buttons (shared by both roles)
+      var sharedButtons =
+          // Edit
+          '<button onclick=\'openModal(' + JSON.stringify(d) + ')\' title="Edit" class="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition">' +
+            '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 11l6-6 3 3-6 6H9v-3z"/></svg>' +
+          '</button>' +
+          // Change password
+          '<button onclick=\'openPwModal(' + JSON.stringify({id:d.doctor_id, name:'Dr. '+d.last_name+', '+d.first_name}) + ')\' title="Change Password" class="p-1.5 text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition">' +
+            '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>' +
+          '</button>' +
+          // Delete
+          '<button onclick=\'openDeleteModal(' + JSON.stringify({id:d.doctor_id, name:'Dr. '+d.last_name+', '+d.first_name}) + ')\' title="Delete" class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition">' +
+            '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>' +
+          '</button>';
+
+      // Assign button: super admin only
+      var assignButton = isSuperAdmin
+          ? '<button onclick=\'openAssignModal(' + JSON.stringify({id:d.doctor_id, name:'Dr. '+d.last_name+', '+d.first_name, branch_id:d.branch_id, branch_name:d.branch_name}) + ')\' title="' + (d.branch_id ? 'Reassign Branch' : 'Assign Branch') + '" class="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition">' +
               '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>' +
-            '</button>' +
-            // Change password
-            '<button onclick=\'openPwModal(' + JSON.stringify({id:d.doctor_id, name:'Dr. '+d.last_name+', '+d.first_name}) + ')\' title="Change Password" class="p-1.5 text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition">' +
-              '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>' +
-            '</button>' +
-            // Delete
-            '<button onclick=\'openDeleteModal(' + JSON.stringify({id:d.doctor_id, name:'Dr. '+d.last_name+', '+d.first_name}) + ')\' title="Delete" class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition">' +
-              '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>' +
-            '</button>' +
+            '</button>'
+          : '';
+
+      var actionsCell = (isSuperAdmin || isBranchAdmin)
+        ? '<td class="px-5 py-3.5 text-right"><div class="flex items-center justify-end gap-1">' +
+            sharedButtons + assignButton +
           '</div></td>'
         : '<td class="px-5 py-3.5"></td>';
 
