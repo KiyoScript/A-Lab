@@ -568,12 +568,12 @@
             <span class="text-[11px] font-bold text-slate-500 uppercase tracking-widest group-hover:text-slate-700">${escHtml(dept.dept_name)}</span>
             ${countLabel}
           </button>
-          <label class="relative inline-flex items-center cursor-pointer ml-3" title="${mixed ? 'Partially enabled — click to enable all' : (allOn ? 'All enabled — click to disable all' : 'All disabled — click to enable all')}">
+          <label class="relative inline-flex items-center cursor-pointer ml-3" title="${allOn ? 'All enabled — click to disable all' : (mixed ? 'Partially enabled — click to enable all' : 'All disabled — click to enable all')}">
             <input type="checkbox" id="dept-toggle-${deptKey}"
-              ${allOn ? 'checked' : ''}
+              ${(allOn || mixed) ? 'checked' : ''}
               onchange="toggleDeptServices('${deptKey}', ${JSON.stringify(dept.labs.map(function(l){return l.lab_id;}))}, this.checked, this)"
               class="sr-only peer"/>
-            <div class="w-10 h-5 ${mixed ? 'bg-amber-300' : 'bg-slate-200'} peer-focus:outline-none rounded-full peer
+            <div class="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer
               peer-checked:bg-emerald-500 transition-colors after:content-[''] after:absolute
               after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4
               after:w-4 after:transition-all peer-checked:after:translate-x-5"></div>

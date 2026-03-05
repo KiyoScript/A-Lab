@@ -89,17 +89,24 @@ function getDepartments(payload, token) {
       try { disabledIds = getDisabledLabsForBranch(session.branch_id); } catch(_) {}
     }
 
-    const depts = data.slice(1)
+    var depts = data.slice(1)
       .filter(function(r) { return r[0] !== ''; })
       .map(function(r) {
         const dept       = _deptRowToObj(r);
         const allLabIds  = labIdsMap[dept.dept_id] || [];
         const available  = allLabIds.filter(function(id) { return !disabledIds.includes(id); });
-        dept.lab_service_count          = allLabIds.length;
-        dept.lab_service_available      = available.length;
-        dept.lab_service_has_disabled   = available.length < allLabIds.length;
+        dept.lab_service_count        = allLabIds.length;
+        dept.lab_service_available    = available.length;
+        dept.lab_service_has_disabled = available.length < allLabIds.length;
         return dept;
       });
+
+    // Branch admin: hide departments with no available services
+    if (session && session.role === 'branch_admin') {
+      depts = depts.filter(function(d) {
+        return d.lab_service_available > 0;
+      });
+    }
 
     depts.sort(function(a, b) {
       return a.dept_name.localeCompare(b.dept_name);
