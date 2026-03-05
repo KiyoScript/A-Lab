@@ -121,10 +121,35 @@ function getPackages(token) {
       });
 
     // Branch admin: sees global packages + their own branch packages only
+    // Also flag packages that contain disabled lab services at their branch
     if (session.role === 'branch_admin') {
       packages = packages.filter(function(p) {
         return !p.branch_id || p.branch_id === session.branch_id;
       });
+
+      // Get disabled lab ids for this branch
+      const disabledLabs = getDisabledLabsForBranch(session.branch_id);
+
+      if (disabledLabs.length > 0) {
+        // Load lab names for the disabled ids so we can show them in the warning
+        const labSh   = _getLabSheet();
+        const labData = labSh.getDataRange().getValues();
+        const labNameMap = {};
+        labData.slice(1).forEach(function(r) {
+          if (r[0]) labNameMap[String(r[0])] = String(r[2] || '');
+        });
+
+        packages.forEach(function(pkg) {
+          const disabled = pkg.lab_ids.filter(function(id) {
+            return disabledLabs.includes(id);
+          });
+          pkg.disabled_labs = disabled.map(function(id) {
+            return { lab_id: id, lab_name: labNameMap[id] || id };
+          });
+        });
+      } else {
+        packages.forEach(function(pkg) { pkg.disabled_labs = []; });
+      }
     }
 
     return { success: true, data: packages };
