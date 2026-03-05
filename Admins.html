@@ -218,6 +218,8 @@
 
 <script>
   let allBranchAdmins = [];
+  let isBranchAdmin   = false;
+  let currentSession  = null;
   var alab_token = (new URLSearchParams(window.location.search)).get('token') || localStorage.getItem('alab_token') || '';
 
   function _handleExpired() {
@@ -237,7 +239,30 @@
   let deletingRole    = null;
   let selectedRole    = 'branch_admin';
 
-  document.addEventListener('DOMContentLoaded', loadData);
+  document.addEventListener('DOMContentLoaded', initPage);
+
+  function initPage() {
+    google.script.run
+      .withSuccessHandler(res => {
+        if (res.success) {
+          currentSession = res.data;
+          isBranchAdmin  = currentSession.role === 'branch_admin';
+        }
+        applyRoleUI();
+        loadData();
+      })
+      .withFailureHandler(() => loadData())
+      .handleAdminRequest('GET_SESSION', {}, alab_token);
+  }
+
+  function applyRoleUI() {
+    if (isBranchAdmin) {
+      // Hide Super Admin tab
+      document.getElementById('tab-super').style.display = 'none';
+      // Hide role selector in modal (branch admin can only create branch admins)
+      // Hide Add Admin button branch selector — auto-uses their branch
+    }
+  }
 
   function loadData() {
     showLoading(true);
@@ -247,6 +272,16 @@
         google.script.run
           .withSuccessHandler(res => {
             allBranchAdmins = res.success ? (res.data || []) : [];
+
+            // Branch admin: skip loading super admins entirely
+            if (isBranchAdmin) {
+              showLoading(false);
+              // Filter to own branch only
+              allBranchAdmins = allBranchAdmins.filter(a => a.branch_id === currentSession.branch_id);
+              renderStats(); renderTable();
+              return;
+            }
+
             google.script.run
               .withSuccessHandler(res => {
                 showLoading(false);
