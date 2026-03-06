@@ -106,7 +106,7 @@
           <h2 class="text-sm font-bold text-slate-800">Recent Referrals</h2>
           <p class="text-xs text-slate-400 mt-0.5">Your latest 8 lab orders</p>
         </div>
-        <a href="#" onclick="parent.document.querySelector('[onclick*=DoctorOrders]').click(); return false;"
+        <a href="#" onclick="parent.document.querySelector('[onclick*=Orders]').click(); return false;"
            class="text-xs font-semibold text-blue-500 hover:text-blue-600 transition-colors">View all →</a>
       </div>
       <div id="recent-loading" class="flex flex-col items-center justify-center py-10 gap-2">
@@ -209,11 +209,53 @@
   });
 
   function loadRecentOrders() {
-    // TODO: wire to real OrdersService once Phase 2 is built
-    // For now show the empty state with zeroed stats
-    showEmpty();
-    setStats(0, 0, 0, 0);
-    renderStatusBreakdown(0, 0, 0, 0);
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (_checkExpired(res)) return;
+        if (!res.success) { showEmpty(); setStats(0,0,0,0); renderStatusBreakdown(0,0,0,0,0,0); return; }
+        var orders = res.data || [];
+
+        // Stats
+        var total      = orders.length;
+        var inProgress = orders.filter(function(o){ return ['DRAFT','OPEN','PAID','IN_PROGRESS'].includes(o.status); }).length;
+        var forRelease = orders.filter(function(o){ return o.status === 'FOR_RELEASE'; }).length;
+        var released   = orders.filter(function(o){ return o.status === 'RELEASED'; }).length;
+        setStats(total, inProgress, forRelease, released);
+
+        // Breakdown counts
+        var draft   = orders.filter(function(o){ return o.status === 'DRAFT'; }).length;
+        var open    = orders.filter(function(o){ return o.status === 'OPEN'; }).length;
+        var paid    = orders.filter(function(o){ return o.status === 'PAID'; }).length;
+        var inProg  = orders.filter(function(o){ return o.status === 'IN_PROGRESS'; }).length;
+        renderStatusBreakdown(draft, open, paid, inProg, forRelease, released);
+
+        // Recent table — latest 8
+        var recent = orders.slice(0, 8);
+        if (!recent.length) { showEmpty(); return; }
+
+        document.getElementById('recent-loading').classList.add('hidden');
+        document.getElementById('recent-empty').classList.add('hidden');
+        document.getElementById('recent-empty').classList.remove('flex');
+        document.getElementById('recent-wrap').classList.remove('hidden');
+
+        document.getElementById('recent-tbody').innerHTML = recent.map(function(o) {
+          return '<tr class="data-row">' +
+            '<td class="px-5 py-3 font-semibold text-xs text-slate-800" style="font-family:\'DM Mono\',monospace">' + escHtml(o.order_number) + '</td>' +
+            '<td class="px-3 py-3 text-sm text-slate-700">' + escHtml(o.patient_snapshot || '—') + '</td>' +
+            '<td class="px-3 py-3 text-xs text-slate-400 hidden md:table-cell">₱' + Number(o.payment_amount - o.payment_discount).toLocaleString('en-PH',{minimumFractionDigits:2}) + '</td>' +
+            '<td class="px-3 py-3">' + statusBadge(o.status) + '</td>' +
+            '<td class="px-3 py-3 text-xs text-slate-400 hidden md:table-cell">' + fmtDate(o.order_date) + '</td>' +
+          '</tr>';
+        }).join('');
+      })
+      .withFailureHandler(function() { showEmpty(); setStats(0,0,0,0); renderStatusBreakdown(0,0,0,0,0,0); })
+      .handleOrderRequest('GET_ORDERS', {}, alab_token);
+  }
+
+  function fmtDate(val) {
+    if (!val) return '—';
+    try { return new Date(val).toLocaleDateString('en-PH', { year:'numeric', month:'short', day:'numeric' }); }
+    catch(_) { return String(val); }
   }
 
   function showEmpty() {
@@ -223,20 +265,22 @@
     document.getElementById('recent-wrap').classList.add('hidden');
   }
 
-  function setStats(total, pending, release, released) {
+  function setStats(total, inProgress, forRelease, released) {
     document.getElementById('stat-total').textContent    = total;
-    document.getElementById('stat-pending').textContent  = pending;
-    document.getElementById('stat-release').textContent  = release;
+    document.getElementById('stat-pending').textContent  = inProgress;
+    document.getElementById('stat-release').textContent  = forRelease;
     document.getElementById('stat-released').textContent = released;
   }
 
-  function renderStatusBreakdown(pending, processing, forRelease, released) {
-    var total = pending + processing + forRelease + released || 1;
+  function renderStatusBreakdown(draft, open, paid, inProgress, forRelease, released) {
+    var total = draft + open + paid + inProgress + forRelease + released || 1;
     var items = [
-      { label: 'Pending',      count: pending,    color: 'bg-amber-400',   pct: Math.round(pending/total*100) },
-      { label: 'Processing',   count: processing, color: 'bg-blue-400',    pct: Math.round(processing/total*100) },
-      { label: 'For Release',  count: forRelease, color: 'bg-orange-400',  pct: Math.round(forRelease/total*100) },
-      { label: 'Released',     count: released,   color: 'bg-emerald-400', pct: Math.round(released/total*100) }
+      { label: 'Draft',       count: draft,       color: 'bg-slate-300',   pct: Math.round(draft/total*100) },
+      { label: 'Open',        count: open,        color: 'bg-blue-400',    pct: Math.round(open/total*100) },
+      { label: 'Paid',        count: paid,        color: 'bg-emerald-400', pct: Math.round(paid/total*100) },
+      { label: 'In Progress', count: inProgress,  color: 'bg-amber-400',   pct: Math.round(inProgress/total*100) },
+      { label: 'For Release', count: forRelease,  color: 'bg-purple-400',  pct: Math.round(forRelease/total*100) },
+      { label: 'Released',    count: released,    color: 'bg-teal-400',    pct: Math.round(released/total*100) }
     ];
     document.getElementById('status-breakdown').innerHTML = items.map(function(i) {
       return '<div>' +
@@ -252,15 +296,18 @@
   }
 
   function statusBadge(status) {
-    var map = {
-      'Pending':      'badge-pending',
-      'Processing':   'badge-processing',
-      'For Review':   'badge-review',
-      'For Release':  'badge-release',
-      'Released':     'badge-released'
+    var labels = { DRAFT:'Draft', OPEN:'Open', PAID:'Paid', IN_PROGRESS:'In Progress', FOR_RELEASE:'For Release', RELEASED:'Released' };
+    var colors = {
+      DRAFT:       'background:#f1f5f9;color:#64748b',
+      OPEN:        'background:#dbeafe;color:#1d4ed8',
+      PAID:        'background:#d1fae5;color:#065f46',
+      IN_PROGRESS: 'background:#fef3c7;color:#92400e',
+      FOR_RELEASE: 'background:#ede9fe;color:#6d28d9',
+      RELEASED:    'background:#dcfce7;color:#15803d'
     };
-    var cls = map[status] || 'badge-pending';
-    return '<span class="status-badge ' + cls + '">' + escHtml(status) + '</span>';
+    var style = colors[status] || colors.DRAFT;
+    var label = labels[status] || status;
+    return '<span class="status-badge" style="' + style + ';font-size:11px;font-weight:600;padding:2px 10px;border-radius:99px">' + escHtml(label) + '</span>';
   }
 
   function escHtml(s) {
