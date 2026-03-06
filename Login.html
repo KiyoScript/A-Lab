@@ -111,6 +111,12 @@
   </div>
 
   <script>
+    let scriptUrl = ''; // cached on page load — avoids extra server call on login
+
+    google.script.run
+      .withSuccessHandler(function(url) { scriptUrl = url; })
+      .getScriptUrl();
+
     document.addEventListener('keydown', function(e) { if (e.key === 'Enter') doLogin(); });
 
     function togglePassword() {
@@ -129,17 +135,14 @@
           if (res.success) {
             localStorage.setItem('alab_token', res.token);
             if (res.data && res.data.must_change_password) {
-              pendingToken    = res.token;
-              pendingRole     = res.data.role || '';
+              pendingToken = res.token;
+              pendingRole  = res.data.role || '';
               document.getElementById('change-pw-modal').classList.remove('hidden');
             } else {
               var targetPage = res.data.role === 'doctor'  ? 'DoctorIndex' :
                                res.data.role === 'medtech' ? 'TechIndex'   : 'Index';
-              google.script.run
-                .withSuccessHandler(function(url) {
-                  window.top.location.href = url + '?page=' + targetPage + '&token=' + encodeURIComponent(res.token);
-                })
-                .getScriptUrl();
+              // Use cached scriptUrl — no extra server call needed
+              window.top.location.href = scriptUrl + '?page=' + targetPage + '&token=' + encodeURIComponent(res.token);
             }
           } else { showError(res.error || 'Login failed.'); }
         })

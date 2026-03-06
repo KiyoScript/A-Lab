@@ -247,20 +247,9 @@
     function confirmLogout() {
       const btn = document.getElementById('confirm-logout-btn');
       btn.textContent = 'Signing out…'; btn.disabled = true;
-      google.script.run
-        .withSuccessHandler(function() {
-          localStorage.removeItem('alab_token');
-          google.script.run.withSuccessHandler(function(url) {
-            window.top.location.href = url + '?page=Login';
-          }).getScriptUrl();
-        })
-        .withFailureHandler(function() {
-          localStorage.removeItem('alab_token');
-          google.script.run.withSuccessHandler(function(url) {
-            window.top.location.href = url + '?page=Login';
-          }).getScriptUrl();
-        })
-        .handleAdminRequest('LOGOUT', {}, alab_token);
+      google.script.run.handleAdminRequest('LOGOUT', {}, alab_token);
+      localStorage.removeItem('alab_token');
+      window.top.location.href = baseUrl + '?page=Login';
     }
 
     document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeLogoutModal(); });
