@@ -197,14 +197,6 @@ function createDoctor(payload, token) {
     if (!['super_admin', 'branch_admin'].includes(session.role))
       return { success: false, error: 'Unauthorized.' };
 
-    // Branch admin: verify doctor belongs to their branch
-    if (session.role === 'branch_admin') {
-      const branchMap  = _buildCurrentBranchMap();
-      const assignment = branchMap[payload.doctor_id];
-      if (!assignment || assignment.branch_id !== session.branch_id)
-        return { success: false, error: 'Access denied. This doctor is not in your branch.' };
-    }
-
     if (!payload.last_name  || !payload.last_name.trim())
       return { success: false, error: 'Last name is required.' };
     if (!payload.first_name || !payload.first_name.trim())
