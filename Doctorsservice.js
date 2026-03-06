@@ -247,6 +247,26 @@ function createDoctor(payload, token) {
       true  // must_change_password — always true on creation
     ]);
 
+    // Branch admin: auto-assign the new doctor to their branch
+    if (session.role === 'branch_admin' && session.branch_id) {
+      try {
+        const abSh         = _getDoctorBranchSheet();
+        const assignmentId = 'DA-' + Utilities.getUuid().substring(0, 8).toUpperCase();
+        const assignedBy   = session.full_name || session.username || 'branch_admin';
+        abSh.appendRow([
+          assignmentId,
+          doctorId,
+          session.branch_id,
+          session.branch_name || '',
+          now,
+          assignedBy,
+          true
+        ]);
+      } catch (e) {
+        Logger.log('Auto-assign doctor error: ' + e.message);
+      }
+    }
+
     return {
       success: true,
       data: {
