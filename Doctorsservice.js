@@ -190,7 +190,7 @@ function getDoctors(token) {
 // CREATE — super_admin only
 // Required: last_name, first_name, username, password
 // ═══════════════════════════════════════════════════════════════
-function updateDoctor(payload, token) {
+function createDoctor(payload, token) {
   try {
     const session = _getSession(token);
     if (!session) return { success: false, error: 'Session expired.', expired: true };
