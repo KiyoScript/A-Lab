@@ -158,6 +158,20 @@ function handleDoctorRequest(action, payload, token) {
   }
 }
 
+// ─── Orders requests ──────────────────────────────────────────────
+function handleOrderRequest(action, payload, token) {
+  if (!_getSession(token)) return { success: false, error: 'Session expired. Please log in again.', expired: true };
+  switch (action) {
+    case 'GET_ORDERS':            return getOrders(payload, token);
+    case 'GET_ORDER_ITEMS':       return getOrderItems(payload, token);
+    case 'CREATE_ORDER':          return createOrder(payload, token);
+    case 'ADVANCE_ORDER_STATUS':  return advanceOrderStatus(payload, token);
+    case 'DELETE_ORDER':          return deleteOrder(payload, token);
+    case 'UPDATE_ORDER_NOTES':    return updateOrderNotes(payload, token);
+    default: return { success: false, error: 'Unknown action: ' + action };
+  }
+}
+
 // ─── Admin requests ───────────────────────────────────────────────
 function handleAdminRequest(action, payload, token) {
   if (action === 'LOGIN') return login(payload.username, payload.password);
