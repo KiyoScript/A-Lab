@@ -149,7 +149,8 @@ function handleDoctorRequest(action, payload, token) {
     case 'ASSIGN_DOCTOR_TO_BRANCH': return assignDoctorToBranch(payload, token);
     case 'UNASSIGN_DOCTOR':         return unassignDoctor(payload, token);
     case 'GET_DOCTOR_HISTORY':      return getDoctorAssignmentHistory(payload, token);
-    case 'CHANGE_DOCTOR_PASSWORD':  return changeDoctorPassword(payload, token);
+    case 'CHANGE_DOCTOR_PASSWORD':      return changeDoctorPassword(payload, token);
+    case 'CHANGE_OWN_DOCTOR_PASSWORD':  return changeOwnDoctorPassword(payload, token);
     default: return { success: false, error: 'Unknown action: ' + action };
   }
 }

@@ -27,7 +27,8 @@ function _getDoctorSheet() {
     const headers = [
       'doctor_id', 'last_name', 'first_name', 'middle_name',
       'suffix', 'specialty', 'license_no', 'contact', 'email',
-      'username', 'password_hash', 'is_active', 'created_at', 'updated_at'
+      'username', 'password_hash', 'is_active', 'created_at', 'updated_at',
+      'must_change_password'
     ];
     sh.appendRow(headers);
     sh.getRange(1, 1, 1, headers.length)
@@ -50,6 +51,7 @@ function _getDoctorSheet() {
     sh.setColumnWidth(12,  90); // is_active
     sh.setColumnWidth(13, 180); // created_at
     sh.setColumnWidth(14, 180); // updated_at
+    sh.setColumnWidth(15, 180); // must_change_password
   }
 
   return sh;
@@ -99,9 +101,10 @@ function _doctorRowToObj(row) {
     email:       String(row[8]  || ''),
     username:    String(row[9]  || ''),
     // row[10] = password_hash — intentionally excluded
-    is_active:   row[11] === true || String(row[11]).toUpperCase() === 'TRUE',
-    created_at:  String(row[12] || ''),
-    updated_at:  String(row[13] || '')
+    is_active:            row[11] === true || String(row[11]).toUpperCase() === 'TRUE',
+    created_at:           String(row[12] || ''),
+    updated_at:           String(row[13] || ''),
+    must_change_password: row[14] === true || String(row[14]).toUpperCase() === 'TRUE'
   };
 }
 
@@ -248,7 +251,8 @@ function updateDoctor(payload, token) {
       _hashPassword(payload.password.trim()),
       payload.is_active !== false,
       now,
-      now
+      now,
+      true  // must_change_password — always true on creation
     ]);
 
     return {
@@ -539,6 +543,7 @@ function changeDoctorPassword(payload, token) {
 
     sh.getRange(idx + 1, 11).setValue(_hashPassword(payload.new_password.trim()));
     sh.getRange(idx + 1, 14).setValue(new Date().toISOString());
+    sh.getRange(idx + 1, 15).setValue(false); // clear must_change_password
 
     return { success: true };
   } catch (e) {
@@ -574,12 +579,13 @@ function doctorLogin(username, password) {
         const assignment = branchMap[doctorId] || {};
 
         const sessionData = {
-          doctor_id:   doctorId,
-          full_name:   String(row[2]).trim() + ' ' + String(row[1]).trim(),
-          username:    unameLower,
-          role:        'doctor',
-          branch_id:   assignment.branch_id   || null,
-          branch_name: assignment.branch_name || null
+          doctor_id:            doctorId,
+          full_name:            String(row[2]).trim() + ' ' + String(row[1]).trim(),
+          username:             unameLower,
+          role:                 'doctor',
+          branch_id:            assignment.branch_id   || null,
+          branch_name:          assignment.branch_name || null,
+          must_change_password: row[14] === true || String(row[14]).toUpperCase() === 'TRUE'
         };
 
         const token = _generateToken();
@@ -594,5 +600,38 @@ function doctorLogin(username, password) {
   } catch (e) {
     Logger.log('doctorLogin error: ' + e.message);
     return null;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CHANGE OWN PASSWORD — doctor role only (first login or self-change)
+// ═══════════════════════════════════════════════════════════════
+function changeOwnDoctorPassword(payload, token) {
+  try {
+    const session = _getSession(token);
+    if (!session) return { success: false, error: 'Session expired.', expired: true };
+    if (session.role !== 'doctor') return { success: false, error: 'Unauthorized.' };
+
+    if (!payload.new_password || payload.new_password.trim().length < 6)
+      return { success: false, error: 'Password must be at least 6 characters.' };
+
+    const sh   = _getDoctorSheet();
+    const data = sh.getDataRange().getValues();
+    const idx  = data.findIndex(function(r, i) {
+      return i > 0 && String(r[0]) === String(session.doctor_id);
+    });
+    if (idx === -1) return { success: false, error: 'Doctor not found.' };
+
+    sh.getRange(idx + 1, 11).setValue(_hashPassword(payload.new_password.trim()));
+    sh.getRange(idx + 1, 14).setValue(new Date().toISOString());
+    sh.getRange(idx + 1, 15).setValue(false); // clear must_change_password
+
+    // Update the live session too
+    session.must_change_password = false;
+    _setSession(token, session);
+
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: e.message };
   }
 }

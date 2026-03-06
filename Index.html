@@ -121,6 +121,14 @@
         <span class="nav-label">Discounts</span>
       </a>
 
+      <a id="nav-orders" href="#" onclick="setActive(this); loadPage('Orders'); return false;"
+        class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer">
+        <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v8.5L4.5 18A2 2 0 006.4 21h11.2a2 2 0 001.9-2.5L15 11.5V3M9 3h6M8 15h8"/>
+        </svg>
+        <span class="nav-label">Orders</span>
+      </a>
+
       <p class="nav-section-label text-[10px] font-semibold uppercase tracking-widest px-3 mb-2 mt-4">People</p>
 
       <a href="#" onclick="setActive(this); loadPage('Doctors'); return false;"
@@ -308,6 +316,18 @@
     function applyNavRoles(role) {
       if (role === 'branch_admin') {
         document.getElementById('nav-branches').style.display = 'none';
+      }
+      if (role === 'doctor') {
+        // Doctors only see Orders — hide everything else
+        document.querySelectorAll('.nav-link').forEach(function(el) {
+          el.style.display = 'none';
+        });
+        document.querySelectorAll('.nav-section-label').forEach(function(el) {
+          el.style.display = 'none';
+        });
+        // Show only Orders link once it exists
+        var ordersLink = document.getElementById('nav-orders');
+        if (ordersLink) ordersLink.style.display = '';
       }
     }
 
