@@ -546,6 +546,18 @@ function changeDoctorPassword(payload, token) {
     if (!payload.new_password || payload.new_password.trim().length < 6)
       return { success: false, error: 'Password must be at least 6 characters.' };
 
+    // Verify current password if provided
+    if (payload.current_password) {
+      const currentHashed = _hashPassword(payload.current_password.trim());
+      const sh2   = _getDoctorSheet();
+      const data2 = sh2.getDataRange().getValues();
+      const row2  = data2.find(function(r, i) {
+        return i > 0 && String(r[0]) === String(session.doctor_id);
+      });
+      if (!row2 || String(row2[10]).trim() !== currentHashed)
+        return { success: false, error: 'Current password is incorrect.' };
+    }
+
     const sh   = _getDoctorSheet();
     const data = sh.getDataRange().getValues();
     const idx  = data.findIndex(function(r, i) {
