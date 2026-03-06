@@ -181,6 +181,12 @@ function login(username, password) {
       if (doctorResult !== null) return doctorResult;
     } catch(_) { /* DoctorsService not available — skip */ }
 
+    // ── 4. Check MedTechs (Technologists) ─────────────────────
+    try {
+      const medtechResult = medtechLogin(username, password);
+      if (medtechResult !== null) return medtechResult;
+    } catch(_) { /* MedtechService not available — skip */ }
+
     return { success: false, error: 'Invalid username or password.' };
   } catch (e) {
     return { success: false, error: e.message };

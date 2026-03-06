@@ -270,9 +270,14 @@
               return;
             }
             if (res.data) {
-              // Doctors should never be here — redirect to their portal
+              // Doctors → Doctor portal
               if (res.data.role === 'doctor') {
                 window.top.location.href = url + '?page=DoctorIndex&token=' + encodeURIComponent(alab_token);
+                return;
+              }
+              // Technologists → Tech portal
+              if (res.data.role === 'medtech') {
+                window.top.location.href = url + '?page=TechIndex&token=' + encodeURIComponent(alab_token);
                 return;
               }
               if (res.data.role === 'medtech') {

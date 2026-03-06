@@ -347,3 +347,67 @@ function changeMedTechPassword(payload, token) {
     return { success: false, error: e.message };
   }
 }
+
+// ═══════════════════════════════════════════════════════════════
+// MEDTECH LOGIN — called from AdminService login() as step 4
+// Validates email/username + password against MedTechs sheet
+// in each branch SS. Returns { success, token, data } on match.
+// ═══════════════════════════════════════════════════════════════
+function medtechLogin(username, password) {
+  try {
+    const hashed     = _hashPassword(password.trim());
+    const unameLower = username.trim().toLowerCase();
+
+    const branchSh   = _getRegistrySheet();
+    const branchData = branchSh.getDataRange().getValues();
+
+    for (var b = 1; b < branchData.length; b++) {
+      const branchRow  = branchData[b];
+      const branchId   = String(branchRow[0] || '');
+      const branchName = String(branchRow[1] || '');
+      const ssId       = String(branchRow[7] || '');
+      if (!ssId) continue;
+
+      try {
+        const sh   = _getMedTechSheet(ssId);
+        const data = sh.getDataRange().getValues();
+
+        for (var i = 1; i < data.length; i++) {
+          const row = data[i];
+          if (!row[0]) continue;
+
+          // Login via email (col 5, index 4) or treat email as username
+          const emailMatch = String(row[4]).trim().toLowerCase() === unameLower;
+          const hashMatch  = String(row[5]).trim() === hashed;
+
+          if (emailMatch && hashMatch) {
+            if (String(row[7]) !== 'Active')
+              return { success: false, error: 'Account is inactive.' };
+
+            const fullName = String(row[2]).trim() + ' ' + String(row[1]).trim();
+
+            const sessionData = {
+              medtech_id:   String(row[0]),
+              full_name:    fullName,
+              username:     String(row[4]).trim().toLowerCase(), // email as username
+              role:         'medtech',
+              medtech_role: String(row[6] || ''),  // e.g. "Medical Technologist"
+              branch_id:    branchId,
+              branch_name:  branchName
+            };
+
+            const token = _generateToken();
+            _setSession(token, sessionData);
+            return { success: true, token: token, data: sessionData };
+          }
+        }
+      } catch(_) { /* skip unreadable branch SS */ }
+    }
+
+    // No match — return null so AdminService falls through to final error
+    return null;
+  } catch(e) {
+    Logger.log('medtechLogin error: ' + e.message);
+    return null;
+  }
+}

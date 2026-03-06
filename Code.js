@@ -16,6 +16,9 @@ function doGet(e) {
   // Doctors get their own portal shell
   if (session.role === 'doctor' && page === 'Index') return _serve('DoctorIndex');
 
+  // Technologists get their own portal shell
+  if (session.role === 'medtech' && page === 'Index') return _serve('TechIndex');
+
   return _serve(page);
 }
 

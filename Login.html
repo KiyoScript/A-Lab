@@ -133,7 +133,8 @@
               pendingRole     = res.data.role || '';
               document.getElementById('change-pw-modal').classList.remove('hidden');
             } else {
-              var targetPage = (res.data && res.data.role === 'doctor') ? 'DoctorIndex' : 'Index';
+              var targetPage = res.data.role === 'doctor'  ? 'DoctorIndex' :
+                               res.data.role === 'medtech' ? 'TechIndex'   : 'Index';
               google.script.run
                 .withSuccessHandler(function(url) {
                   window.top.location.href = url + '?page=' + targetPage + '&token=' + encodeURIComponent(res.token);
