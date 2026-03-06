@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard — A-Lab Doctor Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    * { font-family: 'DM Sans', sans-serif; }
+    body { background: #f8fafc; color: #0f172a; height: 100vh; overflow: auto; }
+    .stat-card { background:#fff; border:1px solid #e2e8f0; border-radius:1rem; padding:1.25rem; box-shadow:0 1px 3px rgba(0,0,0,0.06); transition: box-shadow 0.18s, transform 0.18s; }
+    .stat-card:hover { box-shadow:0 8px 30px -6px rgba(47,118,245,0.15); transform:translateY(-2px); }
+    .card { background:#fff; border:1px solid #e2e8f0; border-radius:1rem; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
+    tr.data-row { border-bottom:1px solid #f1f5f9; transition:background 0.12s; }
+    tr.data-row:hover { background:#f8fafc; }
+    .status-badge { font-size:11px; font-weight:600; letter-spacing:0.03em; padding:2px 10px; border-radius:99px; }
+    .badge-pending    { background:#fef9c3; color:#a16207; }
+    .badge-processing { background:#dbeafe; color:#1d4ed8; }
+    .badge-review     { background:#ede9fe; color:#7c3aed; }
+    .badge-release    { background:#ffedd5; color:#c2410c; }
+    .badge-released   { background:#dcfce7; color:#15803d; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+    .fade-up { animation: fadeUp 0.35s ease both; }
+    .delay-1{animation-delay:0.05s} .delay-2{animation-delay:0.10s} .delay-3{animation-delay:0.15s}
+    .delay-4{animation-delay:0.20s} .delay-5{animation-delay:0.25s} .delay-6{animation-delay:0.30s}
+    ::-webkit-scrollbar { width:5px; }
+    ::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:99px; }
+    .skeleton { background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 6px; }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  </style>
+</head>
+<body>
+<div class="p-6 max-w-7xl mx-auto">
+
+  <!-- Header -->
+  <div class="mb-6 fade-up">
+    <h1 class="text-xl font-bold text-slate-800">Dashboard</h1>
+    <p id="welcome-msg" class="text-sm text-slate-400 mt-0.5">Welcome back, Doctor. Here's a summary of your referrals.</p>
+  </div>
+
+  <!-- STAT CARDS -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+
+    <div class="stat-card fade-up delay-1">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-xs font-semibold text-slate-400 uppercase tracking-widest">Total Referrals</span>
+        <div class="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center">
+          <svg class="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v8.5L4.5 18A2 2 0 006.4 21h11.2a2 2 0 001.9-2.5L15 11.5V3M9 3h6"/>
+          </svg>
+        </div>
+      </div>
+      <p id="stat-total" class="text-3xl font-bold text-slate-800">—</p>
+      <p class="text-xs text-slate-400 mt-1">All time</p>
+    </div>
+
+    <div class="stat-card fade-up delay-2">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-xs font-semibold text-slate-400 uppercase tracking-widest">Pending</span>
+        <div class="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center">
+          <svg class="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+      </div>
+      <p id="stat-pending" class="text-3xl font-bold text-slate-800">—</p>
+      <p class="text-xs text-slate-400 mt-1">Awaiting results</p>
+    </div>
+
+    <div class="stat-card fade-up delay-3">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-xs font-semibold text-slate-400 uppercase tracking-widest">For Release</span>
+        <div class="w-8 h-8 rounded-xl bg-orange-50 flex items-center justify-center">
+          <svg class="w-4 h-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+          </svg>
+        </div>
+      </div>
+      <p id="stat-release" class="text-3xl font-bold text-slate-800">—</p>
+      <p class="text-xs text-slate-400 mt-1">Ready for pickup</p>
+    </div>
+
+    <div class="stat-card fade-up delay-4">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-xs font-semibold text-slate-400 uppercase tracking-widest">Released</span>
+        <div class="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center">
+          <svg class="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+      </div>
+      <p id="stat-released" class="text-3xl font-bold text-slate-800">—</p>
+      <p class="text-xs text-slate-400 mt-1">Completed</p>
+    </div>
+
+  </div>
+
+  <!-- MAIN ROW -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+    <!-- Recent Referrals Table -->
+    <div class="lg:col-span-2 card fade-up delay-5">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+        <div>
+          <h2 class="text-sm font-bold text-slate-800">Recent Referrals</h2>
+          <p class="text-xs text-slate-400 mt-0.5">Your latest 8 lab orders</p>
+        </div>
+        <a href="#" onclick="parent.document.querySelector('[onclick*=DoctorOrders]').click(); return false;"
+           class="text-xs font-semibold text-blue-500 hover:text-blue-600 transition-colors">View all →</a>
+      </div>
+      <div id="recent-loading" class="flex flex-col items-center justify-center py-10 gap-2">
+        <div class="w-8 h-8 rounded-full animate-spin" style="border:2px solid #bbd8ff;border-top-color:#2f76f5"></div>
+        <p class="text-xs text-slate-400">Loading referrals…</p>
+      </div>
+      <div id="recent-empty" class="hidden flex-col items-center justify-center py-10 gap-2 text-center">
+        <svg class="w-10 h-10 text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v8.5L4.5 18A2 2 0 006.4 21h11.2a2 2 0 001.9-2.5L15 11.5V3M9 3h6"/>
+        </svg>
+        <p class="text-sm text-slate-400 font-medium">No referrals yet</p>
+        <p class="text-xs text-slate-300">Orders referring you will appear here.</p>
+      </div>
+      <div id="recent-wrap" class="hidden overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-100">
+              <th class="text-left px-5 py-3">Order No.</th>
+              <th class="text-left px-3 py-3">Patient</th>
+              <th class="text-left px-3 py-3 hidden md:table-cell">Tests</th>
+              <th class="text-left px-3 py-3">Status</th>
+              <th class="text-left px-3 py-3 hidden md:table-cell">Date</th>
+            </tr>
+          </thead>
+          <tbody id="recent-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Right column -->
+    <div class="flex flex-col gap-4">
+
+      <!-- Order Status Breakdown -->
+      <div class="card p-5 fade-up delay-5">
+        <h2 class="text-sm font-bold text-slate-800 mb-4">Status Breakdown</h2>
+        <div id="status-breakdown" class="space-y-3">
+          <!-- filled by JS -->
+          <div class="skeleton h-4 w-full"></div>
+          <div class="skeleton h-4 w-5/6"></div>
+          <div class="skeleton h-4 w-4/6"></div>
+          <div class="skeleton h-4 w-3/6"></div>
+        </div>
+      </div>
+
+      <!-- Branch Info -->
+      <div class="card p-5 fade-up delay-6">
+        <h2 class="text-sm font-bold text-slate-800 mb-3">Your Branch</h2>
+        <div id="branch-info" class="space-y-2">
+          <div class="skeleton h-4 w-3/4"></div>
+          <div class="skeleton h-3 w-1/2"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  var alab_token = (new URLSearchParams(window.location.search)).get('token') || localStorage.getItem('alab_token') || '';
+
+  function _checkExpired(res) {
+    if (res && res.expired) {
+      localStorage.removeItem('alab_token');
+      google.script.run.withSuccessHandler(function(url) {
+        window.top.location.href = url + '?page=Login';
+      }).getScriptUrl();
+      return true;
+    }
+    return false;
+  }
+
+  var currentSession = null;
+
+  document.addEventListener('DOMContentLoaded', function() {
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (_checkExpired(res)) return;
+        if (!res.success || !res.data) return;
+        currentSession = res.data;
+
+        // Personalise welcome
+        document.getElementById('welcome-msg').textContent =
+          'Welcome back, Dr. ' + (res.data.full_name || 'Doctor') + '. Here\'s a summary of your referrals.';
+
+        // Branch info
+        var branchEl = document.getElementById('branch-info');
+        if (res.data.branch_name) {
+          branchEl.innerHTML =
+            '<p class="text-sm font-semibold text-slate-700">' + escHtml(res.data.branch_name) + '</p>' +
+            '<p class="text-xs text-slate-400 mt-0.5">Assigned branch</p>';
+        } else {
+          branchEl.innerHTML = '<p class="text-xs text-slate-400 italic">No branch assigned yet.</p>';
+        }
+
+        // Load orders once we have session
+        loadRecentOrders();
+      })
+      .withFailureHandler(function() {})
+      .handleAdminRequest('GET_SESSION', {}, alab_token);
+  });
+
+  function loadRecentOrders() {
+    // TODO: wire to real OrdersService once Phase 2 is built
+    // For now show the empty state with zeroed stats
+    showEmpty();
+    setStats(0, 0, 0, 0);
+    renderStatusBreakdown(0, 0, 0, 0);
+  }
+
+  function showEmpty() {
+    document.getElementById('recent-loading').classList.add('hidden');
+    document.getElementById('recent-empty').classList.remove('hidden');
+    document.getElementById('recent-empty').classList.add('flex');
+    document.getElementById('recent-wrap').classList.add('hidden');
+  }
+
+  function setStats(total, pending, release, released) {
+    document.getElementById('stat-total').textContent    = total;
+    document.getElementById('stat-pending').textContent  = pending;
+    document.getElementById('stat-release').textContent  = release;
+    document.getElementById('stat-released').textContent = released;
+  }
+
+  function renderStatusBreakdown(pending, processing, forRelease, released) {
+    var total = pending + processing + forRelease + released || 1;
+    var items = [
+      { label: 'Pending',      count: pending,    color: 'bg-amber-400',   pct: Math.round(pending/total*100) },
+      { label: 'Processing',   count: processing, color: 'bg-blue-400',    pct: Math.round(processing/total*100) },
+      { label: 'For Release',  count: forRelease, color: 'bg-orange-400',  pct: Math.round(forRelease/total*100) },
+      { label: 'Released',     count: released,   color: 'bg-emerald-400', pct: Math.round(released/total*100) }
+    ];
+    document.getElementById('status-breakdown').innerHTML = items.map(function(i) {
+      return '<div>' +
+        '<div class="flex justify-between text-xs mb-1.5">' +
+          '<span class="text-slate-500 font-medium">' + i.label + '</span>' +
+          '<span class="font-semibold text-slate-700">' + i.count + '</span>' +
+        '</div>' +
+        '<div class="h-1.5 bg-slate-100 rounded-full overflow-hidden">' +
+          '<div class="h-full ' + i.color + ' rounded-full transition-all duration-500" style="width:' + i.pct + '%"></div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function statusBadge(status) {
+    var map = {
+      'Pending':      'badge-pending',
+      'Processing':   'badge-processing',
+      'For Review':   'badge-review',
+      'For Release':  'badge-release',
+      'Released':     'badge-released'
+    };
+    var cls = map[status] || 'badge-pending';
+    return '<span class="status-badge ' + cls + '">' + escHtml(status) + '</span>';
+  }
+
+  function escHtml(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+</script>
+</body>
+</html>
