@@ -13,6 +13,9 @@ function doGet(e) {
   const session = _getSession(token);
   if (!session) return _serve('Login');
 
+  // Doctors get their own portal shell
+  if (session.role === 'doctor' && page === 'Index') return _serve('DoctorIndex');
+
   return _serve(page);
 }
 

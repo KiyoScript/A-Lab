@@ -129,13 +129,14 @@
           if (res.success) {
             localStorage.setItem('alab_token', res.token);
             if (res.data && res.data.must_change_password) {
-              // Show forced password change modal before proceeding
-              pendingToken = res.token;
+              pendingToken    = res.token;
+              pendingRole     = res.data.role || '';
               document.getElementById('change-pw-modal').classList.remove('hidden');
             } else {
+              var targetPage = (res.data && res.data.role === 'doctor') ? 'DoctorIndex' : 'Index';
               google.script.run
                 .withSuccessHandler(function(url) {
-                  window.top.location.href = url + '?token=' + encodeURIComponent(res.token);
+                  window.top.location.href = url + '?page=' + targetPage + '&token=' + encodeURIComponent(res.token);
                 })
                 .getScriptUrl();
             }
@@ -195,6 +196,7 @@
 
 <script>
   var pendingToken = '';
+  var pendingRole  = '';
 
   function submitNewPassword() {
     var np  = document.getElementById('new-pw').value;
@@ -211,9 +213,10 @@
     google.script.run
       .withSuccessHandler(function(res) {
         if (res.success) {
+          var targetPage = pendingRole === 'doctor' ? 'DoctorIndex' : 'Index';
           google.script.run
             .withSuccessHandler(function(url) {
-              window.top.location.href = url + '?token=' + encodeURIComponent(pendingToken);
+              window.top.location.href = url + '?page=' + targetPage + '&token=' + encodeURIComponent(pendingToken);
             })
             .getScriptUrl();
         } else {
