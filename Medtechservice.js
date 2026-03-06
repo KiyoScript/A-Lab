@@ -411,3 +411,59 @@ function medtechLogin(username, password) {
     return null;
   }
 }
+
+// ═══════════════════════════════════════════════════════════════
+// CHANGE OWN PASSWORD — medtech role only (self-service)
+// Verifies current password before allowing the change.
+// ═══════════════════════════════════════════════════════════════
+function changeOwnMedTechPassword(payload, token) {
+  try {
+    const session = _getSession(token);
+    if (!session) return { success: false, error: 'Session expired.', expired: true };
+    if (session.role !== 'medtech') return { success: false, error: 'Unauthorized.' };
+
+    if (!payload.current_password || !payload.current_password.trim())
+      return { success: false, error: 'Current password is required.' };
+    if (!payload.new_password || payload.new_password.trim().length < 6)
+      return { success: false, error: 'New password must be at least 6 characters.' };
+
+    const currentHashed = _hashPassword(payload.current_password.trim());
+    const newHashed     = _hashPassword(payload.new_password.trim());
+
+    if (currentHashed === newHashed)
+      return { success: false, error: 'New password cannot be the same as your current password.' };
+
+    // Find the medtech record in their branch SS
+    const branchSh   = _getRegistrySheet();
+    const branchData = branchSh.getDataRange().getValues();
+
+    for (var b = 1; b < branchData.length; b++) {
+      const ssId = String(branchData[b][7] || '');
+      if (!ssId) continue;
+      if (String(branchData[b][0]) !== session.branch_id) continue;
+
+      try {
+        const sh   = _getMedTechSheet(ssId);
+        const data = sh.getDataRange().getValues();
+        const idx  = data.findIndex(function(r, i) {
+          return i > 0 && String(r[0]) === String(session.medtech_id);
+        });
+        if (idx === -1) continue;
+
+        // Verify current password
+        if (String(data[idx][5]).trim() !== currentHashed)
+          return { success: false, error: 'Current password is incorrect.' };
+
+        // Update password
+        const row = idx + 1;
+        sh.getRange(row, 6).setValue(newHashed);
+        sh.getRange(row, 12).setValue(new Date().toISOString());
+        return { success: true };
+      } catch(_) {}
+    }
+
+    return { success: false, error: 'Account not found.' };
+  } catch(e) {
+    return { success: false, error: e.message };
+  }
+}

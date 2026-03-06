@@ -196,27 +196,31 @@ function _createBranchSpreadsheet(branchName, branchCode) {
   const ordersSheet = ss.insertSheet('Orders');
   const ordersHeaders = [
     'order_id','order_number','patient_id','patient_snapshot',
-    'referring_doctor_id','doctor_snapshot','technologist_id','created_by',
-    'status','payment_amount','payment_discount','amount_paid',
-    'change','notes','order_date','created_at','updated_at'
+    'referring_doctor_id','doctor_snapshot','status','payment_method',
+    'payment_amount','payment_discount','amount_paid','change',
+    'notes','order_date','created_by','created_at','updated_at'
   ];
   ordersSheet.appendRow(ordersHeaders);
   ordersSheet.getRange(1,1,1,ordersHeaders.length)
     .setFontWeight('bold').setBackground('#0f172a')
     .setFontColor('#ffffff').setHorizontalAlignment('center');
   ordersSheet.setFrozenRows(1);
+  ordersSheet.setColumnWidths(1, ordersHeaders.length, 160);
 
   // ── 6. ORDER_ITEMS sheet ──────────────────────────────────────
   const itemsSheet = ss.insertSheet('Order_Items');
   const itemsHeaders = [
-    'item_id','order_id','item_type',
-    'item_ref_id','item_name_snapshot','fee','created_at'
+    'item_id','order_id','item_type','item_ref_id','item_name_snapshot',
+    'fee','item_status','result_status','result_file_url','result_drive_id',
+    'result_file_name','started_by','started_at','completed_by','completed_at',
+    'created_at'
   ];
   itemsSheet.appendRow(itemsHeaders);
   itemsSheet.getRange(1,1,1,itemsHeaders.length)
     .setFontWeight('bold').setBackground('#0f172a')
     .setFontColor('#ffffff').setHorizontalAlignment('center');
   itemsSheet.setFrozenRows(1);
+  itemsSheet.setColumnWidths(1, itemsHeaders.length, 160);
 
   // ── Bring Admins to front ─────────────────────────────────────
   ss.setActiveSheet(adminsSheet);

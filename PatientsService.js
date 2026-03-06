@@ -206,8 +206,8 @@ function getPatients(payload, token) {
 
       if (!ssId) continue;
 
-      // Branch admin: only their branch
-      if (session.role === 'branch_admin' && bId !== session.branch_id) continue;
+      // Branch-scoped roles: only their branch
+      if (['branch_admin', 'medtech'].includes(session.role) && bId !== session.branch_id) continue;
 
       // Super admin with branch filter
       if (payload && payload.branch_id && bId !== payload.branch_id) continue;
@@ -266,7 +266,7 @@ function createPatient(payload, token) {
     if (!session) return { success: false, error: 'Session expired.', expired: true };
     if (session.role === 'super_admin')
       return { success: false, error: 'Access denied. Super admins cannot create patients.' };
-    if (session.role !== 'branch_admin')
+    if (!['branch_admin', 'medtech'].includes(session.role))
       return { success: false, error: 'Unauthorized.' };
 
     if (!payload.last_name  || !payload.last_name.trim())  return { success: false, error: 'Last name is required.' };
@@ -276,9 +276,9 @@ function createPatient(payload, token) {
     if (!payload.contact_number || !payload.contact_number.trim()) return { success: false, error: 'Contact number is required.' };
     if (!payload.address || !payload.address.trim())        return { success: false, error: 'Address is required.' };
 
-    // Determine target branch
+    // Determine target branch — both branch_admin and medtech are auto-assigned
     var targetBranchId = payload.branch_id;
-    if (session.role === 'branch_admin') targetBranchId = session.branch_id;
+    if (['branch_admin', 'medtech'].includes(session.role)) targetBranchId = session.branch_id;
     if (!targetBranchId) return { success: false, error: 'Branch is required.' };
 
     const branchInfo = _getBranchSsId(targetBranchId);
@@ -343,7 +343,7 @@ function updatePatient(payload, token) {
     if (!session) return { success: false, error: 'Session expired.', expired: true };
     if (session.role === 'super_admin')
       return { success: false, error: 'Access denied. Super admins cannot edit patients.' };
-    if (session.role !== 'branch_admin')
+    if (!['branch_admin', 'medtech'].includes(session.role))
       return { success: false, error: 'Unauthorized.' };
 
     if (!payload.patient_id) return { success: false, error: 'patient_id is required.' };
@@ -394,7 +394,7 @@ function deletePatient(payload, token) {
     if (!session) return { success: false, error: 'Session expired.', expired: true };
     if (session.role === 'super_admin')
       return { success: false, error: 'Access denied. Super admins cannot delete patients.' };
-    if (session.role !== 'branch_admin')
+    if (!['branch_admin', 'medtech'].includes(session.role))
       return { success: false, error: 'Unauthorized.' };
 
     if (!payload.patient_id) return { success: false, error: 'patient_id is required.' };
