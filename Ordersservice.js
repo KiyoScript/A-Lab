@@ -1,100 +1,79 @@
 // ═══════════════════════════════════════════════════════════════
 // ORDERS SERVICE
-// Orders stored per-branch SS → "Orders" sheet
-// Order line items → per-branch SS → "Order_Items" sheet
+// ═══════════════════════════════════════════════════════════════
 //
-// Orders schema:
-//   A: order_id            B: order_number         C: patient_id
-//   D: patient_snapshot    E: referring_doctor_id  F: doctor_snapshot
-//   G: technologist_id     H: created_by           I: status
-//   J: payment_amount      K: payment_discount     L: amount_paid
-//   M: change              N: notes                O: order_date
-//   P: created_at          Q: updated_at
+// Order Status Flow:
+//   DRAFT → OPEN → PAID → IN_PROGRESS → FOR_RELEASE → RELEASED
 //
-// Order_Items schema:
-//   A: item_id   B: order_id   C: item_type (service/package)
-//   D: item_ref_id   E: item_name_snapshot   F: fee   G: created_at
+// Order Item Status Flow:
+//   PENDING → RUNNING → DONE
 //
-// Status flow:
-//   Pending → Processing → For Review → For Release → Released
+// Result Status Flow:
+//   DRAFT → FOR_VERIFICATION → VERIFIED → RELEASED
 //
-// Access:
-//   CREATE            → medtech only
-//   READ              → medtech (own branch) | branch_admin (own branch) |
-//                       super_admin (all) | doctor (their referrals only)
-//   ADVANCE STATUS    → medtech (Pending→Processing, For Release→Released)
-//                       branch_admin (Processing→For Review→For Release)
-//   DELETE            → branch_admin only (Pending status only)
+// ── Orders Sheet Schema (per branch SS) ─────────────────────────
+//   A: order_id           B: order_number       C: patient_id
+//   D: patient_snapshot   E: referring_doctor_id F: doctor_snapshot
+//   G: status             H: payment_method      I: payment_amount
+//   J: payment_discount   K: amount_paid         L: change
+//   M: notes              N: order_date          O: created_by
+//   P: created_at         Q: updated_at
+//
+// ── Order_Items Sheet Schema (per branch SS) ─────────────────────
+//   A: item_id            B: order_id            C: item_type
+//   D: item_ref_id        E: item_name_snapshot  F: fee
+//   G: item_status        H: result_status       I: result_file_url
+//   J: result_drive_id    K: result_file_name    L: started_by
+//   M: started_at         N: completed_by        O: completed_at
+//   P: created_at
+//
+// ── Access ───────────────────────────────────────────────────────
+//   Technologist  → full access (create, process, upload, verify, release)
+//   Branch Admin  → view all + delete DRAFT orders
+//   Super Admin   → view all (read only)
+//   Doctor        → view own referrals only (read only)
 // ═══════════════════════════════════════════════════════════════
 
 // ─── Sheet helpers ────────────────────────────────────────────────
 function _getOrderSheet(spreadsheetId) {
   const ss = SpreadsheetApp.openById(spreadsheetId);
   let sh = ss.getSheetByName('Orders');
-
   if (!sh) {
     sh = ss.insertSheet('Orders');
     const headers = [
-      'order_id', 'order_number', 'patient_id', 'patient_snapshot',
-      'referring_doctor_id', 'doctor_snapshot', 'technologist_id', 'created_by',
-      'status', 'payment_amount', 'payment_discount', 'amount_paid',
-      'change', 'notes', 'order_date', 'created_at', 'updated_at'
+      'order_id','order_number','patient_id','patient_snapshot',
+      'referring_doctor_id','doctor_snapshot','status','payment_method',
+      'payment_amount','payment_discount','amount_paid','change',
+      'notes','order_date','created_by','created_at','updated_at'
     ];
     sh.appendRow(headers);
-    sh.getRange(1, 1, 1, headers.length)
-      .setFontWeight('bold')
-      .setBackground('#0f172a')
-      .setFontColor('#ffffff')
-      .setHorizontalAlignment('center');
+    sh.getRange(1,1,1,headers.length)
+      .setFontWeight('bold').setBackground('#0f172a')
+      .setFontColor('#ffffff').setHorizontalAlignment('center');
     sh.setFrozenRows(1);
-    sh.setColumnWidth(1,  180); // order_id
-    sh.setColumnWidth(2,  160); // order_number
-    sh.setColumnWidth(3,  160); // patient_id
-    sh.setColumnWidth(4,  200); // patient_snapshot
-    sh.setColumnWidth(5,  160); // referring_doctor_id
-    sh.setColumnWidth(6,  200); // doctor_snapshot
-    sh.setColumnWidth(7,  160); // technologist_id
-    sh.setColumnWidth(8,  160); // created_by
-    sh.setColumnWidth(9,  120); // status
-    sh.setColumnWidth(10, 130); // payment_amount
-    sh.setColumnWidth(11, 140); // payment_discount
-    sh.setColumnWidth(12, 120); // amount_paid
-    sh.setColumnWidth(13, 100); // change
-    sh.setColumnWidth(14, 240); // notes
-    sh.setColumnWidth(15, 180); // order_date
-    sh.setColumnWidth(16, 180); // created_at
-    sh.setColumnWidth(17, 180); // updated_at
+    sh.setColumnWidths(1, headers.length, 160);
   }
-
   return sh;
 }
 
 function _getOrderItemSheet(spreadsheetId) {
   const ss = SpreadsheetApp.openById(spreadsheetId);
   let sh = ss.getSheetByName('Order_Items');
-
   if (!sh) {
     sh = ss.insertSheet('Order_Items');
     const headers = [
-      'item_id', 'order_id', 'item_type',
-      'item_ref_id', 'item_name_snapshot', 'fee', 'created_at'
+      'item_id','order_id','item_type','item_ref_id','item_name_snapshot',
+      'fee','item_status','result_status','result_file_url','result_drive_id',
+      'result_file_name','started_by','started_at','completed_by','completed_at',
+      'created_at'
     ];
     sh.appendRow(headers);
-    sh.getRange(1, 1, 1, headers.length)
-      .setFontWeight('bold')
-      .setBackground('#0f172a')
-      .setFontColor('#ffffff')
-      .setHorizontalAlignment('center');
+    sh.getRange(1,1,1,headers.length)
+      .setFontWeight('bold').setBackground('#0f172a')
+      .setFontColor('#ffffff').setHorizontalAlignment('center');
     sh.setFrozenRows(1);
-    sh.setColumnWidth(1, 180); // item_id
-    sh.setColumnWidth(2, 180); // order_id
-    sh.setColumnWidth(3, 100); // item_type
-    sh.setColumnWidth(4, 160); // item_ref_id
-    sh.setColumnWidth(5, 240); // item_name_snapshot
-    sh.setColumnWidth(6, 100); // fee
-    sh.setColumnWidth(7, 180); // created_at
+    sh.setColumnWidths(1, headers.length, 160);
   }
-
   return sh;
 }
 
@@ -107,15 +86,15 @@ function _orderRowToObj(row) {
     patient_snapshot:    String(row[3]  || ''),
     referring_doctor_id: String(row[4]  || ''),
     doctor_snapshot:     String(row[5]  || ''),
-    technologist_id:     String(row[6]  || ''),
-    created_by:          String(row[7]  || ''),
-    status:              String(row[8]  || 'Pending'),
-    payment_amount:      Number(row[9])  || 0,
-    payment_discount:    Number(row[10]) || 0,
-    amount_paid:         Number(row[11]) || 0,
-    change:              Number(row[12]) || 0,
-    notes:               String(row[13] || ''),
-    order_date:          String(row[14] || ''),
+    status:              String(row[6]  || 'DRAFT'),
+    payment_method:      String(row[7]  || ''),
+    payment_amount:      Number(row[8])  || 0,
+    payment_discount:    Number(row[9])  || 0,
+    amount_paid:         Number(row[10]) || 0,
+    change:              Number(row[11]) || 0,
+    notes:               String(row[12] || ''),
+    order_date:          String(row[13] || ''),
+    created_by:          String(row[14] || ''),
     created_at:          String(row[15] || ''),
     updated_at:          String(row[16] || '')
   };
@@ -123,17 +102,26 @@ function _orderRowToObj(row) {
 
 function _orderItemRowToObj(row) {
   return {
-    item_id:            String(row[0] || ''),
-    order_id:           String(row[1] || ''),
-    item_type:          String(row[2] || ''),
-    item_ref_id:        String(row[3] || ''),
-    item_name_snapshot: String(row[4] || ''),
-    fee:                Number(row[5]) || 0,
-    created_at:         String(row[6] || '')
+    item_id:            String(row[0]  || ''),
+    order_id:           String(row[1]  || ''),
+    item_type:          String(row[2]  || ''),
+    item_ref_id:        String(row[3]  || ''),
+    item_name_snapshot: String(row[4]  || ''),
+    fee:                Number(row[5])  || 0,
+    item_status:        String(row[6]  || 'PENDING'),
+    result_status:      String(row[7]  || ''),
+    result_file_url:    String(row[8]  || ''),
+    result_drive_id:    String(row[9]  || ''),
+    result_file_name:   String(row[10] || ''),
+    started_by:         String(row[11] || ''),
+    started_at:         String(row[12] || ''),
+    completed_by:       String(row[13] || ''),
+    completed_at:       String(row[14] || ''),
+    created_at:         String(row[15] || '')
   };
 }
 
-// ─── Generate human-readable order number ─────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────
 function _generateOrderNumber(spreadsheetId) {
   try {
     const sh    = _getOrderSheet(spreadsheetId);
@@ -143,12 +131,11 @@ function _generateOrderNumber(spreadsheetId) {
                   String(today.getMonth() + 1).padStart(2, '0') +
                   String(today.getDate()).padStart(2, '0');
     return 'ORD-' + ymd + '-' + String(count + 1).padStart(4, '0');
-  } catch (e) {
+  } catch(e) {
     return 'ORD-' + Utilities.getUuid().substring(0, 8).toUpperCase();
   }
 }
 
-// ─── Get branch SS ID from session ───────────────────────────────
 function _getBranchSsId(branchId) {
   const sh   = _getRegistrySheet();
   const data = sh.getDataRange().getValues();
@@ -158,44 +145,88 @@ function _getBranchSsId(branchId) {
   return row ? String(row[7] || '') : null;
 }
 
-// ─── Auth guards ──────────────────────────────────────────────────
-function _requireOrderAccess(token) {
-  const s = _getSession(token);
-  if (!s) return { expired: true };
-  if (!['super_admin', 'branch_admin', 'medtech', 'doctor'].includes(s.role))
-    return { denied: true };
-  return s;
+function _getBranchName(branchId) {
+  const sh   = _getRegistrySheet();
+  const data = sh.getDataRange().getValues();
+  const row  = data.find(function(r, i) {
+    return i > 0 && String(r[0]) === String(branchId);
+  });
+  return row ? String(row[1] || '') : '';
 }
 
-function _requireMedtech(token) {
-  const s = _getSession(token);
-  if (!s) return { expired: true };
-  if (s.role !== 'medtech') return { denied: true };
-  return s;
+function _canAccessOrders(role) {
+  return ['medtech', 'branch_admin', 'super_admin', 'doctor'].includes(role);
+}
+
+function _isTechnologist(role) {
+  return role === 'medtech';
+}
+
+// ─── Get or create Drive folder ───────────────────────────────────
+function _getOrCreateDriveFolder(branchName, patientName, orderNumber) {
+  try {
+    const rootFolderName = 'A-Lab Results';
+    let rootFolder;
+    const rootQuery = DriveApp.getFoldersByName(rootFolderName);
+    if (rootQuery.hasNext()) {
+      rootFolder = rootQuery.next();
+    } else {
+      rootFolder = DriveApp.createFolder(rootFolderName);
+    }
+
+    function _getOrCreate(parent, name) {
+      const q = parent.getFoldersByName(name);
+      return q.hasNext() ? q.next() : parent.createFolder(name);
+    }
+
+    const branchFolder  = _getOrCreate(rootFolder, branchName);
+    const patientFolder = _getOrCreate(branchFolder, patientName);
+    const orderFolder   = _getOrCreate(patientFolder, orderNumber);
+    return orderFolder;
+  } catch(e) {
+    throw new Error('Drive folder error: ' + e.message);
+  }
+}
+
+// ─── Find order row helper ────────────────────────────────────────
+function _findOrderRow(spreadsheetId, orderId) {
+  const sh   = _getOrderSheet(spreadsheetId);
+  const data = sh.getDataRange().getValues();
+  const idx  = data.findIndex(function(r, i) {
+    return i > 0 && String(r[0]) === String(orderId);
+  });
+  return { sh, data, idx };
+}
+
+function _findItemRow(spreadsheetId, itemId) {
+  const sh   = _getOrderItemSheet(spreadsheetId);
+  const data = sh.getDataRange().getValues();
+  const idx  = data.findIndex(function(r, i) {
+    return i > 0 && String(r[0]) === String(itemId);
+  });
+  return { sh, data, idx };
 }
 
 // ═══════════════════════════════════════════════════════════════
-// READ — all roles, filtered by role
+// 1. GET ORDERS
 // ═══════════════════════════════════════════════════════════════
 function getOrders(payload, token) {
   try {
-    const session = _requireOrderAccess(token);
-    if (session.expired) return { success: false, error: 'Session expired.', expired: true };
-    if (session.denied)  return { success: false, error: 'Access denied.' };
+    const session = _getSession(token);
+    if (!session) return { success: false, error: 'Session expired.', expired: true };
+    if (!_canAccessOrders(session.role)) return { success: false, error: 'Access denied.' };
 
     const branchSh   = _getRegistrySheet();
     const branchData = branchSh.getDataRange().getValues();
     const result     = [];
 
     for (var b = 1; b < branchData.length; b++) {
-      const branchRow  = branchData[b];
-      const branchId   = String(branchRow[0] || '');
-      const branchName = String(branchRow[1] || '');
-      const ssId       = String(branchRow[7] || '');
+      const branchId   = String(branchData[b][0] || '');
+      const branchName = String(branchData[b][1] || '');
+      const ssId       = String(branchData[b][7] || '');
       if (!ssId) continue;
 
-      // Branch admin + medtech + doctor: only their own branch
-      if (['branch_admin', 'medtech', 'doctor'].includes(session.role)) {
+      if (['medtech', 'branch_admin', 'doctor'].includes(session.role)) {
         if (branchId !== session.branch_id) continue;
       }
 
@@ -204,292 +235,512 @@ function getOrders(payload, token) {
         const data = sh.getDataRange().getValues();
         if (data.length <= 1) continue;
 
-        data.slice(1)
-          .filter(function(r) { return r[0] !== ''; })
-          .forEach(function(r) {
-            const order = _orderRowToObj(r);
-            order.branch_id   = branchId;
-            order.branch_name = branchName;
-
-            // Doctor: only see orders where they are the referring doctor
-            if (session.role === 'doctor') {
-              if (order.referring_doctor_id !== session.doctor_id) return;
-            }
-
-            result.push(order);
-          });
-      } catch(_) { /* skip unreadable SS */ }
+        data.slice(1).filter(function(r) { return r[0] !== ''; }).forEach(function(r) {
+          const order = _orderRowToObj(r);
+          order.branch_id   = branchId;
+          order.branch_name = branchName;
+          if (session.role === 'doctor' && order.referring_doctor_id !== session.doctor_id) return;
+          result.push(order);
+        });
+      } catch(_) {}
     }
 
-    // Sort by order_date descending
     result.sort(function(a, b) {
-      return String(b.order_date).localeCompare(String(a.order_date));
+      return String(b.created_at).localeCompare(String(a.created_at));
     });
 
     return { success: true, data: result };
-  } catch (e) {
+  } catch(e) {
     return { success: false, error: e.message };
   }
 }
 
 // ═══════════════════════════════════════════════════════════════
-// GET ORDER ITEMS — for a specific order
+// 2. GET ORDER ITEMS
 // ═══════════════════════════════════════════════════════════════
 function getOrderItems(payload, token) {
   try {
-    const session = _requireOrderAccess(token);
-    if (session.expired) return { success: false, error: 'Session expired.', expired: true };
-    if (session.denied)  return { success: false, error: 'Access denied.' };
-    if (!payload.order_id) return { success: false, error: 'order_id is required.' };
-
-    const ssId = _getBranchSsId(payload.branch_id || session.branch_id);
-    if (!ssId) return { success: false, error: 'Branch not found.' };
-
-    const sh   = _getOrderItemSheet(ssId);
-    const data = sh.getDataRange().getValues();
-
-    const items = data.slice(1)
-      .filter(function(r) { return r[0] !== '' && String(r[1]) === String(payload.order_id); })
-      .map(_orderItemRowToObj);
-
-    return { success: true, data: items };
-  } catch (e) {
-    return { success: false, error: e.message };
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════
-// CREATE — medtech only
-// payload: {
-//   patient_id, patient_snapshot,
-//   referring_doctor_id, doctor_snapshot,
-//   notes,
-//   amount_paid,
-//   payment_discount,
-//   items: [{ item_type, item_ref_id, item_name_snapshot, fee }]
-// }
-// ═══════════════════════════════════════════════════════════════
-function createOrder(payload, token) {
-  try {
-    const session = _requireMedtech(token);
-    if (session.expired) return { success: false, error: 'Session expired.', expired: true };
-    if (session.denied)  return { success: false, error: 'Only technologists can create orders.' };
-
-    if (!session.branch_id) return { success: false, error: 'Technologist is not assigned to a branch.' };
-    if (!payload.patient_id) return { success: false, error: 'Patient is required.' };
-    if (!payload.items || !payload.items.length)
-      return { success: false, error: 'At least one lab service or package is required.' };
-
-    const ssId = _getBranchSsId(session.branch_id);
-    if (!ssId) return { success: false, error: 'Branch spreadsheet not found.' };
-
-    const now         = new Date().toISOString();
-    const orderId     = 'ORD-' + Utilities.getUuid().substring(0, 8).toUpperCase();
-    const orderNumber = _generateOrderNumber(ssId);
-
-    // Calculate totals
-    const paymentAmount   = payload.items.reduce(function(sum, i) { return sum + (Number(i.fee) || 0); }, 0);
-    const paymentDiscount = Number(payload.payment_discount) || 0;
-    const amountPaid      = Number(payload.amount_paid)      || 0;
-    const change          = amountPaid - (paymentAmount - paymentDiscount);
-
-    // Write order row
-    const orderSh = _getOrderSheet(ssId);
-    orderSh.appendRow([
-      orderId,
-      orderNumber,
-      payload.patient_id,
-      payload.patient_snapshot  || '',
-      payload.referring_doctor_id || '',
-      payload.doctor_snapshot   || '',
-      session.medtech_id        || '',
-      session.full_name         || session.username || '',
-      'Pending',
-      paymentAmount,
-      paymentDiscount,
-      amountPaid,
-      Math.max(change, 0),
-      payload.notes || '',
-      now,   // order_date
-      now,   // created_at
-      now    // updated_at
-    ]);
-
-    // Write order items
-    const itemSh = _getOrderItemSheet(ssId);
-    payload.items.forEach(function(item) {
-      const itemId = 'ITM-' + Utilities.getUuid().substring(0, 8).toUpperCase();
-      itemSh.appendRow([
-        itemId,
-        orderId,
-        item.item_type          || 'service',
-        item.item_ref_id        || '',
-        item.item_name_snapshot || '',
-        Number(item.fee)        || 0,
-        now
-      ]);
-    });
-
-    return {
-      success: true,
-      data: {
-        order_id:     orderId,
-        order_number: orderNumber,
-        status:       'Pending',
-        payment_amount: paymentAmount,
-        created_at:   now
-      }
-    };
-  } catch (e) {
-    return { success: false, error: e.message };
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════
-// ADVANCE STATUS
-// Medtech:      Pending → Processing, For Release → Released
-// Branch Admin: Processing → For Review → For Release
-// ═══════════════════════════════════════════════════════════════
-var STATUS_FLOW = {
-  'Pending':     'Processing',
-  'Processing':  'For Review',
-  'For Review':  'For Release',
-  'For Release': 'Released'
-};
-
-var MEDTECH_CAN_ADVANCE    = ['Pending', 'For Release'];
-var BRANCH_ADMIN_CAN_ADVANCE = ['Processing', 'For Review'];
-
-function advanceOrderStatus(payload, token) {
-  try {
-    const session = _requireOrderAccess(token);
-    if (session.expired) return { success: false, error: 'Session expired.', expired: true };
-    if (session.denied)  return { success: false, error: 'Access denied.' };
-
-    if (!payload.order_id)  return { success: false, error: 'order_id is required.' };
-    if (!payload.branch_id) return { success: false, error: 'branch_id is required.' };
-
-    // Only medtech and branch_admin can advance
-    if (!['medtech', 'branch_admin'].includes(session.role))
-      return { success: false, error: 'Unauthorized to advance order status.' };
-
-    // Must be in own branch
-    if (session.branch_id && session.branch_id !== payload.branch_id)
-      return { success: false, error: 'Access denied. Order is not in your branch.' };
-
-    const ssId = _getBranchSsId(payload.branch_id);
-    if (!ssId) return { success: false, error: 'Branch not found.' };
-
-    const sh   = _getOrderSheet(ssId);
-    const data = sh.getDataRange().getValues();
-    const idx  = data.findIndex(function(r, i) {
-      return i > 0 && String(r[0]) === String(payload.order_id);
-    });
-    if (idx === -1) return { success: false, error: 'Order not found.' };
-
-    const currentStatus = String(data[idx][8] || '');
-    const nextStatus    = STATUS_FLOW[currentStatus];
-
-    if (!nextStatus)
-      return { success: false, error: 'Order is already at final status.' };
-
-    // Role-based permission check
-    if (session.role === 'medtech' && !MEDTECH_CAN_ADVANCE.includes(currentStatus))
-      return { success: false, error: 'Technologists can only advance Pending or For Release orders.' };
-
-    if (session.role === 'branch_admin' && !BRANCH_ADMIN_CAN_ADVANCE.includes(currentStatus))
-      return { success: false, error: 'Branch admins can only advance Processing or For Review orders.' };
-
-    const now = new Date().toISOString();
-    sh.getRange(idx + 1, 9).setValue(nextStatus);
-    sh.getRange(idx + 1, 17).setValue(now);
-
-    return { success: true, data: { order_id: payload.order_id, status: nextStatus } };
-  } catch (e) {
-    return { success: false, error: e.message };
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════
-// DELETE — branch_admin only, Pending orders only
-// ═══════════════════════════════════════════════════════════════
-function deleteOrder(payload, token) {
-  try {
     const session = _getSession(token);
     if (!session) return { success: false, error: 'Session expired.', expired: true };
-    if (session.role !== 'branch_admin')
-      return { success: false, error: 'Only branch admins can delete orders.' };
-
-    if (!payload.order_id)  return { success: false, error: 'order_id is required.' };
-    if (!payload.branch_id) return { success: false, error: 'branch_id is required.' };
-
-    if (session.branch_id !== payload.branch_id)
-      return { success: false, error: 'Access denied. Order is not in your branch.' };
-
-    const ssId = _getBranchSsId(payload.branch_id);
-    if (!ssId) return { success: false, error: 'Branch not found.' };
-
-    const sh   = _getOrderSheet(ssId);
-    const data = sh.getDataRange().getValues();
-    const idx  = data.findIndex(function(r, i) {
-      return i > 0 && String(r[0]) === String(payload.order_id);
-    });
-    if (idx === -1) return { success: false, error: 'Order not found.' };
-
-    const status = String(data[idx][8] || '');
-    if (status !== 'Pending')
-      return { success: false, error: 'Only Pending orders can be deleted.' };
-
-    // Delete order items first
-    const itemSh   = _getOrderItemSheet(ssId);
-    const itemData = itemSh.getDataRange().getValues();
-    // Delete in reverse to preserve row indices
-    for (var i = itemData.length - 1; i >= 1; i--) {
-      if (String(itemData[i][1]) === String(payload.order_id)) {
-        itemSh.deleteRow(i + 1);
-      }
-    }
-
-    // Delete order
-    sh.deleteRow(idx + 1);
-
-    return { success: true };
-  } catch (e) {
-    return { success: false, error: e.message };
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════
-// UPDATE NOTES — medtech or branch_admin, non-released orders
-// ═══════════════════════════════════════════════════════════════
-function updateOrderNotes(payload, token) {
-  try {
-    const session = _getSession(token);
-    if (!session) return { success: false, error: 'Session expired.', expired: true };
-    if (!['medtech', 'branch_admin'].includes(session.role))
-      return { success: false, error: 'Unauthorized.' };
-
+    if (!_canAccessOrders(session.role)) return { success: false, error: 'Access denied.' };
     if (!payload.order_id || !payload.branch_id)
       return { success: false, error: 'order_id and branch_id are required.' };
 
     const ssId = _getBranchSsId(payload.branch_id);
     if (!ssId) return { success: false, error: 'Branch not found.' };
 
-    const sh   = _getOrderSheet(ssId);
-    const data = sh.getDataRange().getValues();
-    const idx  = data.findIndex(function(r, i) {
-      return i > 0 && String(r[0]) === String(payload.order_id);
+    const sh    = _getOrderItemSheet(ssId);
+    const data  = sh.getDataRange().getValues();
+    const items = data.slice(1)
+      .filter(function(r) { return r[0] !== '' && String(r[1]) === String(payload.order_id); })
+      .map(_orderItemRowToObj);
+
+    return { success: true, data: items };
+  } catch(e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 3. CREATE ORDER — saves as DRAFT, no payment yet
+// ═══════════════════════════════════════════════════════════════
+function createOrder(payload, token) {
+  try {
+    const session = _getSession(token);
+    if (!session) return { success: false, error: 'Session expired.', expired: true };
+    if (!_isTechnologist(session.role))
+      return { success: false, error: 'Only technologists can create orders.' };
+    if (!session.branch_id)
+      return { success: false, error: 'You are not assigned to a branch.' };
+    if (!payload.patient_id)
+      return { success: false, error: 'Patient is required.' };
+    if (!payload.items || !payload.items.length)
+      return { success: false, error: 'At least one lab service or package is required.' };
+
+    const ssId = _getBranchSsId(session.branch_id);
+    if (!ssId) return { success: false, error: 'Branch spreadsheet not found.' };
+
+    const now             = new Date().toISOString();
+    const orderId         = 'ORD-' + Utilities.getUuid().substring(0, 8).toUpperCase();
+    const orderNumber     = _generateOrderNumber(ssId);
+    const paymentAmount   = payload.items.reduce(function(s, i) { return s + (Number(i.fee) || 0); }, 0);
+    const paymentDiscount = Number(payload.payment_discount) || 0;
+
+    const orderSh = _getOrderSheet(ssId);
+    orderSh.appendRow([
+      orderId, orderNumber,
+      payload.patient_id,
+      payload.patient_snapshot    || '',
+      payload.referring_doctor_id || '',
+      payload.doctor_snapshot     || '',
+      'DRAFT', '',                    // status, payment_method
+      paymentAmount, paymentDiscount,
+      0, 0,                           // amount_paid, change
+      payload.notes || '',
+      now,                            // order_date
+      session.full_name || session.username || '',
+      now, now
+    ]);
+
+    const itemSh = _getOrderItemSheet(ssId);
+    payload.items.forEach(function(item) {
+      itemSh.appendRow([
+        'ITM-' + Utilities.getUuid().substring(0, 8).toUpperCase(),
+        orderId,
+        item.item_type          || 'service',
+        item.item_ref_id        || '',
+        item.item_name_snapshot || '',
+        Number(item.fee)        || 0,
+        'PENDING', '', '', '', '', '', '', '', '', now
+      ]);
     });
+
+    return {
+      success: true,
+      data: { order_id: orderId, order_number: orderNumber, status: 'DRAFT', payment_amount: paymentAmount }
+    };
+  } catch(e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 4. CONFIRM ORDER — DRAFT → OPEN
+// ═══════════════════════════════════════════════════════════════
+function confirmOrder(payload, token) {
+  try {
+    const session = _getSession(token);
+    if (!session) return { success: false, error: 'Session expired.', expired: true };
+    if (!_isTechnologist(session.role))
+      return { success: false, error: 'Only technologists can confirm orders.' };
+
+    const ssId = _getBranchSsId(payload.branch_id);
+    if (!ssId) return { success: false, error: 'Branch not found.' };
+
+    const { sh, data, idx } = _findOrderRow(ssId, payload.order_id);
     if (idx === -1) return { success: false, error: 'Order not found.' };
+    if (String(data[idx][6]) !== 'DRAFT')
+      return { success: false, error: 'Only DRAFT orders can be confirmed.' };
 
-    if (String(data[idx][8]) === 'Released')
-      return { success: false, error: 'Cannot edit a released order.' };
+    const now = new Date().toISOString();
+    sh.getRange(idx + 1, 7).setValue('OPEN');
+    sh.getRange(idx + 1, 17).setValue(now);
 
-    sh.getRange(idx + 1, 14).setValue(payload.notes || '');
+    return { success: true, data: { status: 'OPEN' } };
+  } catch(e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 5. RECORD PAYMENT — OPEN → PAID
+// payload: { order_id, branch_id, payment_method, amount_paid }
+// ═══════════════════════════════════════════════════════════════
+function recordPayment(payload, token) {
+  try {
+    const session = _getSession(token);
+    if (!session) return { success: false, error: 'Session expired.', expired: true };
+    if (!_isTechnologist(session.role))
+      return { success: false, error: 'Only technologists can record payment.' };
+    if (!payload.payment_method)
+      return { success: false, error: 'Payment method is required.' };
+    if (!payload.amount_paid || Number(payload.amount_paid) <= 0)
+      return { success: false, error: 'Amount paid is required.' };
+
+    const ssId = _getBranchSsId(payload.branch_id);
+    if (!ssId) return { success: false, error: 'Branch not found.' };
+
+    const { sh, data, idx } = _findOrderRow(ssId, payload.order_id);
+    if (idx === -1) return { success: false, error: 'Order not found.' };
+    if (String(data[idx][6]) !== 'OPEN')
+      return { success: false, error: 'Only OPEN orders can be paid.' };
+
+    const paymentAmount   = Number(data[idx][8])  || 0;
+    const paymentDiscount = Number(data[idx][9])  || 0;
+    const amountPaid      = Number(payload.amount_paid);
+    const total           = paymentAmount - paymentDiscount;
+    const change          = Math.max(amountPaid - total, 0);
+
+    const now = new Date().toISOString();
+    sh.getRange(idx + 1, 7).setValue('PAID');
+    sh.getRange(idx + 1, 8).setValue(payload.payment_method);
+    sh.getRange(idx + 1, 11).setValue(amountPaid);
+    sh.getRange(idx + 1, 12).setValue(change);
+    sh.getRange(idx + 1, 17).setValue(now);
+
+    return { success: true, data: { status: 'PAID', amount_paid: amountPaid, change, total } };
+  } catch(e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 6. START ITEM — PENDING → RUNNING
+//    Auto-advances order PAID → IN_PROGRESS
+// ═══════════════════════════════════════════════════════════════
+function startItem(payload, token) {
+  try {
+    const session = _getSession(token);
+    if (!session) return { success: false, error: 'Session expired.', expired: true };
+    if (!_isTechnologist(session.role))
+      return { success: false, error: 'Only technologists can start items.' };
+
+    const ssId = _getBranchSsId(payload.branch_id);
+    if (!ssId) return { success: false, error: 'Branch not found.' };
+
+    // Verify order status
+    const orderResult = _findOrderRow(ssId, payload.order_id);
+    if (orderResult.idx === -1) return { success: false, error: 'Order not found.' };
+    const orderStatus = String(orderResult.data[orderResult.idx][6] || '');
+    if (!['PAID', 'IN_PROGRESS'].includes(orderStatus))
+      return { success: false, error: 'Order must be PAID before processing items.' };
+
+    // Update item
+    const itemResult = _findItemRow(ssId, payload.item_id);
+    if (itemResult.idx === -1) return { success: false, error: 'Item not found.' };
+    if (String(itemResult.data[itemResult.idx][6]) !== 'PENDING')
+      return { success: false, error: 'Item is already started or completed.' };
+
+    const now = new Date().toISOString();
+    itemResult.sh.getRange(itemResult.idx + 1, 7).setValue('RUNNING');
+    itemResult.sh.getRange(itemResult.idx + 1, 12).setValue(session.full_name || session.username || '');
+    itemResult.sh.getRange(itemResult.idx + 1, 13).setValue(now);
+
+    // Auto-advance order to IN_PROGRESS
+    if (orderStatus === 'PAID') {
+      orderResult.sh.getRange(orderResult.idx + 1, 7).setValue('IN_PROGRESS');
+      orderResult.sh.getRange(orderResult.idx + 1, 17).setValue(now);
+    }
+
+    return { success: true, data: { item_status: 'RUNNING', order_status: 'IN_PROGRESS' } };
+  } catch(e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 7. COMPLETE ITEM — RUNNING → DONE
+//    Auto-advances order IN_PROGRESS → FOR_RELEASE if all DONE
+// ═══════════════════════════════════════════════════════════════
+function completeItem(payload, token) {
+  try {
+    const session = _getSession(token);
+    if (!session) return { success: false, error: 'Session expired.', expired: true };
+    if (!_isTechnologist(session.role))
+      return { success: false, error: 'Only technologists can complete items.' };
+
+    const ssId = _getBranchSsId(payload.branch_id);
+    if (!ssId) return { success: false, error: 'Branch not found.' };
+
+    const itemResult = _findItemRow(ssId, payload.item_id);
+    if (itemResult.idx === -1) return { success: false, error: 'Item not found.' };
+    if (String(itemResult.data[itemResult.idx][6]) !== 'RUNNING')
+      return { success: false, error: 'Item must be RUNNING to complete.' };
+
+    const now = new Date().toISOString();
+    itemResult.sh.getRange(itemResult.idx + 1, 7).setValue('DONE');
+    itemResult.sh.getRange(itemResult.idx + 1, 14).setValue(session.full_name || session.username || '');
+    itemResult.sh.getRange(itemResult.idx + 1, 15).setValue(now);
+
+    // Check if all items DONE → advance order to FOR_RELEASE
+    const freshData  = itemResult.sh.getDataRange().getValues();
+    const allItems   = freshData.slice(1).filter(function(r) {
+      return r[0] !== '' && String(r[1]) === String(payload.order_id);
+    });
+    const allDone    = allItems.every(function(r) { return String(r[6]) === 'DONE'; });
+    let newOrderStatus = 'IN_PROGRESS';
+
+    if (allDone) {
+      const orderResult = _findOrderRow(ssId, payload.order_id);
+      if (orderResult.idx !== -1) {
+        orderResult.sh.getRange(orderResult.idx + 1, 7).setValue('FOR_RELEASE');
+        orderResult.sh.getRange(orderResult.idx + 1, 17).setValue(now);
+        newOrderStatus = 'FOR_RELEASE';
+      }
+    }
+
+    return { success: true, data: { item_status: 'DONE', order_status: newOrderStatus, all_items_done: allDone } };
+  } catch(e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 8. UPLOAD RESULT — PDF/DOC to Drive + link to item
+//    Sets result_status → FOR_VERIFICATION
+// payload: { item_id, order_id, branch_id, file_data (base64), file_name, mime_type }
+// ═══════════════════════════════════════════════════════════════
+function uploadResult(payload, token) {
+  try {
+    const session = _getSession(token);
+    if (!session) return { success: false, error: 'Session expired.', expired: true };
+    if (!_isTechnologist(session.role))
+      return { success: false, error: 'Only technologists can upload results.' };
+    if (!payload.item_id || !payload.order_id || !payload.branch_id)
+      return { success: false, error: 'item_id, order_id, and branch_id are required.' };
+    if (!payload.file_data || !payload.file_name)
+      return { success: false, error: 'File data and file name are required.' };
+
+    const allowed = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ];
+    if (!allowed.includes(payload.mime_type))
+      return { success: false, error: 'Only PDF and DOC/DOCX files are allowed.' };
+
+    const ssId = _getBranchSsId(payload.branch_id);
+    if (!ssId) return { success: false, error: 'Branch not found.' };
+
+    // Get order info for Drive folder path
+    const orderResult = _findOrderRow(ssId, payload.order_id);
+    if (orderResult.idx === -1) return { success: false, error: 'Order not found.' };
+    const orderNumber = String(orderResult.data[orderResult.idx][1] || '');
+    const patientName = String(orderResult.data[orderResult.idx][3] || 'Unknown Patient');
+    const branchName  = _getBranchName(payload.branch_id);
+
+    // Get item
+    const itemResult = _findItemRow(ssId, payload.item_id);
+    if (itemResult.idx === -1) return { success: false, error: 'Item not found.' };
+
+    // Upload to Drive
+    const folder    = _getOrCreateDriveFolder(branchName, patientName, orderNumber);
+    const blob      = Utilities.newBlob(
+      Utilities.base64Decode(payload.file_data),
+      payload.mime_type,
+      payload.file_name
+    );
+    const driveFile = folder.createFile(blob);
+    driveFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+
+    const fileUrl = driveFile.getUrl();
+    const fileId  = driveFile.getId();
+    const now     = new Date().toISOString();
+
+    // Update item
+    itemResult.sh.getRange(itemResult.idx + 1, 8).setValue('FOR_VERIFICATION');
+    itemResult.sh.getRange(itemResult.idx + 1, 9).setValue(fileUrl);
+    itemResult.sh.getRange(itemResult.idx + 1, 10).setValue(fileId);
+    itemResult.sh.getRange(itemResult.idx + 1, 11).setValue(payload.file_name);
+
+    return {
+      success: true,
+      data: { result_status: 'FOR_VERIFICATION', result_file_url: fileUrl, result_drive_id: fileId, file_name: payload.file_name }
+    };
+  } catch(e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 9. VERIFY RESULT — FOR_VERIFICATION → VERIFIED
+// ═══════════════════════════════════════════════════════════════
+function verifyResult(payload, token) {
+  try {
+    const session = _getSession(token);
+    if (!session) return { success: false, error: 'Session expired.', expired: true };
+    if (!_isTechnologist(session.role))
+      return { success: false, error: 'Only technologists can verify results.' };
+
+    const ssId = _getBranchSsId(payload.branch_id);
+    if (!ssId) return { success: false, error: 'Branch not found.' };
+
+    const itemResult = _findItemRow(ssId, payload.item_id);
+    if (itemResult.idx === -1) return { success: false, error: 'Item not found.' };
+    if (String(itemResult.data[itemResult.idx][7]) !== 'FOR_VERIFICATION')
+      return { success: false, error: 'Result must be FOR_VERIFICATION to verify.' };
+
+    itemResult.sh.getRange(itemResult.idx + 1, 8).setValue('VERIFIED');
+
+    return { success: true, data: { result_status: 'VERIFIED' } };
+  } catch(e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 10. REJECT RESULT — sends back for re-upload
+//     Reverts result to DRAFT, clears file, reverts order if needed
+// ═══════════════════════════════════════════════════════════════
+function rejectResult(payload, token) {
+  try {
+    const session = _getSession(token);
+    if (!session) return { success: false, error: 'Session expired.', expired: true };
+    if (!_isTechnologist(session.role))
+      return { success: false, error: 'Only technologists can reject results.' };
+
+    const ssId = _getBranchSsId(payload.branch_id);
+    if (!ssId) return { success: false, error: 'Branch not found.' };
+
+    const itemResult = _findItemRow(ssId, payload.item_id);
+    if (itemResult.idx === -1) return { success: false, error: 'Item not found.' };
+
+    const resultStatus = String(itemResult.data[itemResult.idx][7] || '');
+    if (!['FOR_VERIFICATION', 'VERIFIED'].includes(resultStatus))
+      return { success: false, error: 'Result cannot be rejected at this stage.' };
+
+    // Clear result so it can be re-uploaded
+    itemResult.sh.getRange(itemResult.idx + 1, 8).setValue('DRAFT');
+    itemResult.sh.getRange(itemResult.idx + 1, 9).setValue('');
+    itemResult.sh.getRange(itemResult.idx + 1, 10).setValue('');
+    itemResult.sh.getRange(itemResult.idx + 1, 11).setValue('');
+
+    // Revert order from FOR_RELEASE → IN_PROGRESS
+    const orderResult = _findOrderRow(ssId, payload.order_id);
+    if (orderResult.idx !== -1 && String(orderResult.data[orderResult.idx][6]) === 'FOR_RELEASE') {
+      orderResult.sh.getRange(orderResult.idx + 1, 7).setValue('IN_PROGRESS');
+      orderResult.sh.getRange(orderResult.idx + 1, 17).setValue(new Date().toISOString());
+    }
+
+    return { success: true, data: { result_status: 'DRAFT' } };
+  } catch(e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 11. RELEASE ORDER — FOR_RELEASE → RELEASED
+//     All item results must be VERIFIED first
+// ═══════════════════════════════════════════════════════════════
+function releaseOrder(payload, token) {
+  try {
+    const session = _getSession(token);
+    if (!session) return { success: false, error: 'Session expired.', expired: true };
+    if (!_isTechnologist(session.role))
+      return { success: false, error: 'Only technologists can release orders.' };
+
+    const ssId = _getBranchSsId(payload.branch_id);
+    if (!ssId) return { success: false, error: 'Branch not found.' };
+
+    const orderResult = _findOrderRow(ssId, payload.order_id);
+    if (orderResult.idx === -1) return { success: false, error: 'Order not found.' };
+    if (String(orderResult.data[orderResult.idx][6]) !== 'FOR_RELEASE')
+      return { success: false, error: 'Order must be FOR_RELEASE to release.' };
+
+    // All results must be VERIFIED
+    const itemSh   = _getOrderItemSheet(ssId);
+    const itemData = itemSh.getDataRange().getValues();
+    const items    = itemData.slice(1).filter(function(r) {
+      return r[0] !== '' && String(r[1]) === String(payload.order_id);
+    });
+    const allVerified = items.every(function(r) { return String(r[7]) === 'VERIFIED'; });
+    if (!allVerified)
+      return { success: false, error: 'All results must be VERIFIED before releasing.' };
+
+    const now = new Date().toISOString();
+    orderResult.sh.getRange(orderResult.idx + 1, 7).setValue('RELEASED');
+    orderResult.sh.getRange(orderResult.idx + 1, 17).setValue(now);
+
+    // Mark all results RELEASED
+    itemData.forEach(function(r, i) {
+      if (i === 0 || !r[0]) return;
+      if (String(r[1]) === String(payload.order_id)) {
+        itemSh.getRange(i + 1, 8).setValue('RELEASED');
+      }
+    });
+
+    return { success: true, data: { status: 'RELEASED' } };
+  } catch(e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 12. DELETE ORDER — DRAFT only
+// ═══════════════════════════════════════════════════════════════
+function deleteOrder(payload, token) {
+  try {
+    const session = _getSession(token);
+    if (!session) return { success: false, error: 'Session expired.', expired: true };
+    if (!['medtech', 'branch_admin'].includes(session.role))
+      return { success: false, error: 'Unauthorized.' };
+
+    const ssId = _getBranchSsId(payload.branch_id);
+    if (!ssId) return { success: false, error: 'Branch not found.' };
+
+    const { sh, data, idx } = _findOrderRow(ssId, payload.order_id);
+    if (idx === -1) return { success: false, error: 'Order not found.' };
+    if (String(data[idx][6]) !== 'DRAFT')
+      return { success: false, error: 'Only DRAFT orders can be deleted.' };
+
+    // Delete items first (reverse to preserve indices)
+    const itemSh   = _getOrderItemSheet(ssId);
+    const itemData = itemSh.getDataRange().getValues();
+    for (var i = itemData.length - 1; i >= 1; i--) {
+      if (String(itemData[i][1]) === String(payload.order_id)) {
+        itemSh.deleteRow(i + 1);
+      }
+    }
+    sh.deleteRow(idx + 1);
+
+    return { success: true };
+  } catch(e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 13. UPDATE ORDER NOTES — DRAFT or OPEN only
+// ═══════════════════════════════════════════════════════════════
+function updateOrderNotes(payload, token) {
+  try {
+    const session = _getSession(token);
+    if (!session) return { success: false, error: 'Session expired.', expired: true };
+    if (!_isTechnologist(session.role)) return { success: false, error: 'Unauthorized.' };
+
+    const ssId = _getBranchSsId(payload.branch_id);
+    if (!ssId) return { success: false, error: 'Branch not found.' };
+
+    const { sh, data, idx } = _findOrderRow(ssId, payload.order_id);
+    if (idx === -1) return { success: false, error: 'Order not found.' };
+    if (!['DRAFT', 'OPEN'].includes(String(data[idx][6])))
+      return { success: false, error: 'Notes can only be edited on DRAFT or OPEN orders.' };
+
+    sh.getRange(idx + 1, 13).setValue(payload.notes || '');
     sh.getRange(idx + 1, 17).setValue(new Date().toISOString());
 
     return { success: true };
-  } catch (e) {
+  } catch(e) {
     return { success: false, error: e.message };
   }
 }
