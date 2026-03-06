@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard — A-Lab Tech Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    * { font-family: 'DM Sans', sans-serif; }
+    body { background: #f8fafc; color: #0f172a; overflow: auto; }
+
+    .stat-card { background:#fff; border:1px solid #e2e8f0; border-radius:1rem; padding:1.25rem;
+                 box-shadow:0 1px 3px rgba(0,0,0,.06); transition:box-shadow .18s, transform .18s; }
+    .stat-card:hover { box-shadow:0 8px 30px -6px rgba(5,150,105,.15); transform:translateY(-2px); }
+    .card { background:#fff; border:1px solid #e2e8f0; border-radius:1rem; box-shadow:0 1px 3px rgba(0,0,0,.06); }
+
+    /* Queue item cards */
+    .queue-card { background:#fff; border:1px solid #e2e8f0; border-radius:.875rem;
+                  padding:1rem 1.125rem; transition:box-shadow .15s, border-color .15s; }
+    .queue-card:hover { border-color:#6ee7b7; box-shadow:0 4px 16px rgba(5,150,105,.10); }
+    .queue-card.urgent { border-left:3px solid #f59e0b; }
+    .queue-card.in-progress { border-left:3px solid #3b82f6; }
+    .queue-card.for-release { border-left:3px solid #8b5cf6; }
+
+    /* Status badges */
+    .badge { font-size:11px; font-weight:600; padding:2px 10px; border-radius:99px; white-space:nowrap; }
+    .badge-DRAFT       { background:#f1f5f9; color:#64748b; }
+    .badge-OPEN        { background:#dbeafe; color:#1d4ed8; }
+    .badge-PAID        { background:#d1fae5; color:#065f46; }
+    .badge-IN_PROGRESS { background:#fef3c7; color:#92400e; }
+    .badge-FOR_RELEASE { background:#ede9fe; color:#6d28d9; }
+    .badge-RELEASED    { background:#dcfce7; color:#15803d; }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    .fade-up { animation:fadeUp .3s ease both; }
+    .d1{animation-delay:.04s} .d2{animation-delay:.08s} .d3{animation-delay:.12s}
+    .d4{animation-delay:.16s} .d5{animation-delay:.20s} .d6{animation-delay:.24s}
+
+    .skeleton { background:linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 50%,#f1f5f9 75%);
+                background-size:200% 100%; animation:shimmer 1.4s infinite; border-radius:6px; }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+    ::-webkit-scrollbar { width:5px; }
+    ::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:99px; }
+
+    .section-title { font-size:13px; font-weight:700; color:#1e293b; }
+    .section-sub   { font-size:11px; color:#94a3b8; margin-top:1px; }
+
+    /* Quick action buttons */
+    .quick-btn { display:flex; align-items:center; gap:10px; padding:12px 16px;
+                 border:1.5px solid #e2e8f0; border-radius:12px; background:#fff;
+                 cursor:pointer; transition:all .15s; width:100%; text-align:left; }
+    .quick-btn:hover { border-color:#6ee7b7; background:#f0fdf4; }
+    .quick-btn-icon { width:36px; height:36px; border-radius:10px; display:flex;
+                      align-items:center; justify-content:center; flex-shrink:0; }
+  </style>
+</head>
+<body class="p-5">
+
+<!-- ── HEADER ── -->
+<div class="mb-5 fade-up">
+  <h1 class="text-xl font-bold text-slate-800">Dashboard</h1>
+  <p id="welcome-msg" class="text-sm text-slate-400 mt-0.5">Welcome back. Here's your work queue for today.</p>
+</div>
+
+<!-- ── STAT CARDS ── -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+
+  <div class="stat-card fade-up d1">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">New / Open</span>
+      <div class="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center">
+        <svg class="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+        </svg>
+      </div>
+    </div>
+    <p id="s-new" class="text-3xl font-bold text-slate-800">—</p>
+    <p class="text-xs text-slate-400 mt-1">Awaiting payment</p>
+  </div>
+
+  <div class="stat-card fade-up d2">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">In Queue</span>
+      <div class="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center">
+        <svg class="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+    </div>
+    <p id="s-queue" class="text-3xl font-bold text-amber-500">—</p>
+    <p class="text-xs text-slate-400 mt-1">Paid, ready to process</p>
+  </div>
+
+  <div class="stat-card fade-up d3">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">In Progress</span>
+      <div class="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center">
+        <svg class="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+        </svg>
+      </div>
+    </div>
+    <p id="s-progress" class="text-3xl font-bold text-blue-500">—</p>
+    <p class="text-xs text-slate-400 mt-1">Tests running</p>
+  </div>
+
+  <div class="stat-card fade-up d4">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">For Release</span>
+      <div class="w-8 h-8 rounded-xl bg-purple-50 flex items-center justify-center">
+        <svg class="w-4 h-4 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+    </div>
+    <p id="s-release" class="text-3xl font-bold text-purple-500">—</p>
+    <p class="text-xs text-slate-400 mt-1">Ready to release</p>
+  </div>
+
+</div>
+
+<!-- ── MAIN LAYOUT ── -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+  <!-- LEFT: Active Queue (2 cols) -->
+  <div class="lg:col-span-2 space-y-4">
+
+    <!-- Paid / Ready to Process -->
+    <div class="card fade-up d4">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+        <div>
+          <p class="section-title">Paid — Ready to Process</p>
+          <p class="section-sub">Orders waiting for lab work to begin</p>
+        </div>
+        <span id="badge-paid" class="badge badge-PAID">0</span>
+      </div>
+      <div id="list-paid" class="p-4 space-y-2">
+        <div class="skeleton h-16 w-full rounded-xl"></div>
+        <div class="skeleton h-16 w-full rounded-xl"></div>
+      </div>
+    </div>
+
+    <!-- In Progress -->
+    <div class="card fade-up d5">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+        <div>
+          <p class="section-title">In Progress</p>
+          <p class="section-sub">Tests currently being processed</p>
+        </div>
+        <span id="badge-progress" class="badge badge-IN_PROGRESS">0</span>
+      </div>
+      <div id="list-progress" class="p-4 space-y-2">
+        <div class="skeleton h-16 w-full rounded-xl"></div>
+      </div>
+    </div>
+
+    <!-- For Release -->
+    <div class="card fade-up d6">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+        <div>
+          <p class="section-title">For Release</p>
+          <p class="section-sub">All tests done — verify and release</p>
+        </div>
+        <span id="badge-release" class="badge badge-FOR_RELEASE">0</span>
+      </div>
+      <div id="list-release" class="p-4 space-y-2">
+        <div class="skeleton h-16 w-full rounded-xl"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT: Quick actions + Today summary -->
+  <div class="flex flex-col gap-4">
+
+    <!-- Quick Actions -->
+    <div class="card p-5 fade-up d4">
+      <p class="section-title mb-3">Quick Actions</p>
+      <div class="space-y-2">
+        <button class="quick-btn" onclick="parent.document.querySelector('[onclick*=Orders]').click()">
+          <div class="quick-btn-icon bg-emerald-50">
+            <svg class="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-slate-700">New Order</p>
+            <p class="text-xs text-slate-400">Create a lab order for a patient</p>
+          </div>
+        </button>
+        <button class="quick-btn" onclick="parent.document.querySelector('[onclick*=Orders]').click()">
+          <div class="quick-btn-icon bg-amber-50">
+            <svg class="w-5 h-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v8.5L4.5 18A2 2 0 006.4 21h11.2a2 2 0 001.9-2.5L15 11.5V3M9 3h6M8 15h8"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-slate-700">View All Orders</p>
+            <p class="text-xs text-slate-400">Manage orders and process tests</p>
+          </div>
+        </button>
+        <button class="quick-btn" onclick="parent.document.querySelector('[onclick*=Patients]').click()">
+          <div class="quick-btn-icon bg-blue-50">
+            <svg class="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-1a4 4 0 00-5.196-3.762M9 11a4 4 0 100-8 4 4 0 000 8zm-6 9v-1a4 4 0 014-4h4a4 4 0 014 4v1"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-slate-700">Patients</p>
+            <p class="text-xs text-slate-400">Search and manage patient records</p>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Today's Summary -->
+    <div class="card p-5 fade-up d5">
+      <p class="section-title mb-3">Today's Summary</p>
+      <div class="space-y-3">
+        <div class="flex justify-between items-center">
+          <span class="text-xs text-slate-500">Orders Created</span>
+          <span id="today-created" class="text-sm font-bold text-slate-800">—</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-xs text-slate-500">Tests Completed</span>
+          <span id="today-completed" class="text-sm font-bold text-emerald-600">—</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-xs text-slate-500">Released</span>
+          <span id="today-released" class="text-sm font-bold text-purple-600">—</span>
+        </div>
+        <div class="border-t border-slate-100 pt-3 flex justify-between items-center">
+          <span class="text-xs font-semibold text-slate-600">Revenue Today</span>
+          <span id="today-revenue" class="text-sm font-bold text-slate-800" style="font-family:'DM Mono',monospace">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Branch Info -->
+    <div class="card p-5 fade-up d6">
+      <p class="section-title mb-3">Your Branch</p>
+      <div id="branch-info">
+        <div class="skeleton h-4 w-3/4 mb-2"></div>
+        <div class="skeleton h-3 w-1/2"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  var alab_token     = (new URLSearchParams(window.location.search)).get('token') || localStorage.getItem('alab_token') || '';
+  var currentSession = null;
+
+  function _checkExpired(res) {
+    if (res && res.expired) {
+      localStorage.removeItem('alab_token');
+      google.script.run.withSuccessHandler(function(url) {
+        window.top.location.href = url + '?page=Login';
+      }).getScriptUrl();
+      return true;
+    }
+    return false;
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (_checkExpired(res)) return;
+        if (!res.success || !res.data) return;
+        currentSession = res.data;
+
+        // Welcome message
+        document.getElementById('welcome-msg').textContent =
+          'Welcome back, ' + (res.data.full_name || 'Technologist') + '. Here\'s your work queue for today.';
+
+        // Branch info
+        var branchEl = document.getElementById('branch-info');
+        if (res.data.branch_name) {
+          branchEl.innerHTML =
+            '<p class="text-sm font-semibold text-slate-700">' + escHtml(res.data.branch_name) + '</p>' +
+            '<p class="text-xs text-slate-400 mt-0.5">' + escHtml(res.data.medtech_role || 'Technologist') + '</p>';
+        } else {
+          branchEl.innerHTML = '<p class="text-xs text-slate-400 italic">No branch assigned.</p>';
+        }
+
+        loadQueue();
+      })
+      .withFailureHandler(function() {})
+      .handleAdminRequest('GET_SESSION', {}, alab_token);
+  });
+
+  function loadQueue() {
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (_checkExpired(res)) return;
+        if (!res.success) { renderEmptyAll(); return; }
+
+        var orders = res.data || [];
+        var today  = new Date().toDateString();
+
+        // Partition by status
+        var paid       = orders.filter(function(o) { return o.status === 'PAID'; });
+        var inProgress = orders.filter(function(o) { return o.status === 'IN_PROGRESS'; });
+        var forRelease = orders.filter(function(o) { return o.status === 'FOR_RELEASE'; });
+        var newOpen    = orders.filter(function(o) { return ['DRAFT','OPEN'].includes(o.status); });
+        var released   = orders.filter(function(o) { return o.status === 'RELEASED'; });
+
+        // Today's orders
+        var todayOrders    = orders.filter(function(o) { return new Date(o.order_date).toDateString() === today; });
+        var todayCreated   = todayOrders.length;
+        var todayReleased  = todayOrders.filter(function(o) { return o.status === 'RELEASED'; }).length;
+        var todayRevenue   = todayOrders
+          .filter(function(o) { return o.status !== 'DRAFT' && o.status !== 'OPEN'; })
+          .reduce(function(s, o) { return s + (o.payment_amount - o.payment_discount); }, 0);
+
+        // Stats
+        document.getElementById('s-new').textContent      = newOpen.length;
+        document.getElementById('s-queue').textContent    = paid.length;
+        document.getElementById('s-progress').textContent = inProgress.length;
+        document.getElementById('s-release').textContent  = forRelease.length;
+
+        // Badge counts
+        document.getElementById('badge-paid').textContent     = paid.length;
+        document.getElementById('badge-progress').textContent = inProgress.length;
+        document.getElementById('badge-release').textContent  = forRelease.length;
+
+        // Today summary
+        document.getElementById('today-created').textContent   = todayCreated;
+        document.getElementById('today-completed').textContent = todayReleased;
+        document.getElementById('today-released').textContent  = todayReleased;
+        document.getElementById('today-revenue').textContent   = '₱' + fmt(todayRevenue);
+
+        // Render queues
+        renderQueueList('list-paid',     paid,       'paid');
+        renderQueueList('list-progress', inProgress, 'in-progress');
+        renderQueueList('list-release',  forRelease, 'for-release');
+      })
+      .withFailureHandler(function() { renderEmptyAll(); })
+      .handleOrderRequest('GET_ORDERS', {}, alab_token);
+  }
+
+  function renderQueueList(containerId, orders, cardClass) {
+    var el = document.getElementById(containerId);
+    if (!orders.length) {
+      el.innerHTML = '<div class="flex items-center justify-center py-6 text-slate-300 gap-2">' +
+        '<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>' +
+        '<span class="text-xs font-medium">All clear</span></div>';
+      return;
+    }
+
+    el.innerHTML = orders.map(function(o) {
+      var total    = o.payment_amount - o.payment_discount;
+      var timeAgo  = getTimeAgo(o.order_date);
+      var badge    = '<span class="badge badge-' + o.status + '">' + statusLabel(o.status) + '</span>';
+
+      return '<div class="queue-card ' + cardClass + '">' +
+        '<div class="flex items-start justify-between gap-3">' +
+          '<div class="flex-1 min-w-0">' +
+            '<div class="flex items-center gap-2 mb-1">' +
+              '<span class="text-xs font-bold text-slate-800" style="font-family:\'DM Mono\',monospace">' + escHtml(o.order_number) + '</span>' +
+              badge +
+            '</div>' +
+            '<p class="text-sm font-semibold text-slate-700 truncate">' + escHtml(o.patient_snapshot || '—') + '</p>' +
+            '<p class="text-xs text-slate-400 mt-0.5">' +
+              (o.doctor_snapshot ? 'Ref: ' + escHtml(o.doctor_snapshot) + ' · ' : '') +
+              timeAgo +
+            '</p>' +
+          '</div>' +
+          '<div class="text-right flex-shrink-0">' +
+            '<p class="text-sm font-bold text-slate-800" style="font-family:\'DM Mono\',monospace">₱' + fmt(total) + '</p>' +
+            '<button onclick="goToOrder(\'' + o.order_id + '\')" ' +
+              'class="mt-1.5 text-xs font-semibold text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1 rounded-lg transition-colors">' +
+              'Open →' +
+            '</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function goToOrder(orderId) {
+    // Navigate parent to Orders page — the order will need to be found there
+    try {
+      var navLink = parent.document.querySelector('a[onclick*="Orders"]');
+      if (navLink) navLink.click();
+    } catch(e) {}
+  }
+
+  function renderEmptyAll() {
+    ['list-paid','list-progress','list-release'].forEach(function(id) {
+      document.getElementById(id).innerHTML =
+        '<div class="flex items-center justify-center py-6 text-slate-300 gap-2">' +
+        '<span class="text-xs font-medium">No orders</span></div>';
+    });
+    ['s-new','s-queue','s-progress','s-release'].forEach(function(id) {
+      document.getElementById(id).textContent = '0';
+    });
+    ['badge-paid','badge-progress','badge-release'].forEach(function(id) {
+      document.getElementById(id).textContent = '0';
+    });
+    document.getElementById('today-created').textContent   = '0';
+    document.getElementById('today-completed').textContent = '0';
+    document.getElementById('today-released').textContent  = '0';
+    document.getElementById('today-revenue').textContent   = '₱0.00';
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────
+  function statusLabel(s) {
+    var map = { DRAFT:'Draft', OPEN:'Open', PAID:'Paid', IN_PROGRESS:'In Progress', FOR_RELEASE:'For Release', RELEASED:'Released' };
+    return map[s] || s;
+  }
+
+  function fmt(val) {
+    return Number(val || 0).toLocaleString('en-PH', { minimumFractionDigits:2, maximumFractionDigits:2 });
+  }
+
+  function getTimeAgo(val) {
+    if (!val) return '';
+    try {
+      var diff = Date.now() - new Date(val).getTime();
+      var mins = Math.floor(diff / 60000);
+      if (mins < 1)   return 'just now';
+      if (mins < 60)  return mins + 'm ago';
+      var hrs = Math.floor(mins / 60);
+      if (hrs < 24)   return hrs + 'h ago';
+      return Math.floor(hrs / 24) + 'd ago';
+    } catch(_) { return ''; }
+  }
+
+  function escHtml(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+</script>
+</body>
+</html>

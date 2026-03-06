@@ -275,6 +275,10 @@
                 window.top.location.href = url + '?page=DoctorIndex&token=' + encodeURIComponent(alab_token);
                 return;
               }
+              if (res.data.role === 'medtech') {
+                window.top.location.href = url + '?page=TechIndex&token=' + encodeURIComponent(alab_token);
+                return;
+              }
               document.getElementById('sidebar-name').textContent = res.data.full_name || 'Admin';
               document.getElementById('sidebar-role').textContent =
                 res.data.role === 'super_admin'
