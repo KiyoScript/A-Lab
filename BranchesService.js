@@ -192,6 +192,32 @@ function _createBranchSpreadsheet(branchName, branchCode) {
   pdSheet.setColumnWidth(3, 180);
   pdSheet.setColumnWidth(4, 200);
 
+  // ── 5. ORDERS sheet ───────────────────────────────────────────
+  const ordersSheet = ss.insertSheet('Orders');
+  const ordersHeaders = [
+    'order_id','order_number','patient_id','patient_snapshot',
+    'referring_doctor_id','doctor_snapshot','technologist_id','created_by',
+    'status','payment_amount','payment_discount','amount_paid',
+    'change','notes','order_date','created_at','updated_at'
+  ];
+  ordersSheet.appendRow(ordersHeaders);
+  ordersSheet.getRange(1,1,1,ordersHeaders.length)
+    .setFontWeight('bold').setBackground('#0f172a')
+    .setFontColor('#ffffff').setHorizontalAlignment('center');
+  ordersSheet.setFrozenRows(1);
+
+  // ── 6. ORDER_ITEMS sheet ──────────────────────────────────────
+  const itemsSheet = ss.insertSheet('Order_Items');
+  const itemsHeaders = [
+    'item_id','order_id','item_type',
+    'item_ref_id','item_name_snapshot','fee','created_at'
+  ];
+  itemsSheet.appendRow(itemsHeaders);
+  itemsSheet.getRange(1,1,1,itemsHeaders.length)
+    .setFontWeight('bold').setBackground('#0f172a')
+    .setFontColor('#ffffff').setHorizontalAlignment('center');
+  itemsSheet.setFrozenRows(1);
+
   // ── Bring Admins to front ─────────────────────────────────────
   ss.setActiveSheet(adminsSheet);
   ss.moveActiveSheet(1);
