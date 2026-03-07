@@ -198,7 +198,8 @@ function handleAdminRequest(action, payload, token) {
     case 'GET_BRANCH_ADMINS':   return getBranchAdmins();
     case 'CREATE_BRANCH_ADMIN': return createBranchAdmin(payload);
     case 'UPDATE_BRANCH_ADMIN': return updateBranchAdmin(payload);
-    case 'DELETE_BRANCH_ADMIN': return deleteBranchAdmin(payload.admin_id);
+    case 'DELETE_BRANCH_ADMIN':               return deleteBranchAdmin(payload.admin_id);
+    case 'CHANGE_OWN_BRANCH_ADMIN_PASSWORD':  return changeOwnBranchAdminPassword(payload, token);
     default: return { success: false, error: 'Unknown action: ' + action };
   }
 }

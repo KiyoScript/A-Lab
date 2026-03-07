@@ -228,7 +228,7 @@
       <div class="section-divider">Patient</div>
       <div>
         <label class="field-label">Patient <span class="text-red-400">*</span></label>
-        <select id="f-patient" class="field-input">
+        <select id="f-patient" class="field-input" onchange="onPatientChange()">
           <option value="">Select patient…</option>
         </select>
       </div>
@@ -1059,8 +1059,18 @@
     document.getElementById('create-modal').classList.add('hidden');
   }
 
+  var allDiscountsCache = [];
+
   function loadCreateDropdowns() {
-    // Patients
+    // Pre-load discounts for patient discount auto-apply
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (res && res.success) allDiscountsCache = res.data || [];
+      })
+      .withFailureHandler(function(){})
+      .handleDiscountRequest('GET_DISCOUNTS_ALL', {}, alab_token);
+
+    // Patients — store discount_ids on each option for auto-apply
     google.script.run
       .withSuccessHandler(function(res) {
         if (_checkExpired(res)) return;
@@ -1069,7 +1079,12 @@
         if (res.success && res.data) {
           res.data.forEach(function(p) {
             var name = p.last_name + ', ' + p.first_name + (p.middle_name ? ' ' + p.middle_name.charAt(0) + '.' : '');
-            sel.innerHTML += '<option value="' + escHtml(p.patient_id) + '" data-name="' + escHtml(name) + '">' + escHtml(name) + '</option>';
+            var opt  = document.createElement('option');
+            opt.value = p.patient_id;
+            opt.text  = name;
+            opt.setAttribute('data-name',         name);
+            opt.setAttribute('data-discount-ids',  JSON.stringify(p.discount_ids || []));
+            sel.appendChild(opt);
           });
         }
       })
@@ -1085,7 +1100,11 @@
         if (res.success && res.data) {
           res.data.filter(function(d){return d.is_active;}).forEach(function(d) {
             var name = 'Dr. ' + d.first_name + ' ' + d.last_name + (d.suffix ? ', ' + d.suffix : '');
-            sel.innerHTML += '<option value="' + escHtml(d.doctor_id) + '" data-name="' + escHtml(name) + '">' + escHtml(name) + '</option>';
+            var opt  = document.createElement('option');
+            opt.value = d.doctor_id;
+            opt.text  = name;
+            opt.setAttribute('data-name', name);
+            sel.appendChild(opt);
           });
         }
       })
@@ -1108,6 +1127,36 @@
       })
       .withFailureHandler(function(){renderItemList('');})
       .handleLabServiceRequest('GET_LAB_SERVICES', {}, alab_token);
+  }
+
+  function onPatientChange() {
+    var sel = document.getElementById('f-patient');
+    var opt = sel.options[sel.selectedIndex];
+    if (!opt || !opt.value) {
+      document.getElementById('f-discount').value = '';
+      recalc();
+      return;
+    }
+    var discountIds = [];
+    try { discountIds = JSON.parse(opt.getAttribute('data-discount-ids') || '[]'); } catch(_) {}
+    if (!discountIds.length || !allDiscountsCache.length) {
+      document.getElementById('f-discount').value = '';
+      recalc();
+      return;
+    }
+    var subtotal = Object.values(selectedItems).reduce(function(s, i) { return s + (Number(i.fee) || 0); }, 0);
+    var totalDisc = 0;
+    discountIds.forEach(function(did) {
+      var d = allDiscountsCache.find(function(x) { return x.discount_id === did; });
+      if (!d || !d.is_active) return;
+      if (d.discount_type === 'percentage') {
+        totalDisc += subtotal * (Number(d.value) / 100);
+      } else {
+        totalDisc += Number(d.value);
+      }
+    });
+    document.getElementById('f-discount').value = totalDisc > 0 ? totalDisc.toFixed(2) : '';
+    recalc();
   }
 
   function renderItemList(q) {

@@ -129,25 +129,37 @@
       const password = document.getElementById('password').value;
       if (!username || !password) { showError('Please enter both username and password.'); return; }
       setLoading(true); hideError();
-      google.script.run
-        .withSuccessHandler(function(res) {
-          setLoading(false);
-          if (res.success) {
-            localStorage.setItem('alab_token', res.token);
-            if (res.data && res.data.must_change_password) {
-              pendingToken = res.token;
-              pendingRole  = res.data.role || '';
-              document.getElementById('change-pw-modal').classList.remove('hidden');
-            } else {
-              var targetPage = res.data.role === 'doctor'  ? 'DoctorIndex' :
-                               res.data.role === 'medtech' ? 'TechIndex'   : 'Index';
-              // Use cached scriptUrl — no extra server call needed
-              window.top.location.href = scriptUrl + '?page=' + targetPage + '&token=' + encodeURIComponent(res.token);
-            }
-          } else { showError(res.error || 'Login failed.'); }
-        })
-        .withFailureHandler(function(err) { setLoading(false); showError('Error: ' + err.message); })
-        .handleAdminRequest('LOGIN', { username: username, password: password }, '');
+
+      function _proceed(url) {
+        google.script.run
+          .withSuccessHandler(function(res) {
+            setLoading(false);
+            if (res.success) {
+              localStorage.setItem('alab_token', res.token);
+              if (res.data && res.data.must_change_password) {
+                pendingToken = res.token;
+                pendingRole  = res.data.role || '';
+                document.getElementById('change-pw-modal').classList.remove('hidden');
+              } else {
+                var targetPage = res.data.role === 'doctor'  ? 'DoctorIndex' :
+                                 res.data.role === 'medtech' ? 'TechIndex'   : 'Index';
+                window.top.location.href = url + '?page=' + targetPage + '&token=' + encodeURIComponent(res.token);
+              }
+            } else { showError(res.error || 'Login failed.'); }
+          })
+          .withFailureHandler(function(err) { setLoading(false); showError('Error: ' + err.message); })
+          .handleAdminRequest('LOGIN', { username: username, password: password }, '');
+      }
+
+      // If scriptUrl wasn't ready yet, fetch it now before proceeding
+      if (scriptUrl) {
+        _proceed(scriptUrl);
+      } else {
+        google.script.run
+          .withSuccessHandler(function(url) { scriptUrl = url; _proceed(url); })
+          .withFailureHandler(function(err) { setLoading(false); showError('Error: ' + err.message); })
+          .getScriptUrl();
+      }
     }
 
     function setLoading(v) {

@@ -242,7 +242,11 @@ function handleDiscountRequest(action, payload, token) {
   if (!session) return { success: false, error: 'Session expired. Please log in again.', expired: true };
 
   // GET_DISCOUNTS_ALL — readable by both super_admin and branch_admin
-  if (action === 'GET_DISCOUNTS_ALL') return getDiscountsAll(token);
+  if (action === 'GET_DISCOUNTS_ALL') {
+    if (!['super_admin', 'branch_admin', 'medtech'].includes(session.role))
+      return { success: false, error: 'Access denied.' };
+    return getDiscountsAll(token);
+  }
 
   // GET_DISCOUNTS — readable by branch_admin (read-only page access)
   if (action === 'GET_DISCOUNTS' && session.role === 'branch_admin') return getDiscountsAll(token);

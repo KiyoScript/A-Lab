@@ -485,6 +485,57 @@ function deleteBranchAdmin(adminId) {
 // ROUTER
 // ═══════════════════════════════════════════════════════════════
 
+// ═══════════════════════════════════════════════════════════════
+// CHANGE OWN PASSWORD — branch_admin only (self-service)
+// payload: { current_password, new_password }
+// ═══════════════════════════════════════════════════════════════
+function changeOwnBranchAdminPassword(payload, token) {
+  try {
+    const session = _getSession(token);
+    if (!session) return { success: false, error: 'Session expired.', expired: true };
+    if (session.role !== 'branch_admin') return { success: false, error: 'Unauthorized.' };
+
+    if (!payload.current_password || !payload.current_password.trim())
+      return { success: false, error: 'Current password is required.' };
+    if (!payload.new_password || payload.new_password.trim().length < 6)
+      return { success: false, error: 'New password must be at least 6 characters.' };
+
+    const currentHashed = _hashPassword(payload.current_password.trim());
+    const newHashed     = _hashPassword(payload.new_password.trim());
+
+    if (currentHashed === newHashed)
+      return { success: false, error: 'New password cannot be the same as your current password.' };
+
+    const branchSh   = _getRegistrySheet();
+    const branchData = branchSh.getDataRange().getValues();
+    const branchRow  = branchData.find(function(r, i) {
+      return i > 0 && String(r[0]) === String(session.branch_id);
+    });
+    if (!branchRow) return { success: false, error: 'Branch not found.' };
+
+    const ssId    = String(branchRow[7] || '');
+    if (!ssId) return { success: false, error: 'Branch spreadsheet not found.' };
+
+    const adminSh   = _getBranchAdminSheet(ssId);
+    const adminData = adminSh.getDataRange().getValues();
+    const idx       = adminData.findIndex(function(r, i) {
+      return i > 0 && String(r[0]) === String(session.admin_id);
+    });
+    if (idx === -1) return { success: false, error: 'Account not found.' };
+
+    if (String(adminData[idx][3]).trim() !== currentHashed)
+      return { success: false, error: 'Current password is incorrect.' };
+
+    const now = new Date().toISOString();
+    adminSh.getRange(idx + 1, 4).setValue(newHashed);
+    adminSh.getRange(idx + 1, 9).setValue(now);
+
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
 function handleAdminRequest(action, payload) {
   switch (action) {
     // Auth
