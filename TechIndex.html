@@ -220,6 +220,17 @@
       frame.classList.remove('hidden');
     }
 
+    function navigateTo(pageName) {
+      loadPage(pageName);
+      document.querySelectorAll('.nav-link').forEach(function(l) { l.classList.remove('active'); });
+      var pageToNav = pageName === 'CreateOrder' ? 'Orders' : pageName;
+      document.querySelectorAll('.nav-link').forEach(function(l) {
+        if ((l.querySelector('span') || {}).textContent === pageToNav) l.classList.add('active');
+      });
+      document.getElementById('page-title').textContent =
+        pageName === 'CreateOrder' ? 'New Order' : pageName;
+    }
+
     function setActive(el) {
       document.querySelectorAll('.nav-link').forEach(function(l) { l.classList.remove('active'); });
       el.classList.add('active');

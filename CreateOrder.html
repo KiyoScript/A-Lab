@@ -889,26 +889,17 @@
   }
 
   // ── Navigation ────────────────────────────────────────────────
-  function goBack() {
+    function goBack() {
+    try {
+        if (window.parent && typeof window.parent.navigateTo === 'function') {
+        window.parent.navigateTo('Orders');
+        return;
+        }
+    } catch(_) {}
     google.script.run.withSuccessHandler(function(url) {
-      // Navigate the parent frame back to Orders
-      if (window.parent && window.parent !== window) {
-        window.parent.document.getElementById('content-frame').src =
-          url + '?page=Orders&token=' + encodeURIComponent(alab_token);
-        // Update nav active state in parent if possible
-        try {
-          var links = window.parent.document.querySelectorAll('.nav-link');
-          links.forEach(function(l){ l.classList.remove('active'); });
-          var ordersLink = window.parent.document.getElementById('nav-orders');
-          if (ordersLink) ordersLink.classList.add('active');
-          var title = window.parent.document.getElementById('page-title');
-          if (title) title.textContent = 'Orders';
-        } catch(_) {}
-      } else {
-        window.location.href = url + '?page=Orders&token=' + encodeURIComponent(alab_token);
-      }
-    }).getScriptUrl();
-  }
+        window.top.location.href = url + '?page=TechIndex&token=' + encodeURIComponent(alab_token);
+    }).catch(function(){});
+    }
 
   // ── Helpers ───────────────────────────────────────────────────
   function fmt(val) {
