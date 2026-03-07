@@ -173,8 +173,8 @@ function getDoctors(token) {
         return doc;
       });
 
-    // Branch admin only sees doctors assigned to their branch
-    if (session.role === 'branch_admin') {
+    // Branch admin and medtech only see doctors assigned to their branch
+    if (['branch_admin', 'medtech'].includes(session.role)) {
       doctors = doctors.filter(function(d) {
         return d.branch_id === session.branch_id;
       });

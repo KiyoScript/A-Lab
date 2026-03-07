@@ -1221,9 +1221,12 @@
   function recalc() {
     var sub  = Object.values(selectedItems).reduce(function(s,i){ return s+(Number(i.fee)||0); }, 0);
     var disc = Number(document.getElementById('f-discount').value) || 0;
+    var total = Math.max(sub - disc, 0);
     document.getElementById('c-subtotal').textContent = '₱' + fmt(sub);
-    document.getElementById('c-discount').textContent = '-₱' + fmt(disc);
-    document.getElementById('c-total').textContent    = '₱' + fmt(Math.max(sub - disc, 0));
+    document.getElementById('c-discount').textContent = disc > 0 ? '-₱' + fmt(disc) : '-₱0.00';
+    document.getElementById('c-total').textContent    = '₱' + fmt(total);
+    // Debug: log to catch silent failures
+    console.log('recalc → sub:', sub, 'disc:', disc, 'total:', total, 'items:', JSON.stringify(selectedItems));
   }
 
   function saveOrder() {
