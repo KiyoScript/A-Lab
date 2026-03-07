@@ -8,7 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; }
-    body { font-family: 'DM Sans', sans-serif; background: #f8fafc; color: #1e293b; margin: 0; }
+    body { font-family: 'DM Sans', sans-serif; background: #f8fafc; color: #1e293b; margin: 0; overflow-x: hidden; }
 
     .card { background:#fff; border:1px solid #e2e8f0; border-radius:1rem; box-shadow:0 1px 3px rgba(0,0,0,.06); }
     .stat-card { background:#fff; border:1px solid #e2e8f0; border-radius:1rem; padding:1.1rem 1.25rem; }
@@ -29,13 +29,11 @@
     .badge-FOR_RELEASE { background:#ede9fe; color:#6d28d9; }
     .badge-RELEASED    { background:#dcfce7; color:#15803d; }
 
-    /* ── Item status badges ── */
+    /* ── Item / Result badges ── */
     .item-badge { font-size:10px; font-weight:700; padding:2px 8px; border-radius:99px; }
     .item-PENDING   { background:#f1f5f9; color:#64748b; }
     .item-RUNNING   { background:#fef3c7; color:#92400e; }
     .item-DONE      { background:#d1fae5; color:#065f46; }
-
-    /* ── Result status badges ── */
     .result-badge { font-size:10px; font-weight:700; padding:2px 8px; border-radius:99px; }
     .result-empty            { background:#f1f5f9; color:#94a3b8; }
     .result-DRAFT            { background:#fee2e2; color:#dc2626; }
@@ -43,19 +41,20 @@
     .result-VERIFIED         { background:#d1fae5; color:#065f46; }
     .result-RELEASED         { background:#dcfce7; color:#15803d; }
 
-    /* ── Form ── */
+    /* ── Form fields ── */
     .field-label { font-size:11px; font-weight:600; color:#475569; text-transform:uppercase;
                    letter-spacing:.04em; margin-bottom:5px; display:block; }
-    .field-input { width:100%; border:1.5px solid #e2e8f0; border-radius:10px; padding:8px 12px;
-                   font-size:.8125rem; color:#1e293b; outline:none; transition:border .15s, box-shadow .15s; background:#fff; }
+    .field-input { width:100%; border:1.5px solid #e2e8f0; border-radius:10px; padding:9px 13px;
+                   font-size:.8125rem; color:#1e293b; outline:none; transition:border .15s, box-shadow .15s;
+                   background:#fff; font-family:'DM Sans',sans-serif; }
     .field-input:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.10); }
+    select.field-input { cursor:pointer; }
     textarea.field-input { resize:vertical; min-height:68px; }
 
     /* ── Item picker ── */
     .item-row { display:flex; align-items:center; gap:8px; padding:8px 10px;
                 border:1.5px solid #e2e8f0; border-radius:10px; margin-bottom:5px; background:#fff; cursor:pointer; }
     .item-row:hover { border-color:#cbd5e1; background:#f8fafc; }
-    .item-row.selected { border-color:#e2e8f0; background:#fff; }
     .item-check { width:16px; height:16px; accent-color:#3b82f6; flex-shrink:0; cursor:pointer; }
     .item-name  { flex:1; font-size:13px; color:#1e293b; font-weight:500; }
     .item-fee   { font-size:12px; color:#2f76f5; font-weight:600; font-family:'DM Mono',monospace; }
@@ -65,32 +64,31 @@
     .section-divider { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.08em;
                        color:#94a3b8; border-bottom:1px solid #f1f5f9; padding-bottom:5px; margin:14px 0 10px; }
 
+    /* ── Modals (view/pay/upload) ── */
     .modal-card { background:#fff; border-radius:20px; box-shadow:0 20px 60px rgba(0,0,0,.18);
                   max-height:92vh; overflow-y:auto; }
     .modal-card::-webkit-scrollbar { width:4px; }
     .modal-card::-webkit-scrollbar-thumb { background:#e2e8f0; border-radius:9px; }
 
+    /* ── Search box ── */
     .search-box { width:100%; border:1.5px solid #e2e8f0; border-radius:10px;
                   padding:7px 12px 7px 32px; font-size:13px; outline:none;
-                  background:#f8fafc; transition:border .15s; }
+                  background:#f8fafc; transition:border .15s; font-family:'DM Sans',sans-serif; }
     .search-box:focus { border-color:#3b82f6; background:#fff; }
 
-    .spinner { display:inline-block; width:14px; height:14px; border:2px solid rgba(255,255,255,.35);
-               border-top-color:#fff; border-radius:50%; animation:spin .6s linear infinite; }
-    @keyframes spin { to { transform:rotate(360deg); } }
-    @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-    .fade-up { animation:fadeUp .3s ease both; }
-    .d1{animation-delay:.05s}.d2{animation-delay:.1s}.d3{animation-delay:.15s}
+    /* ── Buttons ── */
+    .btn-primary   { background:#3b82f6; color:#fff; border:none; border-radius:10px; padding:10px 20px;
+                     font-size:13px; font-weight:600; cursor:pointer; transition:background .15s; font-family:'DM Sans',sans-serif; }
+    .btn-primary:hover    { background:#2563eb; }
+    .btn-primary:disabled { background:#93c5fd; cursor:not-allowed; }
+    .btn-secondary { background:#fff; color:#475569; border:1.5px solid #e2e8f0; border-radius:10px; padding:10px 20px;
+                     font-size:13px; font-weight:600; cursor:pointer; transition:all .15s; font-family:'DM Sans',sans-serif; }
+    .btn-secondary:hover  { background:#f8fafc; border-color:#cbd5e1; }
+    .btn-green  { background:#16a34a; color:#fff; border:none; border-radius:10px; padding:10px 24px;
+                  font-size:13px; font-weight:600; cursor:pointer; transition:background .15s; font-family:'DM Sans',sans-serif; }
+    .btn-green:hover    { background:#15803d; }
+    .btn-green:disabled { background:#86efac; cursor:not-allowed; }
 
-    #toast { position:fixed; bottom:24px; right:24px; z-index:9999;
-             display:flex; flex-direction:column; gap:8px; pointer-events:none; }
-    .toast-item { display:flex; align-items:center; gap:10px; padding:10px 16px; border-radius:12px;
-                  font-size:13px; font-weight:500; max-width:320px; box-shadow:0 4px 20px rgba(0,0,0,.12);
-                  animation:fadeUp .3s ease; }
-    .toast-success { background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; }
-    .toast-error   { background:#fef2f2; color:#dc2626; border:1px solid #fecaca; }
-
-    /* ── Action buttons ── */
     .act-btn { font-size:12px; font-weight:600; padding:5px 12px; border-radius:8px;
                border:none; cursor:pointer; transition:all .15s; white-space:nowrap; }
     .act-primary { background:#3b82f6; color:#fff; }
@@ -104,16 +102,13 @@
     .act-purple { background:#ede9fe; color:#6d28d9; }
     .act-purple:hover { background:#ddd6fe; }
 
-    ::-webkit-scrollbar { width:5px; }
-    ::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:99px; }
-
-    /* ── Upload area ── */
+    /* ── Upload ── */
     .upload-zone { border:2px dashed #cbd5e1; border-radius:12px; padding:24px; text-align:center;
                    cursor:pointer; transition:all .2s; background:#f8fafc; }
     .upload-zone:hover { border-color:#3b82f6; background:#eff6ff; }
     .upload-zone.dragover { border-color:#3b82f6; background:#eff6ff; }
 
-    /* ── Step indicator ── */
+    /* ── Step indicator (order view) ── */
     .step-flow { display:flex; align-items:center; gap:0; overflow-x:auto; padding:2px 0; }
     .step { font-size:11px; font-weight:600; padding:4px 12px; background:#f1f5f9; color:#64748b;
             border-radius:0; white-space:nowrap; }
@@ -122,169 +117,441 @@
     .step.active { background:#3b82f6; color:#fff; }
     .step.done   { background:#dcfce7; color:#15803d; }
     .step-arrow  { font-size:10px; color:#cbd5e1; flex-shrink:0; }
+
+    /* ══════════════════════════════════════════
+       NEW ORDER WIZARD OVERLAY
+    ══════════════════════════════════════════ */
+    #wizard-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: #f8fafc;
+      transform: translateX(100%);
+      transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+    #wizard-overlay.open {
+      transform: translateX(0);
+    }
+
+    /* Wizard step indicator */
+    .wizard-step { display:flex; flex-direction:column; align-items:center; gap:6px; }
+    .wstep-circle { width:36px; height:36px; border-radius:50%; display:flex; align-items:center;
+                    justify-content:center; font-size:13px; font-weight:700; transition:all .25s;
+                    border:2px solid #e2e8f0; color:#94a3b8; background:#fff; }
+    .wstep-circle.active { background:#3b82f6; border-color:#3b82f6; color:#fff; box-shadow:0 0 0 4px rgba(59,130,246,.15); }
+    .wstep-circle.done   { background:#dcfce7; border-color:#16a34a; color:#16a34a; }
+    .wstep-label { font-size:11px; font-weight:600; color:#94a3b8; white-space:nowrap; }
+    .wstep-label.active { color:#3b82f6; }
+    .wstep-label.done   { color:#16a34a; }
+    .wstep-line { flex:1; height:2px; background:#e2e8f0; margin-top:-20px; transition:background .25s; }
+    .wstep-line.done { background:#16a34a; }
+
+    /* Patient result cards */
+    .patient-result { display:flex; align-items:center; justify-content:space-between; gap:10px;
+                      padding:10px 14px; border:1.5px solid #e2e8f0; border-radius:10px;
+                      cursor:pointer; transition:all .15s; background:#fff; }
+    .patient-result:hover { border-color:#bfdbfe; background:#f0f7ff; }
+    .patient-result.selected-patient { border-color:#3b82f6; background:#eff6ff; }
+
+    /* Discount badge */
+    .disc-badge { display:inline-flex; align-items:center; gap:5px; background:#fef3c7; color:#92400e;
+                  border:1px solid #fde68a; border-radius:99px; padding:3px 10px; font-size:11px; font-weight:600; }
+
+    /* Spinner */
+    .spinner { display:inline-block; width:14px; height:14px; border:2px solid rgba(255,255,255,.35);
+               border-top-color:#fff; border-radius:50%; animation:spin .6s linear infinite; }
+    .spinner-blue { border-color:rgba(59,130,246,.2); border-top-color:#3b82f6; }
+
+    @keyframes spin    { to { transform:rotate(360deg); } }
+    @keyframes fadeUp  { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes fadeIn  { from{opacity:0} to{opacity:1} }
+    .fade-up  { animation:fadeUp .3s ease both; }
+    .fade-in  { animation:fadeIn .25s ease; }
+    .d1{animation-delay:.05s}.d2{animation-delay:.1s}.d3{animation-delay:.15s}
+
+    #toast { position:fixed; bottom:24px; right:24px; z-index:9999;
+             display:flex; flex-direction:column; gap:8px; pointer-events:none; }
+    .toast-item { display:flex; align-items:center; gap:10px; padding:10px 16px; border-radius:12px;
+                  font-size:13px; font-weight:500; max-width:320px; box-shadow:0 4px 20px rgba(0,0,0,.12); animation:fadeUp .3s ease; }
+    .toast-success { background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; }
+    .toast-error   { background:#fef2f2; color:#dc2626; border:1px solid #fecaca; }
+
+    ::-webkit-scrollbar { width:5px; }
+    ::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:99px; }
   </style>
 </head>
-<body class="p-5">
+<body>
 <div id="toast"></div>
 
-<!-- ── HEADER ── -->
-<div class="flex items-center justify-between mb-5 flex-wrap gap-3 fade-up">
-  <div>
-    <h1 class="text-xl font-bold text-slate-800">Orders</h1>
-    <p id="header-sub" class="text-xs text-slate-400 mt-0.5">Lab order management</p>
-  </div>
-  <button id="create-btn" onclick="openCreateWizard()"
-    class="hidden items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-sm">
-    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-    </svg>
-    New Order
-  </button>
-</div>
+<!-- ══════════════════════════════════════════════════════════════
+     ORDERS PAGE
+══════════════════════════════════════════════════════════════ -->
+<div id="orders-page" class="p-5">
 
-<!-- ── STATS ── -->
-<div class="grid grid-cols-3 sm:grid-cols-6 gap-3 mb-5 fade-up d1">
-  <div class="stat-card"><p id="s-total"      class="text-2xl font-bold text-slate-800">—</p><p class="text-xs text-slate-400 mt-0.5">Total</p></div>
-  <div class="stat-card"><p id="s-draft"      class="text-2xl font-bold text-slate-400">—</p><p class="text-xs text-slate-400 mt-0.5">Draft</p></div>
-  <div class="stat-card"><p id="s-open"       class="text-2xl font-bold text-blue-500">—</p><p class="text-xs text-slate-400 mt-0.5">Open</p></div>
-  <div class="stat-card"><p id="s-paid"       class="text-2xl font-bold text-emerald-600">—</p><p class="text-xs text-slate-400 mt-0.5">Paid</p></div>
-  <div class="stat-card"><p id="s-inprogress" class="text-2xl font-bold text-amber-500">—</p><p class="text-xs text-slate-400 mt-0.5">In Progress</p></div>
-  <div class="stat-card"><p id="s-released"   class="text-2xl font-bold text-purple-500">—</p><p class="text-xs text-slate-400 mt-0.5">Released</p></div>
-</div>
-
-<!-- ── FILTERS ── -->
-<div class="flex items-center gap-3 mb-4 flex-wrap fade-up d2">
-  <div class="relative flex-1 min-w-[200px]">
-    <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
-    </svg>
-    <input id="search-input" type="text" placeholder="Search order no., patient, doctor…"
-      oninput="filterTable()" class="search-box"/>
-  </div>
-  <select id="status-filter" onchange="filterTable()"
-    class="border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-600 bg-white outline-none focus:border-blue-400 cursor-pointer">
-    <option value="">All Status</option>
-    <option value="DRAFT">Draft</option>
-    <option value="OPEN">Open</option>
-    <option value="PAID">Paid</option>
-    <option value="IN_PROGRESS">In Progress</option>
-    <option value="FOR_RELEASE">For Release</option>
-    <option value="RELEASED">Released</option>
-  </select>
-</div>
-
-<!-- ── TABLE ── -->
-<div class="card fade-up d3">
-  <div id="loading-state" class="flex flex-col items-center justify-center py-20 gap-3">
-    <div class="w-8 h-8 rounded-full animate-spin" style="border:2px solid #bbd8ff;border-top-color:#2f76f5"></div>
-    <p class="text-xs text-slate-400">Loading orders…</p>
-  </div>
-  <div id="empty-state" class="hidden flex-col items-center justify-center py-20 text-center gap-3">
-    <div class="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center">
-      <svg class="w-8 h-8 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v8.5L4.5 18A2 2 0 006.4 21h11.2a2 2 0 001.9-2.5L15 11.5V3M9 3h6M8 15h8"/>
-      </svg>
+  <!-- HEADER -->
+  <div class="flex items-center justify-between mb-5 flex-wrap gap-3 fade-up">
+    <div>
+      <h1 class="text-xl font-bold text-slate-800">Orders</h1>
+      <p id="header-sub" class="text-xs text-slate-400 mt-0.5">Lab order management</p>
     </div>
-    <p class="text-slate-500 text-sm font-semibold">No orders found</p>
-    <p id="empty-sub" class="text-slate-400 text-xs">No orders yet.</p>
+    <button id="create-btn" onclick="openWizard()"
+      class="hidden items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-sm">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+      </svg>
+      New Order
+    </button>
   </div>
-  <div id="table-wrap" class="hidden overflow-x-auto">
-    <table>
-      <thead>
-        <tr>
-          <th class="px-4">Order No.</th>
-          <th class="px-3">Patient</th>
-          <th class="px-3 hidden md:table-cell">Doctor</th>
-          <th class="px-3">Amount</th>
-          <th class="px-3">Status</th>
-          <th class="px-3 hidden lg:table-cell">Created By</th>
-          <th class="px-3 hidden md:table-cell">Date</th>
-          <th class="px-4 text-right">Action</th>
-        </tr>
-      </thead>
-      <tbody id="order-tbody"></tbody>
-    </table>
+
+  <!-- STATS -->
+  <div class="grid grid-cols-3 sm:grid-cols-6 gap-3 mb-5 fade-up d1">
+    <div class="stat-card"><p id="s-total"      class="text-2xl font-bold text-slate-800">—</p><p class="text-xs text-slate-400 mt-0.5">Total</p></div>
+    <div class="stat-card"><p id="s-draft"      class="text-2xl font-bold text-slate-400">—</p><p class="text-xs text-slate-400 mt-0.5">Draft</p></div>
+    <div class="stat-card"><p id="s-open"       class="text-2xl font-bold text-blue-500">—</p><p class="text-xs text-slate-400 mt-0.5">Open</p></div>
+    <div class="stat-card"><p id="s-paid"       class="text-2xl font-bold text-emerald-600">—</p><p class="text-xs text-slate-400 mt-0.5">Paid</p></div>
+    <div class="stat-card"><p id="s-inprogress" class="text-2xl font-bold text-amber-500">—</p><p class="text-xs text-slate-400 mt-0.5">In Progress</p></div>
+    <div class="stat-card"><p id="s-released"   class="text-2xl font-bold text-purple-500">—</p><p class="text-xs text-slate-400 mt-0.5">Released</p></div>
   </div>
-</div>
+
+  <!-- FILTERS -->
+  <div class="flex items-center gap-3 mb-4 flex-wrap fade-up d2">
+    <div class="relative flex-1 min-w-[200px]">
+      <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
+      </svg>
+      <input id="search-input" type="text" placeholder="Search order no., patient, doctor…" oninput="filterTable()" class="search-box"/>
+    </div>
+    <select id="status-filter" onchange="filterTable()"
+      class="border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-600 bg-white outline-none focus:border-blue-400 cursor-pointer">
+      <option value="">All Status</option>
+      <option value="DRAFT">Draft</option>
+      <option value="OPEN">Open</option>
+      <option value="PAID">Paid</option>
+      <option value="IN_PROGRESS">In Progress</option>
+      <option value="FOR_RELEASE">For Release</option>
+      <option value="RELEASED">Released</option>
+    </select>
+  </div>
+
+  <!-- TABLE -->
+  <div class="card fade-up d3">
+    <div id="loading-state" class="flex flex-col items-center justify-center py-20 gap-3">
+      <div class="w-8 h-8 rounded-full animate-spin" style="border:2px solid #bbd8ff;border-top-color:#2f76f5"></div>
+      <p class="text-xs text-slate-400">Loading orders…</p>
+    </div>
+    <div id="empty-state" class="hidden flex-col items-center justify-center py-20 text-center gap-3">
+      <div class="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center">
+        <svg class="w-8 h-8 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v8.5L4.5 18A2 2 0 006.4 21h11.2a2 2 0 001.9-2.5L15 11.5V3M9 3h6M8 15h8"/>
+        </svg>
+      </div>
+      <p class="text-slate-500 text-sm font-semibold">No orders found</p>
+      <p id="empty-sub" class="text-slate-400 text-xs">No orders yet.</p>
+    </div>
+    <div id="table-wrap" class="hidden overflow-x-auto">
+      <table>
+        <thead>
+          <tr>
+            <th class="px-4">Order No.</th>
+            <th class="px-3">Patient</th>
+            <th class="px-3 hidden md:table-cell">Doctor</th>
+            <th class="px-3">Amount</th>
+            <th class="px-3">Status</th>
+            <th class="px-3 hidden lg:table-cell">Created By</th>
+            <th class="px-3 hidden md:table-cell">Date</th>
+            <th class="px-4 text-right">Action</th>
+          </tr>
+        </thead>
+        <tbody id="order-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div><!-- end #orders-page -->
+
 
 <!-- ══════════════════════════════════════════════════════════════
-     CREATE ORDER MODAL
+     NEW ORDER WIZARD OVERLAY (slides in from right)
 ══════════════════════════════════════════════════════════════ -->
-<div id="create-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden" onclick="closeCreateModal()">
-  <div class="modal-card w-full max-w-2xl" onclick="event.stopPropagation()">
-    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 sticky top-0 bg-white z-10">
-      <div>
-        <h2 class="text-base font-bold text-slate-800">New Order</h2>
-        <p class="text-xs text-slate-400 mt-0.5">Saves as DRAFT — confirm and pay in next steps.</p>
-      </div>
-      <button onclick="closeCreateModal()" class="text-slate-400 hover:text-slate-600 p-1">
+<div id="wizard-overlay">
+  <div class="flex-1 p-5 pb-10 max-w-2xl w-full mx-auto">
+
+    <!-- Wizard Header -->
+    <div class="flex items-center gap-3 mb-6">
+      <button onclick="closeWizard()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors">
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
         </svg>
       </button>
-    </div>
-    <div class="px-6 py-5 space-y-4">
-
-      <div class="section-divider">Patient</div>
       <div>
-        <label class="field-label">Patient <span class="text-red-400">*</span></label>
-        <select id="f-patient" class="field-input" onchange="onPatientChange()">
-          <option value="">Select patient…</option>
+        <h1 class="text-xl font-bold text-slate-800">New Order</h1>
+        <p class="text-xs text-slate-400 mt-0.5">Walk through each step to create a lab order</p>
+      </div>
+    </div>
+
+    <!-- Step Indicator -->
+    <div class="flex items-center gap-0 mb-8 px-2">
+      <div class="wizard-step">
+        <div class="wstep-circle active" id="wsc-1">1</div>
+        <span class="wstep-label active" id="wsl-1">Patient</span>
+      </div>
+      <div class="wstep-line" id="wline-1"></div>
+      <div class="wizard-step">
+        <div class="wstep-circle" id="wsc-2">2</div>
+        <span class="wstep-label" id="wsl-2">Services</span>
+      </div>
+      <div class="wstep-line" id="wline-2"></div>
+      <div class="wizard-step">
+        <div class="wstep-circle" id="wsc-3">3</div>
+        <span class="wstep-label" id="wsl-3">Billing</span>
+      </div>
+    </div>
+
+    <!-- ── STEP 1 — PATIENT ── -->
+    <div id="wstep-1" class="fade-in">
+      <div class="card p-6">
+        <h2 class="text-sm font-bold text-slate-700 mb-1">Find or Enroll Patient</h2>
+        <p class="text-xs text-slate-400 mb-4">Search by name or contact number.</p>
+
+        <div class="relative mb-3">
+          <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
+          </svg>
+          <input id="w-patient-search" type="text" placeholder="Type name or contact number…"
+            oninput="wFilterPatients()" class="search-box"/>
+        </div>
+
+        <div id="w-patient-results" class="space-y-2 max-h-64 overflow-y-auto mb-3">
+          <div class="flex items-center justify-center py-8 gap-2 text-slate-400">
+            <div class="spinner spinner-blue w-4 h-4"></div>
+            <span class="text-xs">Loading patients…</span>
+          </div>
+        </div>
+
+        <!-- Selected patient chip -->
+        <div id="w-patient-chip" class="hidden items-center gap-3 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 mb-4">
+          <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold shrink-0" id="w-chip-avatar">—</div>
+          <div class="flex-1 min-w-0">
+            <p id="w-chip-name" class="text-sm font-semibold text-slate-800 truncate">—</p>
+            <p id="w-chip-meta" class="text-xs text-slate-400 truncate">—</p>
+          </div>
+          <button onclick="wClearPatient()" class="text-slate-400 hover:text-red-500 p-1 transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Enroll toggle -->
+        <div class="flex items-center gap-2 mb-3">
+          <div class="flex-1 h-px bg-slate-100"></div>
+          <span class="text-xs text-slate-400 font-medium">or</span>
+          <div class="flex-1 h-px bg-slate-100"></div>
+        </div>
+        <button id="w-enroll-toggle-btn" onclick="wToggleEnroll()"
+          class="w-full py-2.5 rounded-xl border-2 border-dashed border-slate-200 text-sm font-semibold text-slate-500
+                 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50 transition-all flex items-center justify-center gap-2">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+          </svg>
+          Enroll New Patient
+        </button>
+
+        <!-- Inline enroll form -->
+        <div id="w-enroll-form" class="hidden mt-4 space-y-3 fade-in" style="border:1.5px dashed #bfdbfe;border-radius:12px;background:#f0f7ff;padding:16px;">
+          <p class="text-xs font-bold text-blue-700 uppercase tracking-wider mb-1">New Patient Details</p>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="field-label">Last Name <span class="text-red-400">*</span></label>
+              <input id="we-last" type="text" class="field-input" placeholder="Dela Cruz"/>
+            </div>
+            <div>
+              <label class="field-label">First Name <span class="text-red-400">*</span></label>
+              <input id="we-first" type="text" class="field-input" placeholder="Juan"/>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="field-label">Middle Name</label>
+              <input id="we-middle" type="text" class="field-input" placeholder="Optional"/>
+            </div>
+            <div>
+              <label class="field-label">Sex <span class="text-red-400">*</span></label>
+              <select id="we-sex" class="field-input">
+                <option value="">Select…</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="field-label">Birth Date <span class="text-red-400">*</span></label>
+              <input id="we-bdate" type="date" class="field-input"/>
+            </div>
+            <div>
+              <label class="field-label">Contact No. <span class="text-red-400">*</span></label>
+              <input id="we-contact" type="text" class="field-input" placeholder="09xx-xxx-xxxx"/>
+            </div>
+          </div>
+          <div>
+            <label class="field-label">Address <span class="text-red-400">*</span></label>
+            <input id="we-address" type="text" class="field-input" placeholder="Street, Barangay, City"/>
+          </div>
+          <button id="w-enroll-btn" onclick="wEnrollAndSelect()"
+            class="w-full btn-primary flex items-center justify-center gap-2 mt-1">
+            <span id="w-enroll-label">Enroll &amp; Select Patient</span>
+          </button>
+        </div>
+
+        <div class="flex justify-end mt-6 pt-4 border-t border-slate-100">
+          <button id="wstep1-next" onclick="wGoToStep2()" disabled
+            class="btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+            Continue to Services
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── STEP 2 — SERVICES ── -->
+    <div id="wstep-2" class="hidden fade-in">
+      <div class="card p-6">
+        <!-- Patient bar -->
+        <div class="flex items-center gap-3 bg-slate-50 rounded-xl px-4 py-2.5 mb-5 border border-slate-100">
+          <div class="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-white text-[11px] font-bold shrink-0" id="ws2-avatar">—</div>
+          <div class="flex-1 min-w-0">
+            <p id="ws2-patient-name" class="text-xs font-semibold text-slate-700 truncate">—</p>
+            <p id="ws2-patient-meta" class="text-[10px] text-slate-400 truncate">—</p>
+          </div>
+          <button onclick="wBackToStep1()" class="text-xs text-blue-500 font-semibold hover:underline">Change</button>
+        </div>
+
+        <h2 class="text-sm font-bold text-slate-700 mb-1">Referring Doctor <span class="text-slate-300 font-normal">(optional)</span></h2>
+        <select id="w-doctor" class="field-input mb-5">
+          <option value="">None / Walk-in</option>
         </select>
-      </div>
 
-      <div class="section-divider">Referring Doctor <span class="text-slate-300 font-normal normal-case text-[11px]">(optional)</span></div>
-      <select id="f-doctor" class="field-input">
-        <option value="">None / Walk-in</option>
-      </select>
+        <h2 class="text-sm font-bold text-slate-700 mb-3">Lab Services &amp; Packages <span class="text-red-400">*</span></h2>
+        <div class="relative mb-3">
+          <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
+          </svg>
+          <input id="w-item-search" type="text" placeholder="Search services or packages…"
+            oninput="wFilterItems()" class="search-box"/>
+        </div>
+        <div id="w-item-list" class="max-h-72 overflow-y-auto pr-1 mb-4">
+          <div class="flex items-center justify-center py-8 gap-2 text-slate-400">
+            <div class="spinner spinner-blue w-4 h-4"></div>
+            <span class="text-xs">Loading services…</span>
+          </div>
+        </div>
 
-      <div class="section-divider">Lab Services &amp; Packages <span class="text-red-400">*</span></div>
-      <div class="relative">
-        <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
-        </svg>
-        <input id="item-search" type="text" placeholder="Search services or packages…"
-          oninput="filterItems()" class="search-box"/>
-      </div>
-      <div id="item-list" class="max-h-52 overflow-y-auto pr-1">
-        <p class="text-xs text-slate-400 text-center py-4">Loading…</p>
-      </div>
+        <div class="bg-slate-50 rounded-xl px-4 py-3 flex items-center justify-between border border-slate-100">
+          <span class="text-xs text-slate-500 font-semibold">Selected: <span id="ws2-count" class="text-slate-700">0 items</span></span>
+          <span class="text-sm font-bold text-slate-800" style="font-family:'DM Mono',monospace">
+            Subtotal: <span id="ws2-subtotal" class="text-blue-600">₱0.00</span>
+          </span>
+        </div>
 
-      <div class="section-divider">Discount</div>
-      <div>
-        <label class="field-label">Discount Amount (₱)</label>
-        <input id="f-discount" type="number" min="0" step="0.01" placeholder="0.00"
-          oninput="recalc()" class="field-input"/>
+        <div class="flex justify-between mt-6 pt-4 border-t border-slate-100">
+          <button onclick="wBackToStep1()" class="btn-secondary flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+            </svg>
+            Back
+          </button>
+          <button id="wstep2-next" onclick="wGoToStep3()" disabled
+            class="btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+            Continue to Billing
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
       </div>
-
-      <!-- Subtotal preview -->
-      <div class="bg-slate-50 rounded-xl p-4">
-        <div class="flex justify-between text-xs text-slate-500 mb-1"><span>Subtotal</span><span id="c-subtotal">₱0.00</span></div>
-        <div class="flex justify-between text-xs text-slate-500 mb-2"><span>Discount</span><span id="c-discount" class="text-red-500">-₱0.00</span></div>
-        <div class="flex justify-between text-sm font-bold text-slate-800 border-t border-slate-200 pt-2"><span>Total</span><span id="c-total">₱0.00</span></div>
-      </div>
-
-      <div class="section-divider">Notes</div>
-      <textarea id="f-notes" placeholder="Optional notes…" class="field-input"></textarea>
     </div>
-    <div class="px-6 pb-6 flex gap-3 border-t border-slate-100 pt-4 sticky bottom-0 bg-white">
-      <button onclick="closeCreateModal()"
-        class="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
-      <button id="c-save-btn" onclick="saveOrder()"
-        class="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold flex items-center justify-center">
-        <span id="c-save-label">Save as Draft</span>
-      </button>
+
+    <!-- ── STEP 3 — BILLING ── -->
+    <div id="wstep-3" class="hidden fade-in">
+      <div class="card p-6">
+        <!-- Summary bar -->
+        <div class="flex items-center gap-3 bg-slate-50 rounded-xl px-4 py-2.5 mb-5 border border-slate-100">
+          <div class="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-white text-[11px] font-bold shrink-0" id="ws3-avatar">—</div>
+          <div class="flex-1 min-w-0">
+            <p id="ws3-patient-name" class="text-xs font-semibold text-slate-700 truncate">—</p>
+            <p id="ws3-items-summary" class="text-[10px] text-slate-400 truncate">—</p>
+          </div>
+          <button onclick="wGoToStep2()" class="text-xs text-blue-500 font-semibold hover:underline">Edit</button>
+        </div>
+
+        <!-- Items recap -->
+        <div class="mb-5">
+          <p class="section-divider">Order Items</p>
+          <div id="ws3-items-list" class="space-y-1.5 max-h-40 overflow-y-auto"></div>
+        </div>
+
+        <!-- Auto-applied discounts -->
+        <div id="w-auto-disc-wrap" class="mb-4 hidden">
+          <p class="section-divider">Patient Discounts</p>
+          <div id="w-auto-disc-list" class="flex flex-wrap gap-2"></div>
+        </div>
+
+        <!-- Discount -->
+        <div class="mb-4">
+          <label class="field-label">Discount Amount (₱)</label>
+          <input id="w-discount" type="number" min="0" step="0.01" placeholder="0.00"
+            oninput="wRecalc()" class="field-input"/>
+          <p class="text-[11px] text-slate-400 mt-1">Auto-applied from patient's assigned discounts. You can override.</p>
+        </div>
+
+        <!-- Summary -->
+        <div class="bg-slate-50 rounded-xl p-4 border border-slate-100 mb-4">
+          <div class="flex justify-between text-xs text-slate-500 mb-1.5">
+            <span>Subtotal</span><span id="wb-subtotal" style="font-family:'DM Mono',monospace">₱0.00</span>
+          </div>
+          <div class="flex justify-between text-xs text-slate-500 mb-3">
+            <span>Discount</span><span id="wb-discount" class="text-red-500" style="font-family:'DM Mono',monospace">-₱0.00</span>
+          </div>
+          <div class="flex justify-between text-sm font-bold text-slate-800 border-t border-slate-200 pt-3">
+            <span>Total</span><span id="wb-total" class="text-blue-600" style="font-family:'DM Mono',monospace">₱0.00</span>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="mb-5">
+          <label class="field-label">Notes <span class="text-slate-300 font-normal normal-case">(optional)</span></label>
+          <textarea id="w-notes" placeholder="Any special instructions or notes…"
+            class="field-input" style="resize:none;min-height:60px;" rows="2"></textarea>
+        </div>
+
+        <div class="flex justify-between pt-4 border-t border-slate-100">
+          <button onclick="wBackToStep2()" class="btn-secondary flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+            </svg>
+            Back
+          </button>
+          <button id="w-save-btn" onclick="wSaveOrder()" class="btn-green flex items-center gap-2">
+            <span id="w-save-label">Save as Draft</span>
+          </button>
+        </div>
+      </div>
     </div>
+
   </div>
-</div>
+</div><!-- end #wizard-overlay -->
+
 
 <!-- ══════════════════════════════════════════════════════════════
      ORDER DETAIL MODAL
 ══════════════════════════════════════════════════════════════ -->
 <div id="view-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden" onclick="closeViewModal()">
   <div class="modal-card w-full max-w-2xl" onclick="event.stopPropagation()">
-
-    <!-- Header -->
     <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 sticky top-0 bg-white z-10">
       <div>
         <div class="flex items-center gap-2">
@@ -299,55 +566,27 @@
         </svg>
       </button>
     </div>
-
-    <!-- Status flow indicator -->
     <div class="px-6 pt-4 pb-2">
       <div class="step-flow">
-        <span class="step" id="step-DRAFT">Draft</span>
-        <span class="step-arrow">›</span>
-        <span class="step" id="step-OPEN">Open</span>
-        <span class="step-arrow">›</span>
-        <span class="step" id="step-PAID">Paid</span>
-        <span class="step-arrow">›</span>
-        <span class="step" id="step-IN_PROGRESS">In Progress</span>
-        <span class="step-arrow">›</span>
-        <span class="step" id="step-FOR_RELEASE">For Release</span>
-        <span class="step-arrow">›</span>
+        <span class="step" id="step-DRAFT">Draft</span><span class="step-arrow">›</span>
+        <span class="step" id="step-OPEN">Open</span><span class="step-arrow">›</span>
+        <span class="step" id="step-PAID">Paid</span><span class="step-arrow">›</span>
+        <span class="step" id="step-IN_PROGRESS">In Progress</span><span class="step-arrow">›</span>
+        <span class="step" id="step-FOR_RELEASE">For Release</span><span class="step-arrow">›</span>
         <span class="step" id="step-RELEASED">Released</span>
       </div>
     </div>
-
     <div class="px-6 py-4 space-y-4">
-
-      <!-- Info grid -->
       <div class="grid grid-cols-2 gap-4">
-        <div>
-          <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Referring Doctor</p>
-          <p id="v-doctor" class="text-sm text-slate-700">—</p>
-        </div>
-        <div>
-          <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Created By</p>
-          <p id="v-created-by" class="text-sm text-slate-700">—</p>
-        </div>
-        <div>
-          <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Order Date</p>
-          <p id="v-date" class="text-sm text-slate-700">—</p>
-        </div>
-        <div id="v-payment-row">
-          <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Payment</p>
-          <p id="v-payment" class="text-sm text-slate-700">—</p>
-        </div>
+        <div><p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Referring Doctor</p><p id="v-doctor" class="text-sm text-slate-700">—</p></div>
+        <div><p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Created By</p><p id="v-created-by" class="text-sm text-slate-700">—</p></div>
+        <div><p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Order Date</p><p id="v-date" class="text-sm text-slate-700">—</p></div>
+        <div><p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Payment</p><p id="v-payment" class="text-sm text-slate-700">—</p></div>
       </div>
-
-      <!-- Items -->
       <div>
         <p class="section-divider">Lab Items</p>
-        <div id="v-items" class="space-y-2">
-          <p class="text-xs text-slate-400 italic">Loading…</p>
-        </div>
+        <div id="v-items" class="space-y-2"><p class="text-xs text-slate-400 italic">Loading…</p></div>
       </div>
-
-      <!-- Payment summary -->
       <div class="bg-slate-50 rounded-xl p-4">
         <div class="flex justify-between text-xs text-slate-500 mb-1"><span>Subtotal</span><span id="v-subtotal">—</span></div>
         <div class="flex justify-between text-xs text-slate-500 mb-1"><span>Discount</span><span id="v-discount" class="text-red-500">—</span></div>
@@ -357,22 +596,10 @@
           <div class="flex justify-between text-xs font-semibold text-emerald-600"><span>Change</span><span id="v-change">—</span></div>
         </div>
       </div>
-
-      <!-- Notes -->
-      <div id="v-notes-wrap">
-        <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Notes</p>
-        <p id="v-notes" class="text-sm text-slate-600 italic">—</p>
-      </div>
-
+      <div><p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Notes</p><p id="v-notes" class="text-sm text-slate-600 italic">—</p></div>
     </div>
-
-    <!-- Footer actions -->
     <div id="v-footer" class="px-6 pb-6 flex flex-wrap gap-2 border-t border-slate-100 pt-4 sticky bottom-0 bg-white">
-      <button onclick="closeViewModal()"
-        class="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 min-w-[80px]">
-        Close
-      </button>
-      <!-- Dynamic action buttons injected here -->
+      <button onclick="closeViewModal()" class="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 min-w-[80px]">Close</button>
     </div>
   </div>
 </div>
@@ -380,17 +607,12 @@
 <!-- ══════════════════════════════════════════════════════════════
      PAYMENT MODAL
 ══════════════════════════════════════════════════════════════ -->
-<div id="pay-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4 hidden" onclick="closePayModal()">
+<div id="pay-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[110] flex items-center justify-center p-4 hidden" onclick="closePayModal()">
   <div class="modal-card w-full max-w-sm" onclick="event.stopPropagation()">
     <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-      <div>
-        <h2 class="text-base font-bold text-slate-800">Record Payment</h2>
-        <p id="pay-order-num" class="text-xs text-slate-400 mt-0.5">—</p>
-      </div>
+      <div><h2 class="text-base font-bold text-slate-800">Record Payment</h2><p id="pay-order-num" class="text-xs text-slate-400 mt-0.5">—</p></div>
       <button onclick="closePayModal()" class="text-slate-400 hover:text-slate-600 p-1">
-        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-        </svg>
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
       </button>
     </div>
     <div class="px-6 py-5 space-y-4">
@@ -413,8 +635,7 @@
       </div>
       <div>
         <label class="field-label">Amount Received <span class="text-red-400">*</span></label>
-        <input id="pay-amount" type="number" min="0" step="0.01" placeholder="0.00"
-          oninput="recalcChange()" class="field-input"/>
+        <input id="pay-amount" type="number" min="0" step="0.01" placeholder="0.00" oninput="recalcChange()" class="field-input"/>
       </div>
       <div class="bg-slate-50 rounded-xl p-3 flex justify-between items-center">
         <span class="text-sm text-slate-500 font-semibold">Change</span>
@@ -422,10 +643,8 @@
       </div>
     </div>
     <div class="flex gap-3 px-6 pb-6">
-      <button onclick="closePayModal()"
-        class="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
-      <button id="pay-btn" onclick="submitPayment()"
-        class="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold flex items-center justify-center">
+      <button onclick="closePayModal()" class="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
+      <button id="pay-btn" onclick="submitPayment()" class="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold flex items-center justify-center">
         <span id="pay-label">Confirm Payment</span>
       </button>
     </div>
@@ -435,17 +654,12 @@
 <!-- ══════════════════════════════════════════════════════════════
      UPLOAD RESULT MODAL
 ══════════════════════════════════════════════════════════════ -->
-<div id="upload-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4 hidden" onclick="closeUploadModal()">
+<div id="upload-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[110] flex items-center justify-center p-4 hidden" onclick="closeUploadModal()">
   <div class="modal-card w-full max-w-sm" onclick="event.stopPropagation()">
     <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-      <div>
-        <h2 class="text-base font-bold text-slate-800">Upload Result</h2>
-        <p id="upload-item-name" class="text-xs text-slate-400 mt-0.5">—</p>
-      </div>
+      <div><h2 class="text-base font-bold text-slate-800">Upload Result</h2><p id="upload-item-name" class="text-xs text-slate-400 mt-0.5">—</p></div>
       <button onclick="closeUploadModal()" class="text-slate-400 hover:text-slate-600 p-1">
-        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-        </svg>
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
       </button>
     </div>
     <div class="px-6 py-5 space-y-4">
@@ -470,9 +684,7 @@
           <p id="file-size" class="text-xs text-slate-400">—</p>
         </div>
         <button onclick="clearFile()" class="text-slate-400 hover:text-red-500 p-1">
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-          </svg>
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
       <div id="upload-progress" class="hidden">
@@ -483,23 +695,19 @@
       </div>
     </div>
     <div class="flex gap-3 px-6 pb-6">
-      <button onclick="closeUploadModal()"
-        class="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
-      <button id="upload-btn" onclick="submitUpload()"
-        class="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold flex items-center justify-center">
+      <button onclick="closeUploadModal()" class="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
+      <button id="upload-btn" onclick="submitUpload()" class="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold flex items-center justify-center">
         <span id="upload-label">Upload Result</span>
       </button>
     </div>
   </div>
 </div>
 
+
 <script>
   var alab_token     = (new URLSearchParams(window.location.search)).get('token') || localStorage.getItem('alab_token') || '';
   var currentSession = null;
   var allOrders      = [];
-  var allServices    = [];
-  var allPackages    = [];
-  var selectedItems  = {};
   var viewingOrder   = null;
   var viewingItems   = [];
   var uploadingItem  = null;
@@ -509,6 +717,17 @@
   var isBranchAdmin  = false;
   var isSuperAdmin   = false;
   var isDoctor       = false;
+
+  // ── Wizard state ──────────────────────────────────────────────
+  var wCurrentStep    = 1;
+  var wSelectedPatient = null;
+  var wAllPatients    = [];
+  var wAllServices    = [];
+  var wAllPackages    = [];
+  var wAllDiscounts   = [];
+  var wSelectedItems  = {};
+  var wEnrollOpen     = false;
+  var wDataLoaded     = false;
 
   // ── Session check ─────────────────────────────────────────────
   function _checkExpired(res) {
@@ -542,14 +761,16 @@
           isSuperAdmin ? 'All branches — read only.' :
           isDoctor     ? 'Your referrals — read only.' :
           'Manage lab orders for your branch.';
-
         loadOrders();
       })
       .withFailureHandler(function(){})
       .handleAdminRequest('GET_SESSION', {}, alab_token);
   });
 
-  // ── Load orders ───────────────────────────────────────────────
+  // ══════════════════════════════════════════════════════════════
+  // ORDERS LIST
+  // ══════════════════════════════════════════════════════════════
+
   function loadOrders() {
     showLoading(true);
     google.script.run
@@ -573,7 +794,6 @@
       .handleOrderRequest('GET_ORDERS', {}, alab_token);
   }
 
-  // ── Stats ─────────────────────────────────────────────────────
   function updateStats(data) {
     document.getElementById('s-total').textContent      = data.length;
     document.getElementById('s-draft').textContent      = data.filter(function(o){return o.status==='DRAFT';}).length;
@@ -583,28 +803,24 @@
     document.getElementById('s-released').textContent   = data.filter(function(o){return o.status==='RELEASED';}).length;
   }
 
-  // ── Filter ────────────────────────────────────────────────────
   function filterTable() {
     var q  = document.getElementById('search-input').value.toLowerCase();
     var st = document.getElementById('status-filter').value;
     var f  = allOrders.filter(function(o) {
-      var mq = !q ||
-        o.order_number.toLowerCase().includes(q) ||
-        o.patient_snapshot.toLowerCase().includes(q) ||
-        (o.doctor_snapshot || '').toLowerCase().includes(q) ||
-        (o.created_by || '').toLowerCase().includes(q);
+      var mq = !q || o.order_number.toLowerCase().includes(q) ||
+               o.patient_snapshot.toLowerCase().includes(q) ||
+               (o.doctor_snapshot||'').toLowerCase().includes(q) ||
+               (o.created_by||'').toLowerCase().includes(q);
       return mq && (!st || o.status === st);
     });
     renderTable(f);
     updateStats(f);
   }
 
-  // ── Render table ──────────────────────────────────────────────
   function renderTable(data) {
     var tbody = document.getElementById('order-tbody');
     var wrap  = document.getElementById('table-wrap');
     var empty = document.getElementById('empty-state');
-
     if (!data.length) {
       wrap.classList.add('hidden');
       empty.classList.remove('hidden'); empty.classList.add('flex');
@@ -615,46 +831,463 @@
     }
     empty.classList.add('hidden'); empty.classList.remove('flex');
     wrap.classList.remove('hidden');
-
     tbody.innerHTML = data.map(function(o) {
       var total = o.payment_amount - o.payment_discount;
       var doctorCell = o.doctor_snapshot
         ? escHtml(o.doctor_snapshot)
         : '<span class="text-slate-300 text-xs italic">Walk-in</span>';
-
       return '<tr class="data-row">' +
-        '<td class="px-4 py-3.5">' +
-          '<p class="font-semibold text-slate-800 text-xs" style="font-family:\'DM Mono\',monospace">' + escHtml(o.order_number) + '</p>' +
-        '</td>' +
-        '<td class="px-3 py-3.5 text-sm font-medium text-slate-700">' + escHtml(o.patient_snapshot || '—') + '</td>' +
+        '<td class="px-4 py-3.5"><p class="font-semibold text-slate-800 text-xs" style="font-family:\'DM Mono\',monospace">' + escHtml(o.order_number) + '</p></td>' +
+        '<td class="px-3 py-3.5 text-sm font-medium text-slate-700">' + escHtml(o.patient_snapshot||'—') + '</td>' +
         '<td class="px-3 py-3.5 text-sm text-slate-500 hidden md:table-cell">' + doctorCell + '</td>' +
         '<td class="px-3 py-3.5 text-sm font-semibold text-slate-800" style="font-family:\'DM Mono\',monospace">₱' + fmt(total) + '</td>' +
         '<td class="px-3 py-3.5"><span class="badge badge-' + o.status + '">' + statusLabel(o.status) + '</span></td>' +
-        '<td class="px-3 py-3.5 text-xs text-slate-400 hidden lg:table-cell">' + escHtml(o.created_by || '—') + '</td>' +
+        '<td class="px-3 py-3.5 text-xs text-slate-400 hidden lg:table-cell">' + escHtml(o.created_by||'—') + '</td>' +
         '<td class="px-3 py-3.5 text-xs text-slate-400 hidden md:table-cell">' + fmtDate(o.order_date) + '</td>' +
         '<td class="px-4 py-3.5 text-right">' +
           '<button onclick="openViewModal(\'' + o.order_id + '\',\'' + o.branch_id + '\')" ' +
             'class="text-xs font-semibold text-blue-500 hover:text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-50">View</button>' +
-        '</td>' +
-      '</tr>';
+        '</td></tr>';
     }).join('');
   }
 
-  // ── View Modal ────────────────────────────────────────────────
-  function openViewModal(orderId, branchId) {
-    var o = allOrders.find(function(x) { return x.order_id === orderId; });
-    if (!o) return;
-    viewingOrder = o;
-    viewingItems = [];
+  // ══════════════════════════════════════════════════════════════
+  // NEW ORDER WIZARD
+  // ══════════════════════════════════════════════════════════════
 
-    // Populate header
-    document.getElementById('v-order-num').textContent   = o.order_number;
+  function openWizard() {
+    // Reset state
+    wCurrentStep     = 1;
+    wSelectedPatient = null;
+    wSelectedItems   = {};
+    wEnrollOpen      = false;
+
+    // Reset UI
+    wSetStep(1);
+    document.getElementById('w-patient-search').value = '';
+    document.getElementById('w-item-search').value    = '';
+    document.getElementById('w-discount').value       = '';
+    document.getElementById('w-notes').value          = '';
+    document.getElementById('wstep1-next').disabled   = true;
+    document.getElementById('w-patient-chip').classList.add('hidden');
+    document.getElementById('w-patient-chip').classList.remove('flex');
+    wCollapseEnroll();
+
+    // Open overlay
+    document.getElementById('wizard-overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+
+    // Load data only once
+    if (!wDataLoaded) {
+      wLoadPatients();
+      wLoadServices();
+      wLoadDoctors();
+      wLoadDiscounts();
+      wDataLoaded = true;
+    } else {
+      wRenderPatientResults('');
+      wRenderItemList('');
+    }
+  }
+
+  function closeWizard() {
+    document.getElementById('wizard-overlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  // ── Wizard data loading ───────────────────────────────────────
+  function wLoadPatients() {
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (_checkExpired(res)) return;
+        if (res.success) { wAllPatients = res.data || []; wRenderPatientResults(''); }
+        else {
+          document.getElementById('w-patient-results').innerHTML =
+            '<p class="text-xs text-red-400 text-center py-4">Failed to load patients.</p>';
+        }
+      })
+      .withFailureHandler(function(err) { showToast(err.message, 'error'); })
+      .handlePatientRequest('GET_PATIENTS', {}, alab_token);
+  }
+
+  function wLoadServices() {
+    google.script.run
+      .withSuccessHandler(function(svcRes) {
+        if (_checkExpired(svcRes)) return;
+        wAllServices = (svcRes.success ? svcRes.data||[] : []).filter(function(s){ return s.is_active; });
+        google.script.run
+          .withSuccessHandler(function(pkgRes) {
+            if (_checkExpired(pkgRes)) return;
+            wAllPackages = (pkgRes.success ? pkgRes.data||[] : []).filter(function(p){ return p.is_active; });
+            wRenderItemList('');
+          })
+          .withFailureHandler(function(){ wRenderItemList(''); })
+          .handlePackageRequest('GET_PACKAGES', {}, alab_token);
+      })
+      .withFailureHandler(function(){ wRenderItemList(''); })
+      .handleLabServiceRequest('GET_LAB_SERVICES', {}, alab_token);
+  }
+
+  function wLoadDoctors() {
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (_checkExpired(res)) return;
+        var sel = document.getElementById('w-doctor');
+        sel.innerHTML = '<option value="">None / Walk-in</option>';
+        if (res.success && res.data) {
+          res.data.filter(function(d){ return d.is_active; }).forEach(function(d) {
+            var name = 'Dr. ' + d.first_name + ' ' + d.last_name + (d.suffix ? ', ' + d.suffix : '');
+            var opt  = document.createElement('option');
+            opt.value = d.doctor_id; opt.text = name;
+            opt.setAttribute('data-name', name);
+            sel.appendChild(opt);
+          });
+        }
+      })
+      .withFailureHandler(function(){})
+      .handleDoctorRequest('GET_DOCTORS', {}, alab_token);
+  }
+
+  function wLoadDiscounts() {
+    google.script.run
+      .withSuccessHandler(function(res) { if (res && res.success) wAllDiscounts = res.data || []; })
+      .withFailureHandler(function(){})
+      .handleDiscountRequest('GET_DISCOUNTS_ALL', {}, alab_token);
+  }
+
+  // ── Step 1 — Patient ──────────────────────────────────────────
+  function wFilterPatients() { wRenderPatientResults(document.getElementById('w-patient-search').value); }
+
+  function wRenderPatientResults(q) {
+    q = (q||'').toLowerCase().trim();
+    var list = document.getElementById('w-patient-results');
+    if (!wAllPatients.length) {
+      list.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">No patients enrolled yet.</p>';
+      return;
+    }
+    var filtered = q
+      ? wAllPatients.filter(function(p) {
+          var name = (p.last_name+' '+p.first_name+' '+(p.middle_name||'')).toLowerCase();
+          return name.includes(q) || (p.contact_number||'').includes(q);
+        })
+      : wAllPatients;
+    if (!filtered.length) {
+      list.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">No match found. Enroll a new patient below.</p>';
+      return;
+    }
+    list.innerHTML = filtered.slice(0,30).map(function(p) {
+      var name     = p.last_name + ', ' + p.first_name + (p.middle_name ? ' ' + p.middle_name.charAt(0) + '.' : '');
+      var meta     = [p.sex, p.birth_date ? fmtDate(p.birth_date) : '', p.contact_number].filter(Boolean).join(' · ');
+      var initials = (p.first_name.charAt(0) + p.last_name.charAt(0)).toUpperCase();
+      var sel      = (wSelectedPatient && wSelectedPatient.patient_id === p.patient_id) ? ' selected-patient' : '';
+      return '<div class="patient-result' + sel + '" onclick="wSelectPatient(\'' + p.patient_id + '\')">' +
+        '<div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold shrink-0">' + escHtml(initials) + '</div>' +
+        '<div class="flex-1 min-w-0"><p class="text-sm font-semibold text-slate-800 truncate">' + escHtml(name) + '</p>' +
+          '<p class="text-xs text-slate-400 truncate">' + escHtml(meta) + '</p></div>' +
+        '<svg class="w-4 h-4 text-slate-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>' +
+      '</div>';
+    }).join('');
+  }
+
+  function wSelectPatient(patientId) {
+    wSelectedPatient = wAllPatients.find(function(p){ return p.patient_id === patientId; });
+    if (!wSelectedPatient) return;
+    var name     = wSelectedPatient.last_name + ', ' + wSelectedPatient.first_name +
+                   (wSelectedPatient.middle_name ? ' ' + wSelectedPatient.middle_name.charAt(0) + '.' : '');
+    var meta     = [wSelectedPatient.sex, wSelectedPatient.birth_date ? fmtDate(wSelectedPatient.birth_date) : '',
+                    wSelectedPatient.contact_number].filter(Boolean).join(' · ');
+    var initials = (wSelectedPatient.first_name.charAt(0) + wSelectedPatient.last_name.charAt(0)).toUpperCase();
+    document.getElementById('w-chip-avatar').textContent = initials;
+    document.getElementById('w-chip-name').textContent   = name;
+    document.getElementById('w-chip-meta').textContent   = meta;
+    document.getElementById('w-patient-chip').classList.remove('hidden');
+    document.getElementById('w-patient-chip').classList.add('flex');
+    wRenderPatientResults(document.getElementById('w-patient-search').value);
+    document.getElementById('wstep1-next').disabled = false;
+    wCollapseEnroll();
+  }
+
+  function wClearPatient() {
+    wSelectedPatient = null;
+    document.getElementById('w-patient-chip').classList.add('hidden');
+    document.getElementById('w-patient-chip').classList.remove('flex');
+    document.getElementById('wstep1-next').disabled = true;
+    wRenderPatientResults(document.getElementById('w-patient-search').value);
+  }
+
+  // ── Enroll form ───────────────────────────────────────────────
+  function wToggleEnroll() {
+    wEnrollOpen = !wEnrollOpen;
+    var form = document.getElementById('w-enroll-form');
+    var btn  = document.getElementById('w-enroll-toggle-btn');
+    if (wEnrollOpen) {
+      form.classList.remove('hidden');
+      btn.innerHTML = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg> Cancel';
+    } else { wCollapseEnroll(); }
+  }
+
+  function wCollapseEnroll() {
+    wEnrollOpen = false;
+    document.getElementById('w-enroll-form').classList.add('hidden');
+    document.getElementById('w-enroll-toggle-btn').innerHTML =
+      '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Enroll New Patient';
+  }
+
+  function wEnrollAndSelect() {
+    var last    = document.getElementById('we-last').value.trim();
+    var first   = document.getElementById('we-first').value.trim();
+    var sex     = document.getElementById('we-sex').value;
+    var bdate   = document.getElementById('we-bdate').value;
+    var contact = document.getElementById('we-contact').value.trim();
+    var address = document.getElementById('we-address').value.trim();
+    if (!last)    { showToast('Last name is required.', 'error'); return; }
+    if (!first)   { showToast('First name is required.', 'error'); return; }
+    if (!sex)     { showToast('Sex is required.', 'error'); return; }
+    if (!bdate)   { showToast('Birth date is required.', 'error'); return; }
+    if (!contact) { showToast('Contact number is required.', 'error'); return; }
+    if (!address) { showToast('Address is required.', 'error'); return; }
+
+    var btn = document.getElementById('w-enroll-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>';
+
+    google.script.run
+      .withSuccessHandler(function(res) {
+        btn.disabled = false;
+        btn.innerHTML = '<span id="w-enroll-label">Enroll &amp; Select Patient</span>';
+        if (_checkExpired(res)) return;
+        if (res.success) {
+          showToast('Patient enrolled!', 'success');
+          wAllPatients.unshift(res.data);
+          wSelectPatient(res.data.patient_id);
+          wCollapseEnroll();
+          ['we-last','we-first','we-middle','we-contact','we-address'].forEach(function(id){ document.getElementById(id).value=''; });
+          document.getElementById('we-sex').value = '';
+          document.getElementById('we-bdate').value = '';
+        } else { showToast(res.error || 'Enrollment failed.', 'error'); }
+      })
+      .withFailureHandler(function(err) {
+        btn.disabled = false;
+        btn.innerHTML = '<span id="w-enroll-label">Enroll &amp; Select Patient</span>';
+        showToast(err.message, 'error');
+      })
+      .handlePatientRequest('CREATE_PATIENT', {
+        last_name: last, first_name: first,
+        middle_name: document.getElementById('we-middle').value.trim(),
+        sex: sex, birth_date: bdate, contact_number: contact, address: address, discount_ids: []
+      }, alab_token);
+  }
+
+  // ── Step navigation ───────────────────────────────────────────
+  function wGoToStep2() {
+    if (!wSelectedPatient) { showToast('Please select a patient.', 'error'); return; }
+    wSetStep(2);
+    var name     = wSelectedPatient.last_name + ', ' + wSelectedPatient.first_name;
+    var meta     = [wSelectedPatient.sex, wSelectedPatient.contact_number].filter(Boolean).join(' · ');
+    var initials = (wSelectedPatient.first_name.charAt(0) + wSelectedPatient.last_name.charAt(0)).toUpperCase();
+    document.getElementById('ws2-avatar').textContent       = initials;
+    document.getElementById('ws2-patient-name').textContent = name;
+    document.getElementById('ws2-patient-meta').textContent = meta;
+    wUpdateStep2Counter();
+  }
+
+  function wGoToStep3() {
+    if (!Object.keys(wSelectedItems).length) { showToast('Please select at least one service or package.', 'error'); return; }
+    wSetStep(3);
+    wBuildStep3();
+  }
+
+  function wBackToStep1() { wSetStep(1); }
+  function wBackToStep2() { wSetStep(2); }
+
+  function wSetStep(n) {
+    wCurrentStep = n;
+    [1,2,3].forEach(function(i) {
+      document.getElementById('wstep-' + i).classList.toggle('hidden', i !== n);
+    });
+    wUpdateStepIndicator();
+    // Scroll wizard to top
+    document.getElementById('wizard-overlay').scrollTop = 0;
+  }
+
+  function wUpdateStepIndicator() {
+    [1,2,3].forEach(function(i) {
+      var circle = document.getElementById('wsc-' + i);
+      var label  = document.getElementById('wsl-' + i);
+      circle.className = 'wstep-circle' + (i < wCurrentStep ? ' done' : i === wCurrentStep ? ' active' : '');
+      label.className  = 'wstep-label'  + (i < wCurrentStep ? ' done' : i === wCurrentStep ? ' active' : '');
+      circle.innerHTML = i < wCurrentStep ? '✓' : String(i);
+    });
+    document.getElementById('wline-1').className = 'wstep-line' + (wCurrentStep > 1 ? ' done' : '');
+    document.getElementById('wline-2').className = 'wstep-line' + (wCurrentStep > 2 ? ' done' : '');
+  }
+
+  // ── Step 2 — Item picker ──────────────────────────────────────
+  function wRenderItemList(q) {
+    q = (q||'').toLowerCase();
+    var svcs = wAllServices.filter(function(s){ return !q || s.lab_name.toLowerCase().includes(q) || s.lab_code.toLowerCase().includes(q); });
+    var pkgs = wAllPackages.filter(function(p){ return !q || p.package_name.toLowerCase().includes(q); });
+    var list = document.getElementById('w-item-list');
+    if (!svcs.length && !pkgs.length) {
+      list.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">No services found.</p>'; return;
+    }
+    var html = '';
+    if (svcs.length) {
+      html += '<p class="section-divider">Lab Services</p>';
+      html += svcs.map(function(s) {
+        var key = 'svc_' + s.lab_id;
+        var chk = wSelectedItems[key] ? 'checked' : '';
+        return '<div class="item-row" data-key="' + escHtml(key) + '" data-type="service" data-ref="' + escHtml(s.lab_id) + '" data-name="' + escHtml(s.lab_name) + '" data-fee="' + (Number(s.default_fee)||0) + '" onclick="wToggleItem(this)">' +
+          '<input type="checkbox" class="item-check" id="wchk-' + escHtml(key) + '" ' + chk + ' onclick="event.stopPropagation()"/>' +
+          '<span class="type-svc">Svc</span>' +
+          '<label for="wchk-' + escHtml(key) + '" class="item-name" onclick="event.stopPropagation()">' + escHtml(s.lab_name) + ' <span class="text-[11px] text-slate-400">' + escHtml(s.lab_code) + '</span></label>' +
+          '<span class="item-fee">₱' + fmt(s.default_fee) + '</span></div>';
+      }).join('');
+    }
+    if (pkgs.length) {
+      html += '<p class="section-divider mt-3">Packages</p>';
+      html += pkgs.map(function(p) {
+        var key = 'pkg_' + p.package_id;
+        var chk = wSelectedItems[key] ? 'checked' : '';
+        return '<div class="item-row" data-key="' + escHtml(key) + '" data-type="package" data-ref="' + escHtml(p.package_id) + '" data-name="' + escHtml(p.package_name) + '" data-fee="' + (Number(p.default_fee)||0) + '" onclick="wToggleItem(this)">' +
+          '<input type="checkbox" class="item-check" id="wchk-' + escHtml(key) + '" ' + chk + ' onclick="event.stopPropagation()"/>' +
+          '<span class="type-pkg">Pkg</span>' +
+          '<label for="wchk-' + escHtml(key) + '" class="item-name" onclick="event.stopPropagation()">' + escHtml(p.package_name) + '</label>' +
+          '<span class="item-fee">₱' + fmt(p.default_fee) + '</span></div>';
+      }).join('');
+    }
+    list.innerHTML = html;
+  }
+
+  function wToggleItem(rowEl) {
+    var key = rowEl.dataset.key;
+    if (wSelectedItems[key]) { delete wSelectedItems[key]; }
+    else { wSelectedItems[key] = { item_type: rowEl.dataset.type, item_ref_id: rowEl.dataset.ref, item_name_snapshot: rowEl.dataset.name, fee: Number(rowEl.dataset.fee)||0 }; }
+    var cb = document.getElementById('wchk-' + key);
+    if (cb) cb.checked = !!wSelectedItems[key];
+    wUpdateStep2Counter();
+  }
+
+  function wFilterItems() { wRenderItemList(document.getElementById('w-item-search').value); }
+
+  function wUpdateStep2Counter() {
+    var count = Object.keys(wSelectedItems).length;
+    var sub   = Object.values(wSelectedItems).reduce(function(s,i){ return s+(Number(i.fee)||0); }, 0);
+    document.getElementById('ws2-count').textContent    = count + (count===1 ? ' item' : ' items');
+    document.getElementById('ws2-subtotal').textContent = '₱' + fmt(sub);
+    document.getElementById('wstep2-next').disabled     = count === 0;
+  }
+
+  // ── Step 3 — Billing ──────────────────────────────────────────
+  function wBuildStep3() {
+    var name     = wSelectedPatient.last_name + ', ' + wSelectedPatient.first_name;
+    var items    = Object.values(wSelectedItems);
+    var initials = (wSelectedPatient.first_name.charAt(0) + wSelectedPatient.last_name.charAt(0)).toUpperCase();
+    var subtotal = items.reduce(function(s,i){ return s+(Number(i.fee)||0); }, 0);
+
+    document.getElementById('ws3-avatar').textContent       = initials;
+    document.getElementById('ws3-patient-name').textContent = name;
+    document.getElementById('ws3-items-summary').textContent = items.length + ' item(s) · ₱' + fmt(subtotal);
+
+    document.getElementById('ws3-items-list').innerHTML = items.map(function(i) {
+      var badge = i.item_type==='package' ? '<span class="type-pkg">Pkg</span>' : '<span class="type-svc">Svc</span>';
+      return '<div class="flex items-center justify-between gap-2 py-1.5 border-b border-slate-50 last:border-0">' +
+        '<div class="flex items-center gap-2">' + badge + '<span class="text-xs text-slate-700 font-medium">' + escHtml(i.item_name_snapshot) + '</span></div>' +
+        '<span class="text-xs font-semibold text-blue-600" style="font-family:\'DM Mono\',monospace">₱' + fmt(i.fee) + '</span></div>';
+    }).join('');
+
+    // Auto-apply discounts
+    var discIds  = wSelectedPatient.discount_ids || [];
+    var totalDisc = 0, discHtml = '';
+    if (discIds.length && wAllDiscounts.length) {
+      discIds.forEach(function(did) {
+        var d = wAllDiscounts.find(function(x){ return x.discount_id === did; });
+        if (!d || !d.is_active) return;
+        var amt = d.discount_type==='percentage' ? subtotal*(Number(d.value)/100) : Number(d.value);
+        totalDisc += amt;
+        discHtml += '<span class="disc-badge">' + escHtml(d.discount_name) + ' · ' +
+          (d.discount_type==='percentage' ? d.value+'%' : '₱'+fmt(d.value)) + '</span>';
+      });
+    }
+    if (discHtml) {
+      document.getElementById('w-auto-disc-wrap').classList.remove('hidden');
+      document.getElementById('w-auto-disc-list').innerHTML = discHtml;
+    } else {
+      document.getElementById('w-auto-disc-wrap').classList.add('hidden');
+    }
+    document.getElementById('w-discount').value = totalDisc > 0 ? totalDisc.toFixed(2) : '';
+    wRecalc();
+  }
+
+  function wRecalc() {
+    var sub   = Object.values(wSelectedItems).reduce(function(s,i){ return s+(Number(i.fee)||0); }, 0);
+    var disc  = Number(document.getElementById('w-discount').value) || 0;
+    var total = Math.max(sub - disc, 0);
+    document.getElementById('wb-subtotal').textContent = '₱' + fmt(sub);
+    document.getElementById('wb-discount').textContent = disc > 0 ? '-₱' + fmt(disc) : '-₱0.00';
+    document.getElementById('wb-total').textContent    = '₱' + fmt(total);
+  }
+
+  // ── Save order ────────────────────────────────────────────────
+  function wSaveOrder() {
+    var items = Object.values(wSelectedItems);
+    if (!wSelectedPatient) { showToast('No patient selected.', 'error'); return; }
+    if (!items.length)     { showToast('No items selected.', 'error'); return; }
+
+    var drSel   = document.getElementById('w-doctor');
+    var drOpt   = drSel.options[drSel.selectedIndex];
+    var sub     = items.reduce(function(s,i){ return s+(Number(i.fee)||0); }, 0);
+    var disc    = Number(document.getElementById('w-discount').value) || 0;
+    var patName = wSelectedPatient.last_name + ', ' + wSelectedPatient.first_name +
+                  (wSelectedPatient.middle_name ? ' ' + wSelectedPatient.middle_name.charAt(0) + '.' : '');
+
+    var btn = document.getElementById('w-save-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>';
+
+    google.script.run
+      .withSuccessHandler(function(res) {
+        btn.disabled = false;
+        btn.innerHTML = '<span id="w-save-label">Save as Draft</span>';
+        if (_checkExpired(res)) return;
+        if (res.success) {
+          showToast('Order ' + res.data.order_number + ' saved as DRAFT!', 'success');
+          closeWizard();
+          loadOrders();
+        } else { showToast(res.error || 'Failed to create order.', 'error'); }
+      })
+      .withFailureHandler(function(err) {
+        btn.disabled = false;
+        btn.innerHTML = '<span id="w-save-label">Save as Draft</span>';
+        showToast(err.message, 'error');
+      })
+      .handleOrderRequest('CREATE_ORDER', {
+        patient_id:          wSelectedPatient.patient_id,
+        patient_snapshot:    patName,
+        referring_doctor_id: drSel.value || '',
+        doctor_snapshot:     (drSel.value && drOpt) ? (drOpt.getAttribute('data-name') || drOpt.text) : '',
+        payment_amount:      sub,
+        payment_discount:    disc,
+        notes:               document.getElementById('w-notes').value.trim(),
+        items:               items
+      }, alab_token);
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // ORDER VIEW MODAL
+  // ══════════════════════════════════════════════════════════════
+
+  function openViewModal(orderId, branchId) {
+    var o = allOrders.find(function(x){ return x.order_id === orderId; });
+    if (!o) return;
+    viewingOrder = o; viewingItems = [];
+
+    document.getElementById('v-order-num').textContent    = o.order_number;
     document.getElementById('v-patient-name').textContent = o.patient_snapshot || '—';
     var badge = document.getElementById('v-status-badge');
     badge.className = 'badge badge-' + o.status;
     badge.textContent = statusLabel(o.status);
 
-    // Step flow
     var STEPS = ['DRAFT','OPEN','PAID','IN_PROGRESS','FOR_RELEASE','RELEASED'];
     var cur = STEPS.indexOf(o.status);
     STEPS.forEach(function(s, i) {
@@ -662,15 +1295,13 @@
       el.className = 'step' + (i < cur ? ' done' : i === cur ? ' active' : '');
     });
 
-    // Info
     document.getElementById('v-doctor').textContent     = o.doctor_snapshot || 'Walk-in';
     document.getElementById('v-created-by').textContent = o.created_by || '—';
     document.getElementById('v-date').textContent       = fmtDate(o.order_date);
 
-    // Payment
     var payRow = document.getElementById('v-payment');
-    if (o.status === 'PAID' || o.status === 'IN_PROGRESS' || o.status === 'FOR_RELEASE' || o.status === 'RELEASED') {
-      payRow.textContent = (o.payment_method || '—') + ' — ₱' + fmt(o.amount_paid);
+    if (['PAID','IN_PROGRESS','FOR_RELEASE','RELEASED'].includes(o.status)) {
+      payRow.textContent = (o.payment_method||'—') + ' — ₱' + fmt(o.amount_paid);
       document.getElementById('v-paid-row').classList.remove('hidden');
       document.getElementById('v-paid').textContent   = '₱' + fmt(o.amount_paid);
       document.getElementById('v-change').textContent = '₱' + fmt(o.change);
@@ -679,16 +1310,11 @@
       document.getElementById('v-paid-row').classList.add('hidden');
     }
 
-    // Subtotals
     document.getElementById('v-subtotal').textContent = '₱' + fmt(o.payment_amount);
     document.getElementById('v-discount').textContent = '-₱' + fmt(o.payment_discount);
     document.getElementById('v-total').textContent    = '₱' + fmt(o.payment_amount - o.payment_discount);
-
-    // Notes
-    document.getElementById('v-notes').textContent = o.notes || '—';
-
-    // Items loading
-    document.getElementById('v-items').innerHTML = '<p class="text-xs text-slate-400 italic py-2">Loading items…</p>';
+    document.getElementById('v-notes').textContent    = o.notes || '—';
+    document.getElementById('v-items').innerHTML      = '<p class="text-xs text-slate-400 italic py-2">Loading items…</p>';
 
     google.script.run
       .withSuccessHandler(function(res) {
@@ -697,64 +1323,43 @@
         renderViewItems();
         renderFooterActions();
       })
-      .withFailureHandler(function() {
-        document.getElementById('v-items').innerHTML = '<p class="text-xs text-red-400">Error loading items.</p>';
-      })
+      .withFailureHandler(function() { document.getElementById('v-items').innerHTML = '<p class="text-xs text-red-400">Error loading items.</p>'; })
       .handleOrderRequest('GET_ORDER_ITEMS', { order_id: orderId, branch_id: branchId || o.branch_id }, alab_token);
 
     document.getElementById('view-modal').classList.remove('hidden');
   }
 
   function renderViewItems() {
-    if (!viewingItems.length) {
-      document.getElementById('v-items').innerHTML = '<p class="text-xs text-slate-400 italic">No items.</p>';
-      return;
-    }
+    if (!viewingItems.length) { document.getElementById('v-items').innerHTML = '<p class="text-xs text-slate-400 italic">No items.</p>'; return; }
     document.getElementById('v-items').innerHTML = viewingItems.map(function(item) {
-      var typeBadge = item.item_type === 'package'
-        ? '<span class="type-pkg">Package</span>'
-        : '<span class="type-svc">Service</span>';
-
+      var typeBadge       = item.item_type==='package' ? '<span class="type-pkg">Package</span>' : '<span class="type-svc">Service</span>';
       var itemStatusBadge = '<span class="item-badge item-' + item.item_status + '">' + item.item_status + '</span>';
-
-      var resultBadge = item.result_status
+      var resultBadge     = item.result_status
         ? '<span class="result-badge result-' + item.result_status + '">' + item.result_status.replace(/_/g,' ') + '</span>'
         : '<span class="result-badge result-empty">No Result</span>';
-
-      // Per-item action buttons (tech only)
       var itemActions = '';
       if (isTech) {
-        if (item.item_status === 'PENDING' && ['PAID','IN_PROGRESS'].includes(viewingOrder.status)) {
+        if (item.item_status==='PENDING' && ['PAID','IN_PROGRESS'].includes(viewingOrder.status))
           itemActions += '<button onclick="doStartItem(\'' + item.item_id + '\')" class="act-btn act-amber">Start</button>';
-        }
-        if (item.item_status === 'RUNNING') {
+        if (item.item_status==='RUNNING')
           itemActions += '<button onclick="doCompleteItem(\'' + item.item_id + '\')" class="act-btn act-green">Done</button>';
-        }
-        if (item.item_status === 'DONE' && !item.result_status) {
+        if (item.item_status==='DONE' && !item.result_status)
           itemActions += '<button onclick="openUploadModal(\'' + item.item_id + '\',\'' + escHtml(item.item_name_snapshot) + '\')" class="act-btn act-primary">Upload Result</button>';
-        }
-        if (item.result_status === 'FOR_VERIFICATION') {
+        if (item.result_status==='FOR_VERIFICATION') {
           itemActions += '<button onclick="doVerify(\'' + item.item_id + '\')" class="act-btn act-green">Verify</button>';
           itemActions += '<button onclick="doReject(\'' + item.item_id + '\')" class="act-btn act-red">Reject</button>';
         }
-        if (item.result_file_url) {
+        if (item.result_file_url)
           itemActions += '<a href="' + item.result_file_url + '" target="_blank" class="act-btn act-purple" style="text-decoration:none">View File</a>';
-        }
       } else if (item.result_file_url) {
         itemActions += '<a href="' + item.result_file_url + '" target="_blank" class="act-btn act-purple" style="text-decoration:none">View Result</a>';
       }
-
       return '<div class="border border-slate-100 rounded-xl p-3 space-y-2">' +
         '<div class="flex items-start justify-between gap-2">' +
-          '<div class="flex items-center gap-2 flex-wrap">' +
-            typeBadge +
-            '<span class="text-sm font-semibold text-slate-800">' + escHtml(item.item_name_snapshot) + '</span>' +
-          '</div>' +
+          '<div class="flex items-center gap-2 flex-wrap">' + typeBadge + '<span class="text-sm font-semibold text-slate-800">' + escHtml(item.item_name_snapshot) + '</span></div>' +
           '<span class="text-sm font-bold text-blue-600 flex-shrink-0" style="font-family:\'DM Mono\',monospace">₱' + fmt(item.fee) + '</span>' +
         '</div>' +
-        '<div class="flex items-center gap-2 flex-wrap">' +
-          itemStatusBadge + resultBadge +
-        '</div>' +
+        '<div class="flex items-center gap-2 flex-wrap">' + itemStatusBadge + resultBadge + '</div>' +
         (itemActions ? '<div class="flex items-center gap-2 flex-wrap pt-1">' + itemActions + '</div>' : '') +
       '</div>';
     }).join('');
@@ -762,117 +1367,77 @@
 
   function renderFooterActions() {
     var footer = document.getElementById('v-footer');
-    // Remove old dynamic buttons
-    var existing = footer.querySelectorAll('.dyn-btn');
-    existing.forEach(function(b) { b.remove(); });
-
+    footer.querySelectorAll('.dyn-btn').forEach(function(b){ b.remove(); });
     if (!isTech && !isBranchAdmin) return;
-
-    var o = viewingOrder;
-    var frag = '';
-
+    var o = viewingOrder, frag = '';
     if (isTech) {
-      if (o.status === 'DRAFT') {
+      if (o.status==='DRAFT') {
         frag += '<button class="dyn-btn act-btn act-green flex-1" onclick="doConfirmOrder()">Confirm Order → Open</button>';
         frag += '<button class="dyn-btn act-btn act-red" onclick="doDeleteOrder()">Delete</button>';
       }
-      if (o.status === 'OPEN') {
+      if (o.status==='OPEN')
         frag += '<button class="dyn-btn act-btn act-green flex-1" onclick="openPayModal()">Record Payment</button>';
-      }
-      if (o.status === 'FOR_RELEASE') {
-        // Check if all verified
-        var allVerified = viewingItems.length > 0 && viewingItems.every(function(i) { return i.result_status === 'VERIFIED'; });
-        if (allVerified) {
-          frag += '<button class="dyn-btn act-btn act-purple flex-1" onclick="doRelease()">Release Order</button>';
-        } else {
-          frag += '<span class="dyn-btn text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-xl font-semibold flex-1 text-center">Verify all results to release</span>';
-        }
+      if (o.status==='FOR_RELEASE') {
+        var allVerified = viewingItems.length>0 && viewingItems.every(function(i){ return i.result_status==='VERIFIED'; });
+        frag += allVerified
+          ? '<button class="dyn-btn act-btn act-purple flex-1" onclick="doRelease()">Release Order</button>'
+          : '<span class="dyn-btn text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-xl font-semibold flex-1 text-center">Verify all results to release</span>';
       }
     }
-
-    if (isBranchAdmin && o.status === 'DRAFT') {
+    if (isBranchAdmin && o.status==='DRAFT')
       frag += '<button class="dyn-btn act-btn act-red" onclick="doDeleteOrder()">Delete Draft</button>';
-    }
-
-    if (frag) {
-      footer.insertAdjacentHTML('beforeend', frag);
-    }
+    if (frag) footer.insertAdjacentHTML('beforeend', frag);
   }
 
   function closeViewModal() {
     document.getElementById('view-modal').classList.add('hidden');
-    viewingOrder = null;
-    viewingItems = [];
+    viewingOrder = null; viewingItems = [];
   }
 
-  // ── Order actions ─────────────────────────────────────────────
   function doConfirmOrder() {
     if (!viewingOrder) return;
-    callOrder('CONFIRM_ORDER', { order_id: viewingOrder.order_id, branch_id: viewingOrder.branch_id },
-      'Order confirmed — now OPEN.', function() { reloadView(); });
+    callOrder('CONFIRM_ORDER', { order_id: viewingOrder.order_id, branch_id: viewingOrder.branch_id }, 'Order confirmed — now OPEN.', function(){ reloadView(); });
   }
-
   function doDeleteOrder() {
     if (!viewingOrder) return;
     if (!confirm('Delete order ' + viewingOrder.order_number + '? This cannot be undone.')) return;
-    callOrder('DELETE_ORDER', { order_id: viewingOrder.order_id, branch_id: viewingOrder.branch_id },
-      'Order deleted.', function() { closeViewModal(); loadOrders(); });
+    callOrder('DELETE_ORDER', { order_id: viewingOrder.order_id, branch_id: viewingOrder.branch_id }, 'Order deleted.', function(){ closeViewModal(); loadOrders(); });
   }
-
   function doRelease() {
     if (!viewingOrder) return;
     if (!confirm('Release order ' + viewingOrder.order_number + ' to the patient?')) return;
-    callOrder('RELEASE_ORDER', { order_id: viewingOrder.order_id, branch_id: viewingOrder.branch_id },
-      'Order released!', function() { reloadView(); });
+    callOrder('RELEASE_ORDER', { order_id: viewingOrder.order_id, branch_id: viewingOrder.branch_id }, 'Order released!', function(){ reloadView(); });
   }
-
-  // ── Item actions ──────────────────────────────────────────────
   function doStartItem(itemId) {
-    callOrder('START_ITEM', { item_id: itemId, order_id: viewingOrder.order_id, branch_id: viewingOrder.branch_id },
-      'Test started.', function() { reloadView(); });
+    callOrder('START_ITEM', { item_id: itemId, order_id: viewingOrder.order_id, branch_id: viewingOrder.branch_id }, 'Test started.', function(){ reloadView(); });
   }
-
   function doCompleteItem(itemId) {
-    callOrder('COMPLETE_ITEM', { item_id: itemId, order_id: viewingOrder.order_id, branch_id: viewingOrder.branch_id },
-      'Test completed.', function() { reloadView(); });
+    callOrder('COMPLETE_ITEM', { item_id: itemId, order_id: viewingOrder.order_id, branch_id: viewingOrder.branch_id }, 'Test completed.', function(){ reloadView(); });
   }
-
   function doVerify(itemId) {
-    callOrder('VERIFY_RESULT', { item_id: itemId, order_id: viewingOrder.order_id, branch_id: viewingOrder.branch_id },
-      'Result verified.', function() { reloadView(); });
+    callOrder('VERIFY_RESULT', { item_id: itemId, order_id: viewingOrder.order_id, branch_id: viewingOrder.branch_id }, 'Result verified.', function(){ reloadView(); });
   }
-
   function doReject(itemId) {
     if (!confirm('Reject this result and send back for re-upload?')) return;
-    callOrder('REJECT_RESULT', { item_id: itemId, order_id: viewingOrder.order_id, branch_id: viewingOrder.branch_id },
-      'Result sent back for correction.', function() { reloadView(); });
+    callOrder('REJECT_RESULT', { item_id: itemId, order_id: viewingOrder.order_id, branch_id: viewingOrder.branch_id }, 'Result sent back for correction.', function(){ reloadView(); });
   }
-
   function reloadView() {
     loadOrders();
-    // Re-open view with fresh data after a short delay
-    var oid = viewingOrder.order_id;
-    var bid = viewingOrder.branch_id;
+    var oid = viewingOrder.order_id, bid = viewingOrder.branch_id;
     closeViewModal();
     setTimeout(function() {
-      var fresh = allOrders.find(function(o) { return o.order_id === oid; });
+      var fresh = allOrders.find(function(o){ return o.order_id === oid; });
       if (fresh) openViewModal(oid, bid);
     }, 800);
   }
-
-  // ── Generic order action caller ───────────────────────────────
   function callOrder(action, payload, successMsg, onSuccess) {
     google.script.run
       .withSuccessHandler(function(res) {
         if (_checkExpired(res)) return;
-        if (res.success) {
-          showToast(successMsg, 'success');
-          if (onSuccess) onSuccess(res);
-        } else {
-          showToast(res.error || 'Action failed.', 'error');
-        }
+        if (res.success) { showToast(successMsg, 'success'); if (onSuccess) onSuccess(res); }
+        else showToast(res.error || 'Action failed.', 'error');
       })
-      .withFailureHandler(function(err) { showToast(err.message, 'error'); })
+      .withFailureHandler(function(err){ showToast(err.message, 'error'); })
       .handleOrderRequest(action, payload, alab_token);
   }
 
@@ -883,60 +1448,35 @@
     var total = viewingOrder.payment_amount - viewingOrder.payment_discount;
     document.getElementById('pay-order-num').textContent = viewingOrder.order_number;
     document.getElementById('pay-total').textContent     = '₱' + fmt(total);
-    document.getElementById('pay-method').value          = '';
-    document.getElementById('pay-amount').value          = '';
-    document.getElementById('pay-change').textContent    = '₱0.00';
+    document.getElementById('pay-method').value = '';
+    document.getElementById('pay-amount').value = '';
+    document.getElementById('pay-change').textContent = '₱0.00';
     document.getElementById('pay-modal').classList.remove('hidden');
   }
-
-  function closePayModal() {
-    document.getElementById('pay-modal').classList.add('hidden');
-    payingOrder = null;
-  }
-
+  function closePayModal() { document.getElementById('pay-modal').classList.add('hidden'); payingOrder = null; }
   function recalcChange() {
     if (!payingOrder) return;
-    var total  = payingOrder.payment_amount - payingOrder.payment_discount;
-    var paid   = Number(document.getElementById('pay-amount').value) || 0;
-    var change = Math.max(paid - total, 0);
-    document.getElementById('pay-change').textContent = '₱' + fmt(change);
+    var total = payingOrder.payment_amount - payingOrder.payment_discount;
+    var paid  = Number(document.getElementById('pay-amount').value) || 0;
+    document.getElementById('pay-change').textContent = '₱' + fmt(Math.max(paid - total, 0));
   }
-
   function submitPayment() {
     if (!payingOrder) return;
     var method = document.getElementById('pay-method').value;
     var amount = Number(document.getElementById('pay-amount').value);
     if (!method) { showToast('Select a payment method.', 'error'); return; }
     if (!amount || amount <= 0) { showToast('Enter amount received.', 'error'); return; }
-
     var btn = document.getElementById('pay-btn');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span>';
-
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
     google.script.run
       .withSuccessHandler(function(res) {
-        btn.disabled = false;
-        btn.innerHTML = '<span id="pay-label">Confirm Payment</span>';
+        btn.disabled = false; btn.innerHTML = '<span id="pay-label">Confirm Payment</span>';
         if (_checkExpired(res)) return;
-        if (res.success) {
-          showToast('Payment recorded — order is now PAID.', 'success');
-          closePayModal();
-          reloadView();
-        } else {
-          showToast(res.error || 'Payment failed.', 'error');
-        }
+        if (res.success) { showToast('Payment recorded — order is now PAID.', 'success'); closePayModal(); reloadView(); }
+        else showToast(res.error || 'Payment failed.', 'error');
       })
-      .withFailureHandler(function(err) {
-        btn.disabled = false;
-        btn.innerHTML = '<span id="pay-label">Confirm Payment</span>';
-        showToast(err.message, 'error');
-      })
-      .handleOrderRequest('RECORD_PAYMENT', {
-        order_id:       payingOrder.order_id,
-        branch_id:      payingOrder.branch_id,
-        payment_method: method,
-        amount_paid:    amount
-      }, alab_token);
+      .withFailureHandler(function(err){ btn.disabled=false; btn.innerHTML='<span id="pay-label">Confirm Payment</span>'; showToast(err.message,'error'); })
+      .handleOrderRequest('RECORD_PAYMENT', { order_id: payingOrder.order_id, branch_id: payingOrder.branch_id, payment_method: method, amount_paid: amount }, alab_token);
   }
 
   // ── Upload Modal ──────────────────────────────────────────────
@@ -944,415 +1484,101 @@
     uploadingItem = { item_id: itemId, order_id: viewingOrder.order_id, branch_id: viewingOrder.branch_id };
     selectedFile  = null;
     document.getElementById('upload-item-name').textContent = itemName;
-    document.getElementById('file-input').value   = '';
+    document.getElementById('file-input').value = '';
     document.getElementById('file-preview').classList.add('hidden');
     document.getElementById('file-preview').classList.remove('flex');
     document.getElementById('upload-zone').classList.remove('hidden');
     document.getElementById('upload-progress').classList.add('hidden');
     document.getElementById('upload-modal').classList.remove('hidden');
   }
-
-  function closeUploadModal() {
-    document.getElementById('upload-modal').classList.add('hidden');
-    uploadingItem = null;
-    selectedFile  = null;
-  }
-
-  function handleFileSelect(e) {
-    if (e.target.files && e.target.files[0]) setFile(e.target.files[0]);
-  }
-
+  function closeUploadModal() { document.getElementById('upload-modal').classList.add('hidden'); uploadingItem=null; selectedFile=null; }
+  function handleFileSelect(e) { if (e.target.files && e.target.files[0]) setFile(e.target.files[0]); }
   function handleDrop(e) {
     e.preventDefault();
     document.getElementById('upload-zone').classList.remove('dragover');
     if (e.dataTransfer.files && e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
   }
-
   function setFile(file) {
-    var allowed = ['application/pdf','application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    var allowed = ['application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
     if (!allowed.includes(file.type)) { showToast('Only PDF and DOC/DOCX allowed.', 'error'); return; }
     selectedFile = file;
     document.getElementById('file-name').textContent = file.name;
-    document.getElementById('file-size').textContent = (file.size / 1024).toFixed(1) + ' KB';
+    document.getElementById('file-size').textContent = (file.size/1024).toFixed(1) + ' KB';
     document.getElementById('file-preview').classList.remove('hidden');
     document.getElementById('file-preview').classList.add('flex');
   }
-
   function clearFile() {
     selectedFile = null;
     document.getElementById('file-input').value = '';
     document.getElementById('file-preview').classList.add('hidden');
     document.getElementById('file-preview').classList.remove('flex');
   }
-
   function submitUpload() {
     if (!selectedFile) { showToast('Please select a file.', 'error'); return; }
     if (!uploadingItem) return;
-
     var btn = document.getElementById('upload-btn');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span>';
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
     document.getElementById('upload-progress').classList.remove('hidden');
-
-    // Animate progress bar
-    var pct = 0;
-    var bar = document.getElementById('upload-bar');
-    var prog = setInterval(function() {
-      pct = Math.min(pct + 8, 85);
-      bar.style.width = pct + '%';
-    }, 200);
-
+    var pct = 0, bar = document.getElementById('upload-bar');
+    var prog = setInterval(function(){ pct = Math.min(pct+8, 85); bar.style.width = pct+'%'; }, 200);
     var reader = new FileReader();
     reader.onload = function(e) {
       var base64 = e.target.result.split(',')[1];
       google.script.run
         .withSuccessHandler(function(res) {
-          clearInterval(prog);
-          bar.style.width = '100%';
-          btn.disabled = false;
-          btn.innerHTML = '<span id="upload-label">Upload Result</span>';
+          clearInterval(prog); bar.style.width = '100%';
+          btn.disabled = false; btn.innerHTML = '<span id="upload-label">Upload Result</span>';
           if (_checkExpired(res)) return;
-          if (res.success) {
-            showToast('Result uploaded successfully!', 'success');
-            closeUploadModal();
-            reloadView();
-          } else {
-            showToast(res.error || 'Upload failed.', 'error');
-            document.getElementById('upload-progress').classList.add('hidden');
-          }
+          if (res.success) { showToast('Result uploaded!', 'success'); closeUploadModal(); reloadView(); }
+          else { showToast(res.error||'Upload failed.', 'error'); document.getElementById('upload-progress').classList.add('hidden'); }
         })
-        .withFailureHandler(function(err) {
-          clearInterval(prog);
-          btn.disabled = false;
-          btn.innerHTML = '<span id="upload-label">Upload Result</span>';
-          showToast(err.message, 'error');
-          document.getElementById('upload-progress').classList.add('hidden');
-        })
-        .handleOrderRequest('UPLOAD_RESULT', {
-          item_id:    uploadingItem.item_id,
-          order_id:   uploadingItem.order_id,
-          branch_id:  uploadingItem.branch_id,
-          file_data:  base64,
-          file_name:  selectedFile.name,
-          mime_type:  selectedFile.type
-        }, alab_token);
+        .withFailureHandler(function(err){ clearInterval(prog); btn.disabled=false; btn.innerHTML='<span id="upload-label">Upload Result</span>'; showToast(err.message,'error'); document.getElementById('upload-progress').classList.add('hidden'); })
+        .handleOrderRequest('UPLOAD_RESULT', { item_id: uploadingItem.item_id, order_id: uploadingItem.order_id, branch_id: uploadingItem.branch_id, file_data: base64, file_name: selectedFile.name, mime_type: selectedFile.type }, alab_token);
     };
     reader.readAsDataURL(selectedFile);
-  }
-// ── Create Order Wizard ───────────────────────────────────────
-  function openCreateWizard() {
-    try {
-      if (window.parent && typeof window.parent.navigateTo === 'function') {
-        window.parent.navigateTo('CreateOrder');
-        return;
-      }
-    } catch(_) {}
-    google.script.run.withSuccessHandler(function(url) {
-      window.top.location.href = url + '?page=CreateOrder&token=' + encodeURIComponent(alab_token);
-    }).getScriptUrl();
-  }
-
-  // ── Create Order Modal (legacy — kept for reference) ──────────
-  function openCreateModal() {
-    selectedItems = {};
-    document.getElementById('f-patient').innerHTML = '<option value="">Select patient…</option>';
-    document.getElementById('f-doctor').innerHTML  = '<option value="">None / Walk-in</option>';
-    document.getElementById('f-discount').value    = '';
-    document.getElementById('f-notes').value       = '';
-    document.getElementById('item-search').value   = '';
-    document.getElementById('item-list').innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Loading…</p>';
-    recalc();
-    loadCreateDropdowns();
-    document.getElementById('create-modal').classList.remove('hidden');
-  }
-
-  function closeCreateModal() {
-    document.getElementById('create-modal').classList.add('hidden');
-  }
-
-  var allDiscountsCache = [];
-
-  function loadCreateDropdowns() {
-    // Pre-load discounts for patient discount auto-apply
-    google.script.run
-      .withSuccessHandler(function(res) {
-        if (res && res.success) allDiscountsCache = res.data || [];
-      })
-      .withFailureHandler(function(){})
-      .handleDiscountRequest('GET_DISCOUNTS_ALL', {}, alab_token);
-
-    // Patients — store discount_ids on each option for auto-apply
-    google.script.run
-      .withSuccessHandler(function(res) {
-        if (_checkExpired(res)) return;
-        var sel = document.getElementById('f-patient');
-        sel.innerHTML = '<option value="">Select patient…</option>';
-        if (res.success && res.data && res.data.length) {
-          res.data.forEach(function(p) {
-            var name = p.last_name + ', ' + p.first_name + (p.middle_name ? ' ' + p.middle_name.charAt(0) + '.' : '');
-            var opt  = document.createElement('option');
-            opt.value = p.patient_id;
-            opt.text  = name;
-            opt.setAttribute('data-name',        name);
-            opt.setAttribute('data-discount-ids', JSON.stringify(p.discount_ids || []));
-            sel.appendChild(opt);
-          });
-        } else if (!res.success) {
-          showToast('Failed to load patients: ' + (res.error || 'Unknown error'), 'error');
-        }
-      })
-      .withFailureHandler(function(err) {
-        showToast('Error loading patients: ' + err.message, 'error');
-      })
-      .handlePatientRequest('GET_PATIENTS', {}, alab_token);
-
-    // Doctors
-    google.script.run
-      .withSuccessHandler(function(res) {
-        if (_checkExpired(res)) return;
-        var sel = document.getElementById('f-doctor');
-        sel.innerHTML = '<option value="">None / Walk-in</option>';
-        if (res.success && res.data) {
-          res.data.filter(function(d){return d.is_active;}).forEach(function(d) {
-            var name = 'Dr. ' + d.first_name + ' ' + d.last_name + (d.suffix ? ', ' + d.suffix : '');
-            var opt  = document.createElement('option');
-            opt.value = d.doctor_id;
-            opt.text  = name;
-            opt.setAttribute('data-name', name);
-            sel.appendChild(opt);
-          });
-        }
-      })
-      .withFailureHandler(function(){})
-      .handleDoctorRequest('GET_DOCTORS', {}, alab_token);
-
-    // Services
-    google.script.run
-      .withSuccessHandler(function(svcRes) {
-        if (_checkExpired(svcRes)) return;
-        allServices = (svcRes.success ? svcRes.data || [] : []).filter(function(s){return s.is_active;});
-        google.script.run
-          .withSuccessHandler(function(pkgRes) {
-            if (_checkExpired(pkgRes)) return;
-            allPackages = (pkgRes.success ? pkgRes.data || [] : []).filter(function(p){return p.is_active;});
-            renderItemList('');
-          })
-          .withFailureHandler(function(){renderItemList('');})
-          .handlePackageRequest('GET_PACKAGES', {}, alab_token);
-      })
-      .withFailureHandler(function(){renderItemList('');})
-      .handleLabServiceRequest('GET_LAB_SERVICES', {}, alab_token);
-  }
-
-  function onPatientChange() {
-    var sel = document.getElementById('f-patient');
-    var opt = sel.options[sel.selectedIndex];
-    if (!opt || !opt.value) {
-      document.getElementById('f-discount').value = '';
-      recalc();
-      return;
-    }
-    var discountIds = [];
-    try { discountIds = JSON.parse(opt.getAttribute('data-discount-ids') || '[]'); } catch(_) {}
-    if (!discountIds.length || !allDiscountsCache.length) {
-      document.getElementById('f-discount').value = '';
-      recalc();
-      return;
-    }
-    var subtotal = Object.values(selectedItems).reduce(function(s, i) { return s + (Number(i.fee) || 0); }, 0);
-    var totalDisc = 0;
-    discountIds.forEach(function(did) {
-      var d = allDiscountsCache.find(function(x) { return x.discount_id === did; });
-      if (!d || !d.is_active) return;
-      if (d.discount_type === 'percentage') {
-        totalDisc += subtotal * (Number(d.value) / 100);
-      } else {
-        totalDisc += Number(d.value);
-      }
-    });
-    document.getElementById('f-discount').value = totalDisc > 0 ? totalDisc.toFixed(2) : '';
-    recalc();
-  }
-
-  function renderItemList(q) {
-    q = (q || '').toLowerCase();
-    var svcs = allServices.filter(function(s){ return !q || s.lab_name.toLowerCase().includes(q) || s.lab_code.toLowerCase().includes(q); });
-    var pkgs = allPackages.filter(function(p){ return !q || p.package_name.toLowerCase().includes(q); });
-    var list = document.getElementById('item-list');
-
-    if (!svcs.length && !pkgs.length) {
-      list.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">No services found.</p>';
-      return;
-    }
-
-    var html = '';
-    if (svcs.length) {
-      html += '<p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1 mb-1">Lab Services</p>';
-      html += svcs.map(function(s) {
-        var key = 'svc_' + s.lab_id;
-        var sel = selectedItems[key] ? ' selected' : '';
-        var chk = selectedItems[key] ? 'checked' : '';
-        return '<div class="item-row' + sel + '"' +
-          ' data-key="' + escHtml(key) + '"' +
-          ' data-type="service"' +
-          ' data-ref="' + escHtml(s.lab_id) + '"' +
-          ' data-name="' + escHtml(s.lab_name) + '"' +
-          ' data-fee="' + (Number(s.default_fee)||0) + '"' +
-          ' onclick="toggleItemClick(this)">' +
-          '<input type="checkbox" class="item-check" id="' + escHtml(key) + '" ' + chk + ' onclick="event.stopPropagation()"/>' +
-          '<label for="' + escHtml(key) + '" class="item-name" onclick="event.stopPropagation()">' + escHtml(s.lab_name) +
-            ' <span class="text-[11px] text-slate-400">' + escHtml(s.lab_code) + '</span></label>' +
-          '<span class="item-fee">₱' + fmt(s.default_fee) + '</span>' +
-        '</div>';
-      }).join('');
-    }
-
-    if (pkgs.length) {
-      html += '<p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1 mb-1 mt-3">Packages</p>';
-      html += pkgs.map(function(p) {
-        var key = 'pkg_' + p.package_id;
-        var sel = selectedItems[key] ? ' selected' : '';
-        var chk = selectedItems[key] ? 'checked' : '';
-        return '<div class="item-row' + sel + '"' +
-          ' data-key="' + escHtml(key) + '"' +
-          ' data-type="package"' +
-          ' data-ref="' + escHtml(p.package_id) + '"' +
-          ' data-name="' + escHtml(p.package_name) + '"' +
-          ' data-fee="' + (Number(p.default_fee)||0) + '"' +
-          ' onclick="toggleItemClick(this)">' +
-          '<input type="checkbox" class="item-check" id="' + escHtml(key) + '" ' + chk + ' onclick="event.stopPropagation()"/>' +
-          '<label for="' + escHtml(key) + '" class="item-name" onclick="event.stopPropagation()">' + escHtml(p.package_name) + '</label>' +
-          '<span class="item-fee">₱' + fmt(p.default_fee) + '</span>' +
-        '</div>';
-      }).join('');
-    }
-    list.innerHTML = html;
-  }
-
-  function toggleItemClick(rowEl) {
-    var key  = rowEl.dataset.key;
-    var type = rowEl.dataset.type;
-    var ref  = rowEl.dataset.ref;
-    var name = rowEl.dataset.name;
-    var fee  = Number(rowEl.dataset.fee) || 0;
-    if (selectedItems[key]) { delete selectedItems[key]; }
-    else { selectedItems[key] = { item_type: type, item_ref_id: ref, item_name_snapshot: name, fee: fee }; }
-    var cb = document.getElementById(key);
-    if (cb)  cb.checked = !!selectedItems[key];
-    rowEl.classList.toggle('selected', !!selectedItems[key]);
-    recalc();
-  }
-
-  function filterItems() { renderItemList(document.getElementById('item-search').value); }
-
-  function recalc() {
-    var sub  = Object.values(selectedItems).reduce(function(s,i){ return s+(Number(i.fee)||0); }, 0);
-    var disc = Number(document.getElementById('f-discount').value) || 0;
-    var total = Math.max(sub - disc, 0);
-    document.getElementById('c-subtotal').textContent = '₱' + fmt(sub);
-    document.getElementById('c-discount').textContent = disc > 0 ? '-₱' + fmt(disc) : '-₱0.00';
-    document.getElementById('c-total').textContent    = '₱' + fmt(total);
-    // Debug: log to catch silent failures
-    console.log('recalc → sub:', sub, 'disc:', disc, 'total:', total, 'items:', JSON.stringify(selectedItems));
-  }
-
-  function saveOrder() {
-    var patSel = document.getElementById('f-patient');
-    var drSel  = document.getElementById('f-doctor');
-    if (!patSel.value) { showToast('Please select a patient.', 'error'); return; }
-    var items = Object.values(selectedItems);
-    if (!items.length) { showToast('Please select at least one service or package.', 'error'); return; }
-
-    var patOpt = patSel.options[patSel.selectedIndex];
-    var drOpt  = drSel.options[drSel.selectedIndex];
-
-    var btn = document.getElementById('c-save-btn');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span>';
-
-    google.script.run
-      .withSuccessHandler(function(res) {
-        btn.disabled = false;
-        btn.innerHTML = '<span id="c-save-label">Save as Draft</span>';
-        if (_checkExpired(res)) return;
-        if (res.success) {
-          showToast('Order ' + res.data.order_number + ' saved as DRAFT.', 'success');
-          closeCreateModal();
-          loadOrders();
-        } else {
-          showToast(res.error || 'Failed to create order.', 'error');
-        }
-      })
-      .withFailureHandler(function(err) {
-        btn.disabled = false;
-        btn.innerHTML = '<span id="c-save-label">Save as Draft</span>';
-        showToast(err.message, 'error');
-      })
-      .handleOrderRequest('CREATE_ORDER', {
-        patient_id:          patSel.value,
-        patient_snapshot:    patOpt ? (patOpt.getAttribute('data-name') || patOpt.text) : '',
-        referring_doctor_id: drSel.value || '',
-        doctor_snapshot:     (drSel.value && drOpt) ? (drOpt.getAttribute('data-name') || drOpt.text) : '',
-        payment_amount:      items.reduce(function(s,i){ return s+(Number(i.fee)||0); }, 0),
-        payment_discount:    Number(document.getElementById('f-discount').value) || 0,
-        notes:               document.getElementById('f-notes').value.trim(),
-        items:               items
-      }, alab_token);
   }
 
   // ── Helpers ───────────────────────────────────────────────────
   function statusLabel(s) {
-    var map = { DRAFT:'Draft', OPEN:'Open', PAID:'Paid', IN_PROGRESS:'In Progress', FOR_RELEASE:'For Release', RELEASED:'Released' };
-    return map[s] || s;
+    return { DRAFT:'Draft', OPEN:'Open', PAID:'Paid', IN_PROGRESS:'In Progress', FOR_RELEASE:'For Release', RELEASED:'Released' }[s] || s;
   }
-
-  function fmt(val) {
-    return Number(val||0).toLocaleString('en-PH', { minimumFractionDigits:2, maximumFractionDigits:2 });
-  }
-
+  function fmt(val) { return Number(val||0).toLocaleString('en-PH', { minimumFractionDigits:2, maximumFractionDigits:2 }); }
   function fmtDate(val) {
     if (!val) return '—';
     try { return new Date(val).toLocaleDateString('en-PH', { year:'numeric', month:'short', day:'numeric' }); }
     catch(_) { return String(val); }
   }
-
-  function escHtml(s) {
-    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-
+  function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   function showLoading(v) {
     document.getElementById('loading-state').classList.toggle('hidden', !v);
-    if (v) {
-      document.getElementById('table-wrap').classList.add('hidden');
-      document.getElementById('empty-state').classList.add('hidden');
-    }
+    if (v) { document.getElementById('table-wrap').classList.add('hidden'); document.getElementById('empty-state').classList.add('hidden'); }
   }
-
   function showEmpty(msg) {
     document.getElementById('empty-state').classList.remove('hidden');
     document.getElementById('empty-state').classList.add('flex');
     document.getElementById('table-wrap').classList.add('hidden');
     if (msg) document.getElementById('empty-sub').textContent = msg;
   }
-
   function showToast(msg, type) {
     var el = document.createElement('div');
-    el.className = 'toast-item toast-' + (type || 'success');
+    el.className = 'toast-item toast-' + (type||'success');
     el.innerHTML = '<svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">' +
-      (type === 'error'
-        ? '<path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>'
-        : '<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>') +
+      (type==='error' ? '<path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>'
+                      : '<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>') +
       '</svg><span>' + escHtml(msg) + '</span>';
     document.getElementById('toast').appendChild(el);
     setTimeout(function(){ el.remove(); }, 4000);
   }
 
   document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') { closeViewModal(); closeCreateModal(); closePayModal(); closeUploadModal(); }
+    if (e.key === 'Escape') {
+      if (!document.getElementById('wizard-overlay').classList.contains('open')) {
+        closeViewModal(); closePayModal(); closeUploadModal();
+      } else {
+        closeWizard();
+      }
+    }
   });
 </script>
-
-
 </body>
 </html>
