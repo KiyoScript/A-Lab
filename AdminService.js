@@ -120,10 +120,11 @@ function login(username, password) {
     if (!username || !password) return { success: false, error: 'Username and password are required.' };
 
     // Housekeep expired sessions occasionally
-    try { _cleanExpiredSessions(); } catch(e) {}
+    try { if (Math.random() < 0.05) _cleanExpiredSessions(); } catch(e) {}
 
-    const hashed = _hashPassword(password.trim());
-    const uname  = username.trim().toLowerCase();
+    const hashed  = _hashPassword(password.trim());
+    const uname   = username.trim().toLowerCase();
+    const isEmail = uname.indexOf('@') !== -1;
 
     // 1. Check Super Admins first
     const superSh   = _getSuperAdminSheet();
@@ -147,6 +148,7 @@ function login(username, password) {
     }
 
     // 2. Check Branch Admins across all branches
+    if (!isEmail) {
     const branchSh   = _getRegistrySheet();
     const branchData = branchSh.getDataRange().getValues();
     for (var b = 1; b < branchData.length; b++) {
@@ -176,16 +178,21 @@ function login(username, password) {
     }
 
         // ── 3. Check Doctors ──────────────────────────────────────
+    } // end if (!isEmail) — branch admin check
+
+        // ── 3. Check Doctors ──────────────────────────────────────
     try {
       const doctorResult = doctorLogin(username, password);
       if (doctorResult !== null) return doctorResult;
     } catch(_) { /* DoctorsService not available — skip */ }
 
     // ── 4. Check MedTechs (Technologists) ─────────────────────
-    try {
-      const medtechResult = medtechLogin(username, password);
-      if (medtechResult !== null) return medtechResult;
-    } catch(_) { /* MedtechService not available — skip */ }
+    if (isEmail) {
+      try {
+        const medtechResult = medtechLogin(username, password);
+        if (medtechResult !== null) return medtechResult;
+      } catch(_) {}
+    }
 
     return { success: false, error: 'Invalid username or password.' };
   } catch (e) {

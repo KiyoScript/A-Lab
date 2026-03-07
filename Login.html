@@ -111,13 +111,9 @@
   </div>
 
   <script>
-    let scriptUrl = ''; // cached on page load — avoids extra server call on login
-
-    google.script.run
-      .withSuccessHandler(function(url) { scriptUrl = url; })
-      .getScriptUrl();
-
-    document.addEventListener('keydown', function(e) { if (e.key === 'Enter') doLogin(); });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !document.getElementById('login-btn').disabled) doLogin();
+    });
 
     function togglePassword() {
       const input = document.getElementById('password');
@@ -130,36 +126,33 @@
       if (!username || !password) { showError('Please enter both username and password.'); return; }
       setLoading(true); hideError();
 
-      function _proceed(url) {
-        google.script.run
-          .withSuccessHandler(function(res) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (!res.success) {
             setLoading(false);
-            if (res.success) {
-              localStorage.setItem('alab_token', res.token);
-              if (res.data && res.data.must_change_password) {
-                pendingToken = res.token;
-                pendingRole  = res.data.role || '';
-                document.getElementById('change-pw-modal').classList.remove('hidden');
-              } else {
-                var targetPage = res.data.role === 'doctor'  ? 'DoctorIndex' :
-                                 res.data.role === 'medtech' ? 'TechIndex'   : 'Index';
+            showError(res.error || 'Login failed.');
+            return;
+          }
+          localStorage.setItem('alab_token', res.token);
+          if (res.data && res.data.must_change_password) {
+            setLoading(false);
+            pendingToken = res.token;
+            pendingRole  = res.data.role || '';
+            document.getElementById('change-pw-modal').classList.remove('hidden');
+          } else {
+            var targetPage = res.data.role === 'doctor'  ? 'DoctorIndex' :
+                             res.data.role === 'medtech' ? 'TechIndex'   : 'Index';
+            // Get script URL only after confirmed success — single round trip
+            google.script.run
+              .withSuccessHandler(function(url) {
                 window.top.location.href = url + '?page=' + targetPage + '&token=' + encodeURIComponent(res.token);
-              }
-            } else { showError(res.error || 'Login failed.'); }
-          })
-          .withFailureHandler(function(err) { setLoading(false); showError('Error: ' + err.message); })
-          .handleAdminRequest('LOGIN', { username: username, password: password }, '');
-      }
-
-      // If scriptUrl wasn't ready yet, fetch it now before proceeding
-      if (scriptUrl) {
-        _proceed(scriptUrl);
-      } else {
-        google.script.run
-          .withSuccessHandler(function(url) { scriptUrl = url; _proceed(url); })
-          .withFailureHandler(function(err) { setLoading(false); showError('Error: ' + err.message); })
-          .getScriptUrl();
-      }
+              })
+              .withFailureHandler(function(err) { setLoading(false); showError('Error: ' + err.message); })
+              .getScriptUrl();
+          }
+        })
+        .withFailureHandler(function(err) { setLoading(false); showError('Error: ' + err.message); })
+        .handleAdminRequest('LOGIN', { username: username, password: password }, '');
     }
 
     function setLoading(v) {
