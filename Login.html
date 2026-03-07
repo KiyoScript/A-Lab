@@ -146,7 +146,13 @@
           } else {
             var targetPage = res.data.role === 'doctor'  ? 'DoctorIndex' :
                              res.data.role === 'medtech' ? 'TechIndex'   : 'Index';
-            window.top.location.href = scriptUrl + '?page=' + targetPage + '&token=' + encodeURIComponent(res.token);
+            var dest = scriptUrl + '?page=' + targetPage + '&token=' + encodeURIComponent(res.token);
+            // Use a real anchor click to preserve user-gesture context for top navigation
+            var a = document.createElement('a');
+            a.href = dest;
+            a.target = '_top';
+            document.body.appendChild(a);
+            a.click();
           }
         })
         .withFailureHandler(function(err) { setLoading(false); showError('Error: ' + err.message); })
