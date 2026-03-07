@@ -179,7 +179,7 @@
     <div class="card p-5 fade-up d4">
       <p class="section-title mb-3">Quick Actions</p>
       <div class="space-y-2">
-        <button class="quick-btn" onclick="parent.document.querySelector('[onclick*=Orders]').click()">
+        <button class="quick-btn" onclick="goToPage('CreateOrder')">
           <div class="quick-btn-icon bg-emerald-50">
             <svg class="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
@@ -190,7 +190,7 @@
             <p class="text-xs text-slate-400">Create a lab order for a patient</p>
           </div>
         </button>
-        <button class="quick-btn" onclick="parent.document.querySelector('[onclick*=Orders]').click()">
+        <button class="quick-btn" onclick="goToPage('Orders')">
           <div class="quick-btn-icon bg-amber-50">
             <svg class="w-5 h-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v8.5L4.5 18A2 2 0 006.4 21h11.2a2 2 0 001.9-2.5L15 11.5V3M9 3h6M8 15h8"/>
@@ -201,7 +201,7 @@
             <p class="text-xs text-slate-400">Manage orders and process tests</p>
           </div>
         </button>
-        <button class="quick-btn" onclick="parent.document.querySelector('[onclick*=Patients]').click()">
+        <button class="quick-btn" onclick="goToPage('Patients')">
           <div class="quick-btn-icon bg-blue-50">
             <svg class="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-1a4 4 0 00-5.196-3.762M9 11a4 4 0 100-8 4 4 0 000 8zm-6 9v-1a4 4 0 014-4h4a4 4 0 014 4v1"/>
@@ -433,6 +433,19 @@
   function escHtml(s) {
     return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
+
+  function goToPage(pageName) {
+    try {
+      var frame   = window.parent.document.getElementById('content-frame');
+      var baseUrl = window.parent.baseUrl;
+      var token   = window.parent.alab_token;
+      if (frame && baseUrl) {
+        frame.src = baseUrl + '?page=' + pageName + '&token=' + encodeURIComponent(token);
+        try { window.parent.document.getElementById('page-title').textContent = pageName === 'CreateOrder' ? 'New Order' : pageName; } catch(_) {}
+      }
+    } catch(e) { console.error('goToPage failed:', e); }
+  }
+  
 </script>
 </body>
 </html>
