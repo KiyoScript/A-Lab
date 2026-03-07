@@ -111,6 +111,13 @@
   </div>
 
   <script>
+    var scriptUrl = '';
+
+    // Fetch script URL immediately on page load — needed for redirect
+    google.script.run
+      .withSuccessHandler(function(url) { scriptUrl = url; })
+      .getScriptUrl();
+
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Enter' && !document.getElementById('login-btn').disabled) doLogin();
     });
@@ -124,31 +131,22 @@
       const username = document.getElementById('username').value.trim();
       const password = document.getElementById('password').value;
       if (!username || !password) { showError('Please enter both username and password.'); return; }
+      if (!scriptUrl) { showError('Page still loading, please try again.'); return; }
       setLoading(true); hideError();
 
       google.script.run
         .withSuccessHandler(function(res) {
-          if (!res.success) {
-            setLoading(false);
-            showError(res.error || 'Login failed.');
-            return;
-          }
+          setLoading(false);
+          if (!res.success) { showError(res.error || 'Login failed.'); return; }
           localStorage.setItem('alab_token', res.token);
           if (res.data && res.data.must_change_password) {
-            setLoading(false);
             pendingToken = res.token;
             pendingRole  = res.data.role || '';
             document.getElementById('change-pw-modal').classList.remove('hidden');
           } else {
             var targetPage = res.data.role === 'doctor'  ? 'DoctorIndex' :
                              res.data.role === 'medtech' ? 'TechIndex'   : 'Index';
-            // Get script URL only after confirmed success — single round trip
-            google.script.run
-              .withSuccessHandler(function(url) {
-                window.top.location.href = url + '?page=' + targetPage + '&token=' + encodeURIComponent(res.token);
-              })
-              .withFailureHandler(function(err) { setLoading(false); showError('Error: ' + err.message); })
-              .getScriptUrl();
+            window.top.location.href = scriptUrl + '?page=' + targetPage + '&token=' + encodeURIComponent(res.token);
           }
         })
         .withFailureHandler(function(err) { setLoading(false); showError('Error: ' + err.message); })
