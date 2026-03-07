@@ -91,7 +91,7 @@ function getDiscountsAll(token) {
   try {
     const session = _getSession(token);
     if (!session) return { success: false, error: 'Session expired.', expired: true };
-    if (!['super_admin', 'branch_admin'].includes(session.role))
+    if (!['super_admin', 'branch_admin', 'medtech'].includes(session.role))
       return { success: false, error: 'Unauthorized.' };
 
     const sh   = _getDiscountSheet();
