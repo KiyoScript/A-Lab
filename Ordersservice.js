@@ -266,8 +266,9 @@ function getOrderItems(payload, token) {
     if (!payload.order_id || !payload.branch_id)
       return { success: false, error: 'order_id and branch_id are required.' };
 
-    const ssId = _getBranchSsId(payload.branch_id);
-    if (!ssId) return { success: false, error: 'Branch not found.' };
+    const branchInfo = _getBranchSsId(payload.branch_id);
+    if (!branchInfo) return { success: false, error: 'Branch not found.' };
+    const ssId = branchInfo.ssId;
 
     const sh    = _getOrderItemSheet(ssId);
     const data  = sh.getDataRange().getValues();
@@ -297,9 +298,9 @@ function createOrder(payload, token) {
     if (!payload.items || !payload.items.length)
       return { success: false, error: 'At least one lab service or package is required.' };
 
-    const ssId = _getBranchSsId(session.branch_id);
-    if (!ssId) return { success: false, error: 'Branch spreadsheet not found.' };
-
+    const branchInfo = _getBranchSsId(session.branch_id);
+    if (!branchInfo) return { success: false, error: 'Branch spreadsheet not found.' };
+    const ssId = branchInfo.ssId;
     const now             = new Date().toISOString();
     const orderId         = 'ORD-' + Utilities.getUuid().substring(0, 8).toUpperCase();
     const orderNumber     = _generateOrderNumber(ssId);
@@ -354,8 +355,9 @@ function confirmOrder(payload, token) {
     if (!_isTechnologist(session.role))
       return { success: false, error: 'Only technologists can confirm orders.' };
 
-    const ssId = _getBranchSsId(payload.branch_id);
-    if (!ssId) return { success: false, error: 'Branch not found.' };
+    const branchInfo = _getBranchSsId(payload.branch_id);
+    if (!branchInfo) return { success: false, error: 'Branch not found.' };
+    const ssId = branchInfo.ssId;
 
     const { sh, data, idx } = _findOrderRow(ssId, payload.order_id);
     if (idx === -1) return { success: false, error: 'Order not found.' };
@@ -387,8 +389,9 @@ function recordPayment(payload, token) {
     if (!payload.amount_paid || Number(payload.amount_paid) <= 0)
       return { success: false, error: 'Amount paid is required.' };
 
-    const ssId = _getBranchSsId(payload.branch_id);
-    if (!ssId) return { success: false, error: 'Branch not found.' };
+    const branchInfo = _getBranchSsId(payload.branch_id);
+    if (!branchInfo) return { success: false, error: 'Branch not found.' };
+    const ssId = branchInfo.ssId;
 
     const { sh, data, idx } = _findOrderRow(ssId, payload.order_id);
     if (idx === -1) return { success: false, error: 'Order not found.' };
@@ -425,8 +428,10 @@ function startItem(payload, token) {
     if (!_isTechnologist(session.role))
       return { success: false, error: 'Only technologists can start items.' };
 
-    const ssId = _getBranchSsId(payload.branch_id);
-    if (!ssId) return { success: false, error: 'Branch not found.' };
+    const branchInfo = _getBranchSsId(payload.branch_id);
+    if (!branchInfo) return { success: false, error: 'Branch not found.' };
+    const ssId = branchInfo.ssId;
+
 
     // Verify order status
     const orderResult = _findOrderRow(ssId, payload.order_id);
@@ -469,8 +474,9 @@ function completeItem(payload, token) {
     if (!_isTechnologist(session.role))
       return { success: false, error: 'Only technologists can complete items.' };
 
-    const ssId = _getBranchSsId(payload.branch_id);
-    if (!ssId) return { success: false, error: 'Branch not found.' };
+    const branchInfo = _getBranchSsId(payload.branch_id);
+    if (!branchInfo) return { success: false, error: 'Branch not found.' };
+    const ssId = branchInfo.ssId;
 
     const itemResult = _findItemRow(ssId, payload.item_id);
     if (itemResult.idx === -1) return { success: false, error: 'Item not found.' };
@@ -649,8 +655,9 @@ function releaseOrder(payload, token) {
     if (!_isTechnologist(session.role))
       return { success: false, error: 'Only technologists can release orders.' };
 
-    const ssId = _getBranchSsId(payload.branch_id);
-    if (!ssId) return { success: false, error: 'Branch not found.' };
+    const branchInfo = _getBranchSsId(payload.branch_id);
+    if (!branchInfo) return { success: false, error: 'Branch not found.' };
+    const ssId = branchInfo.ssId;
 
     const orderResult = _findOrderRow(ssId, payload.order_id);
     if (orderResult.idx === -1) return { success: false, error: 'Order not found.' };
@@ -695,8 +702,9 @@ function deleteOrder(payload, token) {
     if (!['medtech', 'branch_admin'].includes(session.role))
       return { success: false, error: 'Unauthorized.' };
 
-    const ssId = _getBranchSsId(payload.branch_id);
-    if (!ssId) return { success: false, error: 'Branch not found.' };
+    const branchInfo = _getBranchSsId(payload.branch_id);
+    if (!branchInfo) return { success: false, error: 'Branch not found.' };
+    const ssId = branchInfo.ssId;
 
     const { sh, data, idx } = _findOrderRow(ssId, payload.order_id);
     if (idx === -1) return { success: false, error: 'Order not found.' };
@@ -728,8 +736,9 @@ function updateOrderNotes(payload, token) {
     if (!session) return { success: false, error: 'Session expired.', expired: true };
     if (!_isTechnologist(session.role)) return { success: false, error: 'Unauthorized.' };
 
-    const ssId = _getBranchSsId(payload.branch_id);
-    if (!ssId) return { success: false, error: 'Branch not found.' };
+    const branchInfo = _getBranchSsId(payload.branch_id);
+    if (!branchInfo) return { success: false, error: 'Branch not found.' };
+    const ssId = branchInfo.ssId;
 
     const { sh, data, idx } = _findOrderRow(ssId, payload.order_id);
     if (idx === -1) return { success: false, error: 'Order not found.' };
