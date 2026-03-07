@@ -1076,19 +1076,23 @@
         if (_checkExpired(res)) return;
         var sel = document.getElementById('f-patient');
         sel.innerHTML = '<option value="">Select patient…</option>';
-        if (res.success && res.data) {
+        if (res.success && res.data && res.data.length) {
           res.data.forEach(function(p) {
             var name = p.last_name + ', ' + p.first_name + (p.middle_name ? ' ' + p.middle_name.charAt(0) + '.' : '');
             var opt  = document.createElement('option');
             opt.value = p.patient_id;
             opt.text  = name;
-            opt.setAttribute('data-name',         name);
-            opt.setAttribute('data-discount-ids',  JSON.stringify(p.discount_ids || []));
+            opt.setAttribute('data-name',        name);
+            opt.setAttribute('data-discount-ids', JSON.stringify(p.discount_ids || []));
             sel.appendChild(opt);
           });
+        } else if (!res.success) {
+          showToast('Failed to load patients: ' + (res.error || 'Unknown error'), 'error');
         }
       })
-      .withFailureHandler(function(){})
+      .withFailureHandler(function(err) {
+        showToast('Error loading patients: ' + err.message, 'error');
+      })
       .handlePatientRequest('GET_PATIENTS', {}, alab_token);
 
     // Doctors
