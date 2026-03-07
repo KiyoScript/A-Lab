@@ -73,8 +73,8 @@ function getLabServices(token) {
       .filter(function(r) { return r[0] !== ''; })
       .map(function(r)    { return _labRowToObj(r); });
 
-    // Branch admin: filter out services disabled at their branch
-    if (session.role === 'branch_admin' && session.branch_id) {
+    // Branch admin or medtech: filter out services disabled at their branch
+    if (['branch_admin', 'medtech'].includes(session.role) && session.branch_id) {
       const disabledIds = getDisabledLabsForBranch(session.branch_id);
       if (disabledIds.length > 0) {
         labs = labs.filter(function(l) {

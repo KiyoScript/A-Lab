@@ -120,9 +120,9 @@ function getPackages(token) {
         return pkg;
       });
 
-    // Branch admin: sees global packages + their own branch packages only
+    // Branch admin or medtech: sees global packages + their own branch packages only
     // Also flag packages that contain disabled lab services at their branch
-    if (session.role === 'branch_admin') {
+    if (['branch_admin', 'medtech'].includes(session.role)) {
       packages = packages.filter(function(p) {
         return !p.branch_id || p.branch_id === session.branch_id;
       });
