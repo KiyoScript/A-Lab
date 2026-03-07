@@ -1042,15 +1042,24 @@
   }
   // ── Create Order Wizard ───────────────────────────────────────
   function openCreateWizard() {
+    // Try parent frame first (Index / TechIndex shell)
+    try {
+      var frame = window.parent && window.parent.document.getElementById('content-frame');
+      var baseUrl = window.parent && window.parent.baseUrl;
+      if (frame && baseUrl) {
+        frame.src = baseUrl + '?page=CreateOrder&token=' + encodeURIComponent(alab_token);
+        try { window.parent.document.getElementById('page-title').textContent = 'New Order'; } catch(_) {}
+        return;
+      }
+    } catch(_) {}
+    // Fallback: fetch URL and navigate
     google.script.run.withSuccessHandler(function(url) {
-      var frame = window.parent
-        ? window.parent.document.getElementById('content-frame')
-        : null;
+      var frame = window.parent && window.parent.document.getElementById('content-frame');
       if (frame) {
         frame.src = url + '?page=CreateOrder&token=' + encodeURIComponent(alab_token);
-        try {
-          window.parent.document.getElementById('page-title').textContent = 'New Order';
-        } catch(_) {}
+        try { window.parent.document.getElementById('page-title').textContent = 'New Order'; } catch(_) {}
+      } else {
+        window.location.href = url + '?page=CreateOrder&token=' + encodeURIComponent(alab_token);
       }
     }).getScriptUrl();
   }
