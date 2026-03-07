@@ -133,7 +133,7 @@
     <h1 class="text-xl font-bold text-slate-800">Orders</h1>
     <p id="header-sub" class="text-xs text-slate-400 mt-0.5">Lab order management</p>
   </div>
-  <button id="create-btn" onclick="openCreateModal()"
+  <button id="create-btn" onclick="openCreateWizard()"
     class="hidden items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-sm">
     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
       <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
@@ -1040,8 +1040,22 @@
     };
     reader.readAsDataURL(selectedFile);
   }
+  // ── Create Order Wizard ───────────────────────────────────────
+  function openCreateWizard() {
+    google.script.run.withSuccessHandler(function(url) {
+      var frame = window.parent
+        ? window.parent.document.getElementById('content-frame')
+        : null;
+      if (frame) {
+        frame.src = url + '?page=CreateOrder&token=' + encodeURIComponent(alab_token);
+        try {
+          window.parent.document.getElementById('page-title').textContent = 'New Order';
+        } catch(_) {}
+      }
+    }).getScriptUrl();
+  }
 
-  // ── Create Order Modal ────────────────────────────────────────
+  // ── Create Order Modal (legacy — kept for reference) ──────────
   function openCreateModal() {
     selectedItems = {};
     document.getElementById('f-patient').innerHTML = '<option value="">Select patient…</option>';
@@ -1340,5 +1354,7 @@
     if (e.key === 'Escape') { closeViewModal(); closeCreateModal(); closePayModal(); closeUploadModal(); }
   });
 </script>
+
+
 </body>
 </html>
