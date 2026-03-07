@@ -1181,9 +1181,15 @@
         var key = 'svc_' + s.lab_id;
         var sel = selectedItems[key] ? ' selected' : '';
         var chk = selectedItems[key] ? 'checked' : '';
-        return '<div class="item-row' + sel + '" onclick="toggleItemClick(\'' + key + '\',\'service\',\'' + escHtml(s.lab_id) + '\',\'' + escHtml(s.lab_name) + '\',' + (Number(s.default_fee)||0) + ')">' +
-          '<input type="checkbox" class="item-check" id="' + key + '" ' + chk + ' onclick="event.stopPropagation()"/>' +
-          '<label for="' + key + '" class="item-name" onclick="event.stopPropagation()">' + escHtml(s.lab_name) +
+        return '<div class="item-row' + sel + '"' +
+          ' data-key="' + escHtml(key) + '"' +
+          ' data-type="service"' +
+          ' data-ref="' + escHtml(s.lab_id) + '"' +
+          ' data-name="' + escHtml(s.lab_name) + '"' +
+          ' data-fee="' + (Number(s.default_fee)||0) + '"' +
+          ' onclick="toggleItemClick(this)">' +
+          '<input type="checkbox" class="item-check" id="' + escHtml(key) + '" ' + chk + ' onclick="event.stopPropagation()"/>' +
+          '<label for="' + escHtml(key) + '" class="item-name" onclick="event.stopPropagation()">' + escHtml(s.lab_name) +
             ' <span class="text-[11px] text-slate-400">' + escHtml(s.lab_code) + '</span></label>' +
           '<span class="item-fee">₱' + fmt(s.default_fee) + '</span>' +
         '</div>';
@@ -1196,9 +1202,15 @@
         var key = 'pkg_' + p.package_id;
         var sel = selectedItems[key] ? ' selected' : '';
         var chk = selectedItems[key] ? 'checked' : '';
-        return '<div class="item-row' + sel + '" onclick="toggleItemClick(\'' + key + '\',\'package\',\'' + escHtml(p.package_id) + '\',\'' + escHtml(p.package_name) + '\',' + (Number(p.default_fee)||0) + ')">' +
-          '<input type="checkbox" class="item-check" id="' + key + '" ' + chk + ' onclick="event.stopPropagation()"/>' +
-          '<label for="' + key + '" class="item-name" onclick="event.stopPropagation()">' + escHtml(p.package_name) + '</label>' +
+        return '<div class="item-row' + sel + '"' +
+          ' data-key="' + escHtml(key) + '"' +
+          ' data-type="package"' +
+          ' data-ref="' + escHtml(p.package_id) + '"' +
+          ' data-name="' + escHtml(p.package_name) + '"' +
+          ' data-fee="' + (Number(p.default_fee)||0) + '"' +
+          ' onclick="toggleItemClick(this)">' +
+          '<input type="checkbox" class="item-check" id="' + escHtml(key) + '" ' + chk + ' onclick="event.stopPropagation()"/>' +
+          '<label for="' + escHtml(key) + '" class="item-name" onclick="event.stopPropagation()">' + escHtml(p.package_name) + '</label>' +
           '<span class="item-fee">₱' + fmt(p.default_fee) + '</span>' +
         '</div>';
       }).join('');
@@ -1206,13 +1218,17 @@
     list.innerHTML = html;
   }
 
-  function toggleItemClick(key, type, refId, name, fee) {
+  function toggleItemClick(rowEl) {
+    var key  = rowEl.dataset.key;
+    var type = rowEl.dataset.type;
+    var ref  = rowEl.dataset.ref;
+    var name = rowEl.dataset.name;
+    var fee  = Number(rowEl.dataset.fee) || 0;
     if (selectedItems[key]) { delete selectedItems[key]; }
-    else { selectedItems[key] = { item_type: type, item_ref_id: refId, item_name_snapshot: name, fee: fee }; }
-    var cb  = document.getElementById(key);
-    var row = cb ? cb.closest('.item-row') : null;
+    else { selectedItems[key] = { item_type: type, item_ref_id: ref, item_name_snapshot: name, fee: fee }; }
+    var cb = document.getElementById(key);
     if (cb)  cb.checked = !!selectedItems[key];
-    if (row) row.classList.toggle('selected', !!selectedItems[key]);
+    rowEl.classList.toggle('selected', !!selectedItems[key]);
     recalc();
   }
 
@@ -1266,6 +1282,7 @@
         patient_snapshot:    patOpt ? (patOpt.getAttribute('data-name') || patOpt.text) : '',
         referring_doctor_id: drSel.value || '',
         doctor_snapshot:     (drSel.value && drOpt) ? (drOpt.getAttribute('data-name') || drOpt.text) : '',
+        payment_amount:      items.reduce(function(s,i){ return s+(Number(i.fee)||0); }, 0),
         payment_discount:    Number(document.getElementById('f-discount').value) || 0,
         notes:               document.getElementById('f-notes').value.trim(),
         items:               items
