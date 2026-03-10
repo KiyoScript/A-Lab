@@ -211,17 +211,17 @@
   <div id="toast"></div>
 
   <script>
-    var _adm__adm_allBranchAdmins = [];
-    var _adm__adm_isBranchAdmin   = false;
-    var _adm__adm_currentSession  = null;
-    var _adm__adm_allSuperAdmins  = [];
-    var _adm__adm__adm_allBranches     = [];
-    var _adm__adm_currentTab      = 'branch';
-    var _adm__adm_editingId       = null;
-    var _adm__adm_editingRole     = null;
-    var _adm__adm_deletingId      = null;
-    var _adm__adm_deletingRole    = null;
-    var _adm__adm_selectedRole    = 'branch_admin';
+    var _adm_allBranchAdmins = [];
+    var _adm_isBranchAdmin   = false;
+    var _adm_currentSession  = null;
+    var _adm_allSuperAdmins  = [];
+    var _adm_allBranches     = [];
+    var _adm_currentTab      = 'branch';
+    var _adm_editingId       = null;
+    var _adm_editingRole     = null;
+    var _adm_deletingId      = null;
+    var _adm_deletingRole    = null;
+    var _adm_selectedRole    = 'branch_admin';
 
     function _adm_getToken() {
       return (typeof _adm_getToken() !== 'undefined' ? _adm_getToken() : null)
@@ -277,7 +277,7 @@
       // Call 1: Branches
       google.script.run
         .withSuccessHandler(function(res) {
-          if (res.success) { _adm__adm_allBranches = res.data || []; populateBranchDropdown(); }
+          if (res.success) { _adm_allBranches = res.data || []; populateBranchDropdown(); }
           _loaded.branches = true;
           _tryRender();
         })
@@ -329,7 +329,7 @@
       const filterSel = document.getElementById('branch-filter');
       sel.innerHTML = '<option value="">Select branch…</option>';
       filterSel.innerHTML = '<option value="">All Branches</option>';
-      _adm__adm_allBranches.filter(b => b.status === 'Active').forEach(b => {
+      _adm_allBranches.filter(b => b.status === 'Active').forEach(b => {
         sel.insertAdjacentHTML('beforeend', `<option value="${b.branch_id}">${escHtml(b.branch_name)}</option>`);
         filterSel.insertAdjacentHTML('beforeend', `<option value="${b.branch_id}">${escHtml(b.branch_name)}</option>`);
       });
