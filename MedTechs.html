@@ -380,14 +380,14 @@
   };
 
   // ── State ────────────────────────────────────────────────────────
-  var _mt__mt_allMedTechs    = [];
-  var _mt__mt_allBranches    = [];
-  var _mt__mt_currentSession = null;
-  var _mt__mt_isBranchAdmin  = false;
-  var _mt__mt_isSuperAdmin   = false;
-  var _mt__mt_editingId      = null;
-  var _mt__mt_deletingId     = null;
-  var _mt__mt_selectedRole   = '';
+  var _mt_allMedTechs    = [];
+  var _mt_allBranches    = [];
+  var _mt_currentSession = null;
+  var _mt_isBranchAdmin  = false;
+  var _mt_isSuperAdmin   = false;
+  var _mt_editingId      = null;
+  var _mt_deletingId     = null;
+  var _mt_selectedRole   = '';
 
   function _mt_getToken() {
     return localStorage.getItem('alab_token') || '';
@@ -398,7 +398,7 @@
       window.top.location.href = url + '?page=Login';
     }).getScriptUrl();
   }
-  function _mt_mt_checkExpired(res) {
+  function mt_checkExpired(res) {
     if (res && res.expired) { _handleExpired(); return true; }
     return false;
   }
@@ -407,11 +407,11 @@
     buildRoleGrid();
     google.script.run
       .withSuccessHandler(res => {
-        if (_mt_mt_checkExpired(res)) return;
+        if (mt_checkExpired(res)) return;
         if (res.success) {
-          _mt__mt_currentSession = res.data;
-          _mt__mt_isBranchAdmin  = _mt__mt_currentSession.role === 'branch_admin';
-          _mt__mt_isSuperAdmin   = _mt__mt_currentSession.role === 'super_admin';
+          _mt_currentSession = res.data;
+          _mt_isBranchAdmin  = _mt_currentSession.role === 'branch_admin';
+          _mt_isSuperAdmin   = _mt_currentSession.role === 'super_admin';
           applyRoleUI();
         }
         loadBranches();
