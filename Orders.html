@@ -1,17 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Orders — A-Lab</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; }
-    body { font-family: 'DM Sans', sans-serif; background: #f8fafc; color: #1e293b; margin: 0; overflow-x: hidden; }
-
-    .card { background:#fff; border:1px solid #e2e8f0; border-radius:1rem; box-shadow:0 1px 3px rgba(0,0,0,.06); }
-    .stat-card { background:#fff; border:1px solid #e2e8f0; border-radius:1rem; padding:1.1rem 1.25rem; }
+<style>
+    .ord-card { background:#fff; border:1px solid #e2e8f0; border-radius:1rem; box-shadow:0 1px 3px rgba(0,0,0,.06); }
+    .ord-stat-card { background:#fff; border:1px solid #e2e8f0; border-radius:1rem; padding:1.1rem 1.25rem; }
 
     table { border-collapse:collapse; width:100%; }
     th { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:#94a3b8;
@@ -182,9 +171,7 @@
     ::-webkit-scrollbar { width:5px; }
     ::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:99px; }
   </style>
-</head>
-<body>
-<div id="toast"></div>
+<div id="ord-toast"></div>
 
 <!-- ══════════════════════════════════════════════════════════════
      ORDERS PAGE
@@ -208,12 +195,12 @@
 
   <!-- STATS -->
   <div class="grid grid-cols-3 sm:grid-cols-6 gap-3 mb-5 fade-up d1">
-    <div class="stat-card"><p id="s-total"      class="text-2xl font-bold text-slate-800">—</p><p class="text-xs text-slate-400 mt-0.5">Total</p></div>
-    <div class="stat-card"><p id="s-draft"      class="text-2xl font-bold text-slate-400">—</p><p class="text-xs text-slate-400 mt-0.5">Draft</p></div>
-    <div class="stat-card"><p id="s-open"       class="text-2xl font-bold text-blue-500">—</p><p class="text-xs text-slate-400 mt-0.5">Open</p></div>
-    <div class="stat-card"><p id="s-paid"       class="text-2xl font-bold text-emerald-600">—</p><p class="text-xs text-slate-400 mt-0.5">Paid</p></div>
-    <div class="stat-card"><p id="s-inprogress" class="text-2xl font-bold text-amber-500">—</p><p class="text-xs text-slate-400 mt-0.5">In Progress</p></div>
-    <div class="stat-card"><p id="s-released"   class="text-2xl font-bold text-purple-500">—</p><p class="text-xs text-slate-400 mt-0.5">Released</p></div>
+    <div class="ord-stat-card"><p id="ord-s-total"      class="text-2xl font-bold text-slate-800">—</p><p class="text-xs text-slate-400 mt-0.5">Total</p></div>
+    <div class="ord-stat-card"><p id="ord-s-draft"      class="text-2xl font-bold text-slate-400">—</p><p class="text-xs text-slate-400 mt-0.5">Draft</p></div>
+    <div class="ord-stat-card"><p id="ord-s-open"       class="text-2xl font-bold text-blue-500">—</p><p class="text-xs text-slate-400 mt-0.5">Open</p></div>
+    <div class="ord-stat-card"><p id="ord-s-paid"       class="text-2xl font-bold text-emerald-600">—</p><p class="text-xs text-slate-400 mt-0.5">Paid</p></div>
+    <div class="ord-stat-card"><p id="ord-s-inprogress" class="text-2xl font-bold text-amber-500">—</p><p class="text-xs text-slate-400 mt-0.5">In Progress</p></div>
+    <div class="ord-stat-card"><p id="ord-s-released"   class="text-2xl font-bold text-purple-500">—</p><p class="text-xs text-slate-400 mt-0.5">Released</p></div>
   </div>
 
   <!-- FILTERS -->
@@ -222,9 +209,9 @@
       <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
       </svg>
-      <input id="search-input" type="text" placeholder="Search order no., patient, doctor…" oninput="filterTable()" class="search-box"/>
+      <input id="ord-search-input" type="text" placeholder="Search order no., patient, doctor…" oninput="filterTable()" class="search-box"/>
     </div>
-    <select id="status-filter" onchange="filterTable()"
+    <select id="ord-status-filter" onchange="filterTable()"
       class="border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-600 bg-white outline-none focus:border-blue-400 cursor-pointer">
       <option value="">All Status</option>
       <option value="DRAFT">Draft</option>
@@ -237,21 +224,21 @@
   </div>
 
   <!-- TABLE -->
-  <div class="card fade-up d3">
-    <div id="loading-state" class="flex flex-col items-center justify-center py-20 gap-3">
+  <div class="ord-card fade-up d3">
+    <div id="ord-loading-state" class="flex flex-col items-center justify-center py-20 gap-3">
       <div class="w-8 h-8 rounded-full animate-spin" style="border:2px solid #bbd8ff;border-top-color:#2f76f5"></div>
       <p class="text-xs text-slate-400">Loading orders…</p>
     </div>
-    <div id="empty-state" class="hidden flex-col items-center justify-center py-20 text-center gap-3">
+    <div id="ord-empty-state" class="hidden flex-col items-center justify-center py-20 text-center gap-3">
       <div class="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center">
         <svg class="w-8 h-8 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v8.5L4.5 18A2 2 0 006.4 21h11.2a2 2 0 001.9-2.5L15 11.5V3M9 3h6M8 15h8"/>
         </svg>
       </div>
       <p class="text-slate-500 text-sm font-semibold">No orders found</p>
-      <p id="empty-sub" class="text-slate-400 text-xs">No orders yet.</p>
+      <p id="ord-empty-sub" class="text-slate-400 text-xs">No orders yet.</p>
     </div>
-    <div id="table-wrap" class="hidden overflow-x-auto">
+    <div id="ord-table-wrap" class="hidden overflow-x-auto">
       <table>
         <thead>
           <tr>
@@ -265,7 +252,7 @@
             <th class="px-4 text-right">Action</th>
           </tr>
         </thead>
-        <tbody id="order-tbody"></tbody>
+        <tbody id="ord-order-tbody"></tbody>
       </table>
     </div>
   </div>
@@ -705,47 +692,52 @@
 
 
 <script>
-  var alab_token     = (new URLSearchParams(window.location.search)).get('token') || localStorage.getItem('alab_token') || '';
-  var currentSession = null;
-  var allOrders      = [];
-  var viewingOrder   = null;
-  var viewingItems   = [];
-  var uploadingItem  = null;
-  var selectedFile   = null;
-  var payingOrder    = null;
-  var isTech         = false;
-  var isBranchAdmin  = false;
-  var isSuperAdmin   = false;
-  var isDoctor       = false;
+  function _ord_getToken() {
+    return (typeof alab_token !== 'undefined' ? alab_token : null)
+      || localStorage.getItem('alab_token') || '';
+  }
 
-  // ── Wizard state ──────────────────────────────────────────────
-  var wCurrentStep    = 1;
-  var wSelectedPatient = null;
-  var wAllPatients    = [];
-  var wAllServices    = [];
-  var wAllPackages    = [];
-  var wAllDiscounts   = [];
-  var wSelectedItems  = {};
-  var wEnrollOpen     = false;
-  var wDataLoaded     = false;
-
-  // ── Session check ─────────────────────────────────────────────
-  function _checkExpired(res) {
+  function _checkExpired_ord(res) {
     if (res && res.expired) {
       localStorage.removeItem('alab_token');
-      google.script.run.withSuccessHandler(function(url) {
-        window.top.location.href = url + '?page=Login';
-      }).getScriptUrl();
+      window.top.location.href = (typeof baseUrl !== 'undefined' ? baseUrl : '') + '?page=Login';
       return true;
     }
     return false;
   }
 
-  // ── Init ──────────────────────────────────────────────────────
-  document.addEventListener('DOMContentLoaded', function() {
+  // alias so all existing callOrder/reloadView/wLoad* etc. keep working
+  function _checkExpired(res) { return _checkExpired_ord(res); }
+
+  var currentSession   = null;
+  var allOrders        = [];
+  var viewingOrder     = null;
+  var viewingItems     = [];
+  var uploadingItem    = null;
+  var selectedFile     = null;
+  var payingOrder      = null;
+  var isTech           = false;
+  var isBranchAdmin    = false;
+  var isSuperAdmin     = false;
+  var isDoctor         = false;
+
+  // ── Wizard state ──────────────────────────────────────────────
+  var wCurrentStep     = 1;
+  var wSelectedPatient = null;
+  var wAllPatients     = [];
+  var wAllServices     = [];
+  var wAllPackages     = [];
+  var wAllDiscounts    = [];
+  var wSelectedItems   = {};
+  var wEnrollOpen      = false;
+  var wDataLoaded      = false;
+
+  // ── Init — called once by switchTab() ─────────────────────────
+  function init_Orders() {
+    var token = _ord_getToken();
     google.script.run
       .withSuccessHandler(function(res) {
-        if (_checkExpired(res)) return;
+        if (_checkExpired_ord(res)) return;
         if (!res.success) return;
         currentSession = res.data;
         isTech        = currentSession.role === 'medtech';
@@ -753,19 +745,20 @@
         isSuperAdmin  = currentSession.role === 'super_admin';
         isDoctor      = currentSession.role === 'doctor';
 
-        if (isTech) {
-          document.getElementById('create-btn').classList.remove('hidden');
-          document.getElementById('create-btn').classList.add('flex');
-        }
-        document.getElementById('header-sub').textContent =
+        var btn = document.getElementById('ord-create-btn');
+        if (isTech && btn) { btn.classList.remove('hidden'); btn.classList.add('flex'); }
+
+        var sub = document.getElementById('ord-header-sub');
+        if (sub) sub.textContent =
           isSuperAdmin ? 'All branches — read only.' :
           isDoctor     ? 'Your referrals — read only.' :
           'Manage lab orders for your branch.';
+
         loadOrders();
       })
       .withFailureHandler(function(){})
-      .handleAdminRequest('GET_SESSION', {}, alab_token);
-  });
+      .handleAdminRequest('GET_SESSION', {}, token);
+  }
 
   // ══════════════════════════════════════════════════════════════
   // ORDERS LIST
@@ -791,21 +784,21 @@
         showEmpty('Error loading orders.');
         showToast(err.message, 'error');
       })
-      .handleOrderRequest('GET_ORDERS', {}, alab_token);
+      .handleOrderRequest('GET_ORDERS', {}, _ord_getToken());
   }
 
   function updateStats(data) {
-    document.getElementById('s-total').textContent      = data.length;
-    document.getElementById('s-draft').textContent      = data.filter(function(o){return o.status==='DRAFT';}).length;
-    document.getElementById('s-open').textContent       = data.filter(function(o){return o.status==='OPEN';}).length;
-    document.getElementById('s-paid').textContent       = data.filter(function(o){return o.status==='PAID';}).length;
-    document.getElementById('s-inprogress').textContent = data.filter(function(o){return ['IN_PROGRESS','FOR_RELEASE'].includes(o.status);}).length;
-    document.getElementById('s-released').textContent   = data.filter(function(o){return o.status==='RELEASED';}).length;
+    document.getElementById('ord-s-total').textContent      = data.length;
+    document.getElementById('ord-s-draft').textContent      = data.filter(function(o){return o.status==='DRAFT';}).length;
+    document.getElementById('ord-s-open').textContent       = data.filter(function(o){return o.status==='OPEN';}).length;
+    document.getElementById('ord-s-paid').textContent       = data.filter(function(o){return o.status==='PAID';}).length;
+    document.getElementById('ord-s-inprogress').textContent = data.filter(function(o){return ['IN_PROGRESS','FOR_RELEASE'].includes(o.status);}).length;
+    document.getElementById('ord-s-released').textContent   = data.filter(function(o){return o.status==='RELEASED';}).length;
   }
 
   function filterTable() {
-    var q  = document.getElementById('search-input').value.toLowerCase();
-    var st = document.getElementById('status-filter').value;
+    var q  = document.getElementById('ord-search-input').value.toLowerCase();
+    var st = document.getElementById('ord-status-filter').value;
     var f  = allOrders.filter(function(o) {
       var mq = !q || o.order_number.toLowerCase().includes(q) ||
                o.patient_snapshot.toLowerCase().includes(q) ||
@@ -818,13 +811,13 @@
   }
 
   function renderTable(data) {
-    var tbody = document.getElementById('order-tbody');
-    var wrap  = document.getElementById('table-wrap');
-    var empty = document.getElementById('empty-state');
+    var tbody = document.getElementById('ord-order-tbody');
+    var wrap  = document.getElementById('ord-table-wrap');
+    var empty = document.getElementById('ord-empty-state');
     if (!data.length) {
       wrap.classList.add('hidden');
       empty.classList.remove('hidden'); empty.classList.add('flex');
-      document.getElementById('empty-sub').textContent =
+      document.getElementById('ord-empty-sub').textContent =
         allOrders.length ? 'No orders match your filters.' :
         isTech ? 'Create the first order to get started.' : 'No orders yet.';
       return;
@@ -1550,14 +1543,14 @@
   }
   function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   function showLoading(v) {
-    document.getElementById('loading-state').classList.toggle('hidden', !v);
-    if (v) { document.getElementById('table-wrap').classList.add('hidden'); document.getElementById('empty-state').classList.add('hidden'); }
+    document.getElementById('ord-loading-state').classList.toggle('hidden', !v);
+    if (v) { document.getElementById('ord-table-wrap').classList.add('hidden'); document.getElementById('ord-empty-state').classList.add('hidden'); }
   }
   function showEmpty(msg) {
-    document.getElementById('empty-state').classList.remove('hidden');
-    document.getElementById('empty-state').classList.add('flex');
-    document.getElementById('table-wrap').classList.add('hidden');
-    if (msg) document.getElementById('empty-sub').textContent = msg;
+    document.getElementById('ord-empty-state').classList.remove('hidden');
+    document.getElementById('ord-empty-state').classList.add('flex');
+    document.getElementById('ord-table-wrap').classList.add('hidden');
+    if (msg) document.getElementById('ord-empty-sub').textContent = msg;
   }
   function showToast(msg, type) {
     var el = document.createElement('div');
@@ -1566,7 +1559,7 @@
       (type==='error' ? '<path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>'
                       : '<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>') +
       '</svg><span>' + escHtml(msg) + '</span>';
-    document.getElementById('toast').appendChild(el);
+    document.getElementById('ord-toast').appendChild(el);
     setTimeout(function(){ el.remove(); }, 4000);
   }
 
@@ -1580,5 +1573,3 @@
     }
   });
 </script>
-</body>
-</html>
