@@ -251,19 +251,19 @@
 <div id="toast"></div>
 
 <script>
-  var _pkg__pkg_allPackages    = [];
-  var _pkg__pkg_allLabServices = [];
-  var _pkg__pkg_currentSession = null;
-  var _pkg__pkg_isSuperAdmin   = false;
-  var _pkg__pkg_isBranchAdmin  = false;
-  var _pkg__pkg_editingId      = null;
-  var _pkg__pkg_deletingId     = null;
+  var _pkg_allPackages    = [];
+  var _pkg_allLabServices = [];
+  var _pkg_currentSession = null;
+  var _pkg_isSuperAdmin   = false;
+  var _pkg_isBranchAdmin  = false;
+  var _pkg_editingId      = null;
+  var _pkg_deletingId     = null;
 
   function _pkg_getToken() {
     return (typeof alab_token !== 'undefined' ? alab_token : null)
       || localStorage.getItem('alab_token') || '';
   }
-  function _pkg_pkg_checkExpired(res) {
+  function pkg_checkExpired(res) {
     if (res && res.expired) {
       localStorage.removeItem('alab_token');
       window.top.location.href = (typeof baseUrl !== 'undefined' ? baseUrl : '') + '?page=Login';
