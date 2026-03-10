@@ -269,11 +269,13 @@ function updatePackage(payload, token) {
 
     const now = new Date().toISOString();
     const row = idx + 1;
-    sh.getRange(row, 2).setValue((payload.package_code || '').trim().toUpperCase());
-    sh.getRange(row, 3).setValue(payload.package_name.trim());
-    sh.getRange(row, 4).setValue(payload.description  || '');
-    sh.getRange(row, 5).setValue(Number(payload.default_fee) || 0);
-    sh.getRange(row, 6).setValue(payload.is_active !== false);
+    sh.getRange(row, 2, 1, 5).setValues([[
+      (payload.package_code || '').trim().toUpperCase(),
+      payload.package_name.trim(),
+      payload.description  || '',
+      Number(payload.default_fee) || 0,
+      payload.is_active !== false
+    ]]);
     sh.getRange(row, 9).setValue(now);
 
     // Replace lab service assignments

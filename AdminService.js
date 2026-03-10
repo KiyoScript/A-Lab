@@ -275,11 +275,15 @@ function updateSuperAdmin(payload) {
 
     const now = new Date().toISOString();
     const row = idx + 1;
-    sh.getRange(row, 2).setValue(payload.full_name.trim());
-    sh.getRange(row, 3).setValue(payload.username.trim().toLowerCase());
-    if (payload.password && payload.password.trim() !== '')
-      sh.getRange(row, 4).setValue(_hashPassword(payload.password.trim()));
-    sh.getRange(row, 5).setValue(payload.status || 'Active');
+    var pwHash = (payload.password && payload.password.trim() !== '')
+      ? _hashPassword(payload.password.trim())
+      : String(data[idx]);
+    sh.getRange(row, 2, 1, 4).setValues([[
+      payload.full_name.trim(),
+      payload.username.trim().toLowerCase(),
+      pwHash,
+      payload.status || 'Active'
+    ]]);
     sh.getRange(row, 7).setValue(now);
 
     return { success: true };
@@ -420,10 +424,14 @@ function updateBranchAdmin(payload) {
     // ── Same branch — just update in place ────────────────────────
     if (!newBranchId || newBranchId === currentBranchId) {
       const row = foundIdx + 1;
-      foundAdminSh.getRange(row, 2).setValue(payload.full_name.trim());
-      foundAdminSh.getRange(row, 3).setValue(payload.username.trim().toLowerCase());
-      if (payload.password && payload.password.trim() !== '')
-        foundAdminSh.getRange(row, 4).setValue(_hashPassword(payload.password.trim()));
+      var pwHash = (payload.password && payload.password.trim() !== '')
+        ? _hashPassword(payload.password.trim())
+        : String(existingRow);
+      foundAdminSh.getRange(row, 2, 1, 3).setValues([[
+        payload.full_name.trim(),
+        payload.username.trim().toLowerCase(),
+        pwHash
+      ]]);
       foundAdminSh.getRange(row, 7).setValue(payload.status || 'Active');
       foundAdminSh.getRange(row, 9).setValue(now);
       return { success: true };

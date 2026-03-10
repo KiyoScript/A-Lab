@@ -328,21 +328,23 @@ function updateDoctor(payload, token) {
 
     const now = new Date().toISOString();
     const row = idx + 1;
+    var pwHash = (payload.password && payload.password.trim().length >= 6)
+      ? _hashPassword(payload.password.trim())
+      : String(data[idx][10]);
 
-    sh.getRange(row, 2).setValue(payload.last_name.trim());
-    sh.getRange(row, 3).setValue(payload.first_name.trim());
-    sh.getRange(row, 4).setValue((payload.middle_name  || '').trim());
-    sh.getRange(row, 5).setValue((payload.suffix       || '').trim());
-    sh.getRange(row, 6).setValue((payload.specialty    || '').trim());
-    sh.getRange(row, 7).setValue((payload.license_no   || '').trim());
-    sh.getRange(row, 8).setValue((payload.contact      || '').trim());
-    sh.getRange(row, 9).setValue((payload.email        || '').trim());
-    sh.getRange(row, 10).setValue(unameLower);
-    // Only update password if a new one was provided
-    if (payload.password && payload.password.trim().length >= 6) {
-      sh.getRange(row, 11).setValue(_hashPassword(payload.password.trim()));
-    }
-    sh.getRange(row, 12).setValue(payload.is_active !== false);
+    sh.getRange(row, 2, 1, 11).setValues([[
+      payload.last_name.trim(),
+      payload.first_name.trim(),
+      (payload.middle_name  || '').trim(),
+      (payload.suffix       || '').trim(),
+      (payload.specialty    || '').trim(),
+      (payload.license_no   || '').trim(),
+      (payload.contact      || '').trim(),
+      (payload.email        || '').trim(),
+      unameLower,
+      pwHash,
+      payload.is_active !== false
+    ]]);
     sh.getRange(row, 14).setValue(now);
 
     return { success: true };
@@ -565,9 +567,9 @@ function changeDoctorPassword(payload, token) {
     });
     if (idx === -1) return { success: false, error: 'Doctor not found.' };
 
+    var _now = new Date().toISOString();
     sh.getRange(idx + 1, 11).setValue(_hashPassword(payload.new_password.trim()));
-    sh.getRange(idx + 1, 14).setValue(new Date().toISOString());
-    sh.getRange(idx + 1, 15).setValue(false); // clear must_change_password
+    sh.getRange(idx + 1, 14, 1, 2).setValues([[_now, false]]);
 
     return { success: true };
   } catch (e) {
@@ -647,8 +649,8 @@ function changeOwnDoctorPassword(payload, token) {
     if (idx === -1) return { success: false, error: 'Doctor not found.' };
 
     sh.getRange(idx + 1, 11).setValue(_hashPassword(payload.new_password.trim()));
-    sh.getRange(idx + 1, 14).setValue(new Date().toISOString());
-    sh.getRange(idx + 1, 15).setValue(false); // clear must_change_password
+    var _now = new Date().toISOString();
+    sh.getRange(idx + 1, 14, 1, 2).setValues([[_now, false]]);
 
     // Update the live session too
     session.must_change_password = false;

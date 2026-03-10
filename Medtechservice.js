@@ -244,15 +244,19 @@ function updateMedTech(payload, token) {
 
     const now = new Date().toISOString();
     const row = foundIdx + 1;
+    var currentData = foundSh.getRange(row, 2, 1, 7).getValues();
 
-    if (payload.last_name)   foundSh.getRange(row, 2).setValue(payload.last_name.trim());
-    if (payload.first_name)  foundSh.getRange(row, 3).setValue(payload.first_name.trim());
-    if (payload.middle_name !== undefined) foundSh.getRange(row, 4).setValue((payload.middle_name || '').trim());
-    if (payload.email)       foundSh.getRange(row, 5).setValue(payload.email.trim().toLowerCase());
-    if (payload.password && payload.password.trim() !== '')
-      foundSh.getRange(row, 6).setValue(_hashPassword(payload.password.trim()));
-    if (payload.role)   foundSh.getRange(row, 7).setValue(payload.role.trim());
-    if (payload.status) foundSh.getRange(row, 8).setValue(payload.status);
+    var newValues = [
+      payload.last_name   ? payload.last_name.trim()         : currentData,
+      payload.first_name  ? payload.first_name.trim()        : currentData,
+      payload.middle_name !== undefined ? (payload.middle_name || '').trim() : currentData,
+      payload.email       ? payload.email.trim().toLowerCase(): currentData,
+      (payload.password && payload.password.trim() !== '')
+        ? _hashPassword(payload.password.trim()) : currentData,
+      payload.role   ? payload.role.trim()   : currentData,
+      payload.status ? payload.status        : currentData
+    ];
+    foundSh.getRange(row, 2, 1, 7).setValues([newValues]);
     foundSh.getRange(row, 12).setValue(now);
 
     return { success: true };

@@ -324,8 +324,8 @@ function createOrder(payload, token) {
     ]);
 
     const itemSh = _getOrderItemSheet(ssId);
-    payload.items.forEach(function(item) {
-      itemSh.appendRow([
+    var itemRows = payload.items.map(function(item) {
+      return [
         'ITM-' + Utilities.getUuid().substring(0, 8).toUpperCase(),
         orderId,
         item.item_type          || 'service',
@@ -333,8 +333,11 @@ function createOrder(payload, token) {
         item.item_name_snapshot || '',
         Number(item.fee)        || 0,
         'PENDING', '', '', '', '', '', '', '', '', now
-      ]);
+      ];
     });
+    if (itemRows.length > 0) {
+      itemSh.getRange(itemSh.getLastRow() + 1, 1, itemRows.length, 16).setValues(itemRows);
+    }
 
     return {
       success: true,
@@ -405,10 +408,8 @@ function recordPayment(payload, token) {
     const change          = Math.max(amountPaid - total, 0);
 
     const now = new Date().toISOString();
-    sh.getRange(idx + 1, 7).setValue('PAID');
-    sh.getRange(idx + 1, 8).setValue(payload.payment_method);
-    sh.getRange(idx + 1, 11).setValue(amountPaid);
-    sh.getRange(idx + 1, 12).setValue(change);
+    sh.getRange(idx + 1, 7, 1, 2).setValues([['PAID', payload.payment_method]]);
+    sh.getRange(idx + 1, 11, 1, 2).setValues([[amountPaid, change]]);
     sh.getRange(idx + 1, 17).setValue(now);
 
     return { success: true, data: { status: 'PAID', amount_paid: amountPaid, change, total } };
@@ -448,8 +449,7 @@ function startItem(payload, token) {
 
     const now = new Date().toISOString();
     itemResult.sh.getRange(itemResult.idx + 1, 7).setValue('RUNNING');
-    itemResult.sh.getRange(itemResult.idx + 1, 12).setValue(session.full_name || session.username || '');
-    itemResult.sh.getRange(itemResult.idx + 1, 13).setValue(now);
+    itemResult.sh.getRange(itemResult.idx + 1, 12, 1, 2).setValues([[session.full_name || session.username || '', now]]);
 
     // Auto-advance order to IN_PROGRESS
     if (orderStatus === 'PAID') {
@@ -485,8 +485,7 @@ function completeItem(payload, token) {
 
     const now = new Date().toISOString();
     itemResult.sh.getRange(itemResult.idx + 1, 7).setValue('DONE');
-    itemResult.sh.getRange(itemResult.idx + 1, 14).setValue(session.full_name || session.username || '');
-    itemResult.sh.getRange(itemResult.idx + 1, 15).setValue(now);
+    itemResult.sh.getRange(itemResult.idx + 1, 14, 1, 2).setValues([[session.full_name || session.username || '', now]]);
 
     // Check if all items DONE → advance order to FOR_RELEASE
     const freshData  = itemResult.sh.getDataRange().getValues();
@@ -564,10 +563,9 @@ function uploadResult(payload, token) {
     const now     = new Date().toISOString();
 
     // Update item
-    itemResult.sh.getRange(itemResult.idx + 1, 8).setValue('FOR_VERIFICATION');
-    itemResult.sh.getRange(itemResult.idx + 1, 9).setValue(fileUrl);
-    itemResult.sh.getRange(itemResult.idx + 1, 10).setValue(fileId);
-    itemResult.sh.getRange(itemResult.idx + 1, 11).setValue(payload.file_name);
+    itemResult.sh.getRange(itemResult.idx + 1, 8, 1, 4).setValues([[
+      'FOR_VERIFICATION', fileUrl, fileId, payload.file_name
+    ]]);
 
     return {
       success: true,
@@ -626,10 +624,7 @@ function rejectResult(payload, token) {
       return { success: false, error: 'Result cannot be rejected at this stage.' };
 
     // Clear result so it can be re-uploaded
-    itemResult.sh.getRange(itemResult.idx + 1, 8).setValue('DRAFT');
-    itemResult.sh.getRange(itemResult.idx + 1, 9).setValue('');
-    itemResult.sh.getRange(itemResult.idx + 1, 10).setValue('');
-    itemResult.sh.getRange(itemResult.idx + 1, 11).setValue('');
+    itemResult.sh.getRange(itemResult.idx + 1, 8, 1, 4).setValues([['DRAFT', '', '', '']]);
 
     // Revert order from FOR_RELEASE → IN_PROGRESS
     const orderResult = _findOrderRow(ssId, payload.order_id);

@@ -163,9 +163,7 @@ function updateBranchLabService(payload, token) {
       // If disabling:
       if (idx !== -1) {
         // Update existing row
-        sh.getRange(idx + 1, 3).setValue(false);
-        sh.getRange(idx + 1, 4).setValue(now);
-        sh.getRange(idx + 1, 5).setValue(updater);
+        sh.getRange(idx + 1, 3, 1, 3).setValues([[false, now, updater]]);
       } else {
         // Insert new disabled row
         sh.appendRow([

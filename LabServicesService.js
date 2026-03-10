@@ -166,13 +166,15 @@ function updateLabService(payload, token) {
 
     const now = new Date().toISOString();
     const row = idx + 1;
-    sh.getRange(row, 2).setValue(payload.lab_code.trim().toUpperCase());
-    sh.getRange(row, 3).setValue(payload.lab_name.trim());
-    sh.getRange(row, 4).setValue(payload.description   || '');
-    sh.getRange(row, 5).setValue(Number(payload.default_fee) || 0);
-    sh.getRange(row, 6).setValue(Number(payload.tat_hours)   || 0);
-    sh.getRange(row, 7).setValue(payload.specimen_type || '');
-    sh.getRange(row, 8).setValue(payload.is_active !== false);
+    sh.getRange(row, 2, 1, 7).setValues([[
+      payload.lab_code.trim().toUpperCase(),
+      payload.lab_name.trim(),
+      payload.description   || '',
+      Number(payload.default_fee) || 0,
+      Number(payload.tat_hours)   || 0,
+      payload.specimen_type || '',
+      payload.is_active !== false
+    ]]);
     sh.getRange(row, 10).setValue(now);
 
     return { success: true };

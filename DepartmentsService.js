@@ -190,8 +190,10 @@ function updateDepartment(payload, token) {
 
     const now = new Date().toISOString();
     const row = idx + 1;
-    sh.getRange(row, 2).setValue(payload.dept_name.trim());
-    sh.getRange(row, 3).setValue(payload.is_active !== false);
+    sh.getRange(row, 2, 1, 2).setValues([[
+      payload.dept_name.trim(),
+      payload.is_active !== false
+    ]]);
     sh.getRange(row, 5).setValue(now);
 
     return { success: true };

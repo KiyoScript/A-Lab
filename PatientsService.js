@@ -364,14 +364,16 @@ function updatePatient(payload, token) {
 
     const now = new Date().toISOString();
     const row = idx + 1;
-    sh.getRange(row, 2).setValue(payload.last_name.trim());
-    sh.getRange(row, 3).setValue(payload.first_name.trim());
-    sh.getRange(row, 4).setValue((payload.middle_name || '').trim());
-    sh.getRange(row, 5).setValue(payload.sex);
-    sh.getRange(row, 6).setValue(payload.birth_date);
-    sh.getRange(row, 7).setValue(payload.contact_number.trim());
-    sh.getRange(row, 8).setValue((payload.email_address || '').trim());
-    sh.getRange(row, 9).setValue(payload.address.trim());
+    sh.getRange(row, 2, 1, 8).setValues([[
+      payload.last_name.trim(),
+      payload.first_name.trim(),
+      (payload.middle_name || '').trim(),
+      payload.sex,
+      payload.birth_date,
+      payload.contact_number.trim(),
+      (payload.email_address || '').trim(),
+      payload.address.trim()
+    ]]);
     sh.getRange(row, 12).setValue(now);
 
     // Update discount assignments

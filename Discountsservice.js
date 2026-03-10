@@ -198,11 +198,13 @@ function updateDiscount(payload, token) {
 
     const now = new Date().toISOString();
     const row = idx + 1;
-    sh.getRange(row, 2).setValue(payload.discount_name.trim());
-    sh.getRange(row, 3).setValue(payload.discount_type);
-    sh.getRange(row, 4).setValue(value);
-    sh.getRange(row, 5).setValue((payload.description || '').trim());
-    sh.getRange(row, 6).setValue(payload.is_active !== undefined ? Boolean(payload.is_active) : true);
+    sh.getRange(row, 2, 1, 5).setValues([[
+      payload.discount_name.trim(),
+      payload.discount_type,
+      value,
+      (payload.description || '').trim(),
+      payload.is_active !== undefined ? Boolean(payload.is_active) : true
+    ]]);
     sh.getRange(row, 8).setValue(now);
 
     return { success: true };

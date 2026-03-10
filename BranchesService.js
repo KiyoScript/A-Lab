@@ -310,12 +310,14 @@ function updateBranch(payload) {
 
     const now = new Date().toISOString();
     const row = idx + 1;
-    sh.getRange(row, 2).setValue(payload.branch_name.trim());
-    sh.getRange(row, 3).setValue(payload.branch_code.trim().toUpperCase());
-    sh.getRange(row, 4).setValue(payload.address || '');
-    sh.getRange(row, 5).setValue(payload.contact || '');
-    sh.getRange(row, 6).setValue(payload.email   || '');
-    sh.getRange(row, 7).setValue(payload.status  || 'Active');
+    sh.getRange(row, 2, 1, 6).setValues([[
+      payload.branch_name.trim(),
+      payload.branch_code.trim().toUpperCase(),
+      payload.address || '',
+      payload.contact || '',
+      payload.email   || '',
+      payload.status  || 'Active'
+    ]]);
     sh.getRange(row, 11).setValue(now);
 
     try {
