@@ -212,7 +212,7 @@
           class="w-8 h-8 rounded-full avatar-ring" alt="User"/>
     </header>
 
-    <main class="flex-1 overflow-hidden bg-slate-50 relative">
+    <main class="flex-1 overflow-hidden bg-white relative">
 
       <!-- ─────────────────────────────────────────────────────
            Init loading overlay — shown until session resolves.
@@ -228,7 +228,7 @@
            Switching tabs = CSS display toggle only.
            No network requests on tab switch.
       ───────────────────────────────────────────────────────── -->
-      <div id="tab-content" class="w-full h-full overflow-hidden">
+      <div id="tab-content" class="w-full h-full overflow-y-auto">
         <div id="tab-Dashboard"                  class="tab-pane"><?!= include('Dashboard') ?></div>
         <div id="tab-Orders"                     class="tab-pane"><?!= include('Orders') ?></div>
         <div id="tab-Branches"                   class="tab-pane"><?!= include('Branches') ?></div>
