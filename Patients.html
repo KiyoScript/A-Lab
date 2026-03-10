@@ -376,10 +376,10 @@ function init_Patients() {
   }
   google.script.run
     .withSuccessHandler(function(res) {
-      if (_checkExpired(res)) return;
+      if (_pat_checkExpired(res)) return;
       if (res.success) {
-        currentSession = res.data;
-        isSuperAdmin   = currentSession.role === 'super_admin';
+        _pat_currentSession = res.data;
+        _pat_isSuperAdmin   = _pat_currentSession.role === 'super_admin';
         applySessionUI();
       }
       loadData();
@@ -389,14 +389,14 @@ function init_Patients() {
 }
 
   function applySessionUI() {
-    if (isSuperAdmin) {
+    if (_pat_isSuperAdmin) {
       document.getElementById('branch-filter').classList.remove('hidden');
       document.getElementById('branch-col').classList.remove('hidden');
       document.getElementById('add-patient-btn').classList.add('hidden');
       document.getElementById('view-only-badge').classList.remove('hidden');
       document.getElementById('view-only-badge').classList.add('flex');
       document.getElementById('th-actions').classList.add('hidden');
-    } else if (currentSession && currentSession.role === 'medtech') {
+    } else if (_pat_currentSession && _pat_currentSession.role === 'medtech') {
       document.getElementById('add-patient-btn').classList.remove('hidden');
       document.getElementById('add-patient-btn').classList.add('flex');
     }
@@ -410,13 +410,13 @@ function init_Patients() {
 
     function tryRender() {
       if (!branchDone || !discDone || !patDone) return;
-      allBranches  = branchData;
-      allDiscounts = discData.filter(function(d) { return d.is_active; });
-      allPatients  = patData;
+      _pat_allBranches  = branchData;
+      _pat_allDiscounts = discData.filter(function(d) { return d.is_active; });
+      _pat_allPatients  = patData;
       populateBranchFilter();
       showLoading(false);
-      renderTable(allPatients);
-      updateStats(allPatients);
+      renderTable(_pat_allPatients);
+      updateStats(_pat_allPatients);
     }
 
     // Load branches (for filter + super admin select)
@@ -431,7 +431,7 @@ function init_Patients() {
     // Load discounts (all admin roles)
     google.script.run
       .withSuccessHandler(function(res) {
-        if (_checkExpired(res)) return;
+        if (_pat_checkExpired(res)) return;
         if (res.success) discData = res.data || [];
         discDone = true; tryRender();
       })
@@ -441,7 +441,7 @@ function init_Patients() {
     // Load patients
     google.script.run
       .withSuccessHandler(function(res) {
-        if (_checkExpired(res)) return;
+        if (_pat_checkExpired(res)) return;
         if (res.success) patData = res.data || [];
         patDone = true; tryRender();
       })
@@ -455,7 +455,7 @@ function init_Patients() {
   function populateBranchFilter() {
     var sel = document.getElementById('branch-filter');
     sel.innerHTML = '<option value="">All Branches</option>';
-    allBranches.forEach(function(b) {
+    _pat_allBranches.forEach(function(b) {
       sel.innerHTML += '<option value="' + escHtml(b.branch_id) + '">' + escHtml(b.branch_name) + '</option>';
     });
   }
@@ -483,11 +483,11 @@ function init_Patients() {
         ? '<div class="flex flex-wrap gap-1">' + p.discount_names.map(function(n) { return '<span class="disc-tag">' + escHtml(n) + '</span>'; }).join('') + '</div>'
         : '<span class="text-slate-300 text-xs italic">None</span>';
 
-      var branchCell = isSuperAdmin
+      var branchCell = _pat_isSuperAdmin
         ? '<td class="px-3 py-3.5 text-xs text-slate-500">' + escHtml(p.branch_name || '—') + '</td>'
         : '';
 
-      var actionsCell = isSuperAdmin
+      var actionsCell = _pat_isSuperAdmin
         ? '<td class="px-5 py-3.5 text-right">' +
             '<button onclick="openViewModal(\'' + escHtml(p.patient_id) + '\')" class="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors" title="View">' +
               '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>' +
@@ -521,7 +521,7 @@ function init_Patients() {
 
   // ── View Patient Modal (super admin) ───────────────────────────
   function openViewModal(patientId) {
-    var p = allPatients.find(function(x) { return x.patient_id === patientId; });
+    var p = _pat_allPatients.find(function(x) { return x.patient_id === patientId; });
     if (!p) return;
     document.getElementById('view-last-name').textContent  = p.last_name  || '—';
     document.getElementById('view-first-name').textContent = p.first_name || '—';
@@ -551,7 +551,7 @@ function init_Patients() {
     var q   = document.getElementById('search-input').value.toLowerCase();
     var sex = document.getElementById('sex-filter').value;
     var br  = document.getElementById('branch-filter').value;
-    var filtered = allPatients.filter(function(p) {
+    var filtered = _pat_allPatients.filter(function(p) {
       var fullName = (p.last_name + ' ' + p.first_name + ' ' + p.middle_name).toLowerCase();
       var mq = !q || fullName.includes(q) || (p.contact_number || '').includes(q) || (p.email_address || '').toLowerCase().includes(q);
       var ms = !sex || p.sex === sex;
@@ -564,8 +564,8 @@ function init_Patients() {
 
   // ── Modal ──────────────────────────────────────────────────────
   function openModal(patientId, branchId) {
-    editingId       = patientId || null;
-    editingBranchId = branchId  || null;
+    _pat_editingId       = patientId || null;
+    _pat_editingBranchId = branchId  || null;
     clearForm();
 
     var isEdit = !!patientId;
@@ -574,28 +574,28 @@ function init_Patients() {
     document.getElementById('save-label').textContent     = isEdit ? 'Update Patient' : 'Save Patient';
 
     // Branch field
-    if (isSuperAdmin) {
+    if (_pat_isSuperAdmin) {
       document.getElementById('branch-select-wrap').classList.remove('hidden');
       document.getElementById('branch-badge-wrap').classList.add('hidden');
       // Populate branch select
       var sel = document.getElementById('f-branch-select');
       sel.innerHTML = '<option value="">Select branch…</option>';
-      allBranches.filter(function(b) { return b.status === 'Active'; }).forEach(function(b) {
+      _pat_allBranches.filter(function(b) { return b.status === 'Active'; }).forEach(function(b) {
         sel.innerHTML += '<option value="' + escHtml(b.branch_id) + '">' + escHtml(b.branch_name) + '</option>';
       });
       if (isEdit) sel.value = branchId;
     } else {
       document.getElementById('branch-select-wrap').classList.add('hidden');
       document.getElementById('branch-badge-wrap').classList.remove('hidden');
-      var myBranch = allBranches.find(function(b) { return b.branch_id === currentSession.branch_id; });
-      document.getElementById('branch-badge-label').textContent = myBranch ? myBranch.branch_name : (currentSession.branch_name || '—');
-      document.getElementById('f-branch-id').value = currentSession.branch_id;
+      var myBranch = _pat_allBranches.find(function(b) { return b.branch_id === _pat_currentSession.branch_id; });
+      document.getElementById('branch-badge-label').textContent = myBranch ? myBranch.branch_name : (_pat_currentSession.branch_name || '—');
+      document.getElementById('f-branch-id').value = _pat_currentSession.branch_id;
     }
 
     // Pre-fill if editing
     var assignedDiscIds = [];
     if (isEdit) {
-      var p = allPatients.find(function(x) { return x.patient_id === patientId && x.branch_id === branchId; });
+      var p = _pat_allPatients.find(function(x) { return x.patient_id === patientId && x.branch_id === branchId; });
       if (p) {
         document.getElementById('f-patient-id').value  = p.patient_id;
         document.getElementById('f-branch-id').value   = p.branch_id;
@@ -612,13 +612,13 @@ function init_Patients() {
     }
 
     document.getElementById('modal-backdrop').classList.remove('hidden');
-    renderDiscountChecklist(allDiscounts, assignedDiscIds);
+    renderDiscountChecklist(_pat_allDiscounts, assignedDiscIds);
   }
 
   function closeModal() {
     document.getElementById('modal-backdrop').classList.add('hidden');
     clearForm();
-    editingId = null; editingBranchId = null;
+    _pat_editingId = null; _pat_editingBranchId = null;
   }
 
   function clearForm() {
@@ -689,8 +689,8 @@ function init_Patients() {
 
   // ── Save ───────────────────────────────────────────────────────
   function savePatient() {
-    var branchId = isSuperAdmin
-      ? (editingId ? editingBranchId : document.getElementById('f-branch-select').value)
+    var branchId = _pat_isSuperAdmin
+      ? (_pat_editingId ? _pat_editingBranchId : document.getElementById('f-branch-select').value)
       : document.getElementById('f-branch-id').value;
 
     var lastName  = document.getElementById('f-last-name').value.trim();
@@ -728,14 +728,14 @@ function init_Patients() {
     };
 
     setSaving(true);
-    var action = editingId ? 'UPDATE_PATIENT' : 'CREATE_PATIENT';
+    var action = _pat_editingId ? 'UPDATE_PATIENT' : 'CREATE_PATIENT';
     google.script.run
       .withSuccessHandler(function(res) {
         setSaving(false);
-        if (_checkExpired(res)) return;
+        if (_pat_checkExpired(res)) return;
         if (res.success) {
           closeModal();
-          showToast(editingId ? 'Patient updated!' : 'Patient registered!', 'success');
+          showToast(_pat_editingId ? 'Patient updated!' : 'Patient registered!', 'success');
           loadData();
         } else {
           showToast(res.error || 'Failed to save.', 'error');
@@ -748,35 +748,35 @@ function init_Patients() {
   function setSaving(v) {
     var btn = document.getElementById('save-btn');
     btn.disabled = v;
-    btn.innerHTML = v ? '<span class="spinner"></span>' : '<span id="save-label">' + (editingId ? 'Update Patient' : 'Save Patient') + '</span>';
+    btn.innerHTML = v ? '<span class="spinner"></span>' : '<span id="save-label">' + (_pat_editingId ? 'Update Patient' : 'Save Patient') + '</span>';
   }
 
   // ── Delete ─────────────────────────────────────────────────────
   function openDeleteModal(patientId, branchId, name) {
-    deletingPayload = { patient_id: patientId, branch_id: branchId };
+    _pat_deletingPayload = { patient_id: patientId, branch_id: branchId };
     document.getElementById('delete-name').textContent = name;
     document.getElementById('delete-modal').classList.remove('hidden');
   }
 
   function closeDeleteModal() {
-    deletingPayload = null;
+    _pat_deletingPayload = null;
     document.getElementById('delete-modal').classList.add('hidden');
   }
 
   function confirmDelete() {
-    if (!deletingPayload) return;
+    if (!_pat_deletingPayload) return;
     var btn = document.getElementById('confirm-delete-btn');
     btn.textContent = 'Deleting…'; btn.disabled = true;
     google.script.run
       .withSuccessHandler(function(res) {
         btn.textContent = 'Delete'; btn.disabled = false;
         closeDeleteModal();
-        if (_checkExpired(res)) return;
+        if (_pat_checkExpired(res)) return;
         if (res.success) { showToast('Patient deleted.', 'success'); loadData(); }
         else showToast(res.error || 'Failed to delete.', 'error');
       })
       .withFailureHandler(function(err) { btn.textContent = 'Delete'; btn.disabled = false; showToast('Error: ' + err.message, 'error'); })
-      .handlePatientRequest('DELETE_PATIENT', deletingPayload, _pat_getToken());
+      .handlePatientRequest('DELETE_PATIENT', _pat_deletingPayload, _pat_getToken());
   }
 
   function showLoading(v) {

@@ -271,9 +271,9 @@
       .withSuccessHandler(function(res) {
         showLoading(false);
         if (_checkExpired(res)) return;
-        if (res.success) { allLabs = res.data || []; }
-        renderTable(allLabs);
-        updateStats(allLabs);
+        if (res.success) { _ls_allLabs = res.data || []; }
+        renderTable(_ls_allLabs);
+        updateStats(_ls_allLabs);
       })
       .withFailureHandler(function(err) { showLoading(false); showToast('Error: ' + err.message, 'error'); })
       .handleLabServiceRequest('GET_LAB_SERVICES', {}, alab_token);
@@ -332,7 +332,7 @@
   function filterTable() {
     var q  = document.getElementById('search-input').value.toLowerCase();
     var st = document.getElementById('status-filter').value;
-    renderTable(allLabs.filter(function(l) {
+    renderTable(_ls_allLabs.filter(function(l) {
       var mq = !q || l.lab_name.toLowerCase().includes(q) || l.lab_code.toLowerCase().includes(q) ||
                (l.description || '').toLowerCase().includes(q) || (l.specimen_type || '').toLowerCase().includes(q);
       var ms = !st || (st === 'active' ? l.is_active : !l.is_active);
@@ -350,7 +350,7 @@
     document.getElementById('save-label').textContent     = editingId ? 'Update Lab Service' : 'Save Lab Service';
 
     if (editingId) {
-      var l = allLabs.find(function(x) { return x.lab_id === editingId; });
+      var l = _ls_allLabs.find(function(x) { return x.lab_id === editingId; });
       if (l) {
         document.getElementById('f-lab-id').value        = l.lab_id;
         document.getElementById('f-lab-code').value      = l.lab_code;
