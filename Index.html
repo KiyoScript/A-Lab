@@ -38,7 +38,8 @@
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
 
-    iframe { border: none; animation: fadeIn 0.3s ease; }
+    .tab-pane { display: none; width: 100%; height: 100%; overflow-y: auto; }
+    .tab-pane.active { display: block; animation: fadeIn 0.3s ease; }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(6px); }
       to   { opacity: 1; transform: translateY(0); }
@@ -69,7 +70,7 @@
 
       <p class="nav-section-label text-[10px] font-semibold uppercase tracking-widest px-3 mb-2 mt-1">Main</p>
 
-      <a href="#" onclick="setActive(this); loadPage('Dashboard'); return false;"
+      <a href="#" onclick="setActive(this); switchTab('Dashboard'); return false;"
          class="nav-link active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer">
         <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
@@ -213,21 +214,25 @@
     </header>
 
     <main class="flex-1 overflow-hidden bg-slate-50 relative">
+      <!-- Init loading overlay — hidden after session loads -->
       <div id="init-loading" class="absolute inset-0 bg-slate-50 flex flex-col items-center justify-center gap-3 z-10">
         <div class="w-8 h-8 rounded-full animate-spin" style="border:2px solid #bbd8ff;border-top-color:#2f76f5"></div>
         <p class="text-xs text-slate-400">Loading…</p>
       </div>
 
-      <iframe id="content-frame" name="content-frame" src="" class="w-full h-full hidden"></iframe>
-
-      <div id="placeholder" class="hidden w-full h-full flex-col items-center justify-center gap-4">
-        <div class="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center">
-          <svg class="w-8 h-8 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2a4 4 0 014-4h0a4 4 0 014 4v2M12 11a4 4 0 100-8 4 4 0 000 8z"/>
-          </svg>
-        </div>
-        <p class="text-slate-500 text-sm font-medium" id="placeholder-label">Page coming soon</p>
-        <p class="text-slate-400 text-xs">This module will be available in a future sprint.</p>
+      <!-- Tab panes — all embedded, shown/hidden by switchTab() -->
+      <div id="tab-content" class="w-full h-full overflow-hidden">
+        <div id="tab-Dashboard" class="tab-pane"><?!= include('Dashboard') ?></div>
+        <div id="tab-Orders" class="tab-pane"><?!= include('Orders') ?></div>
+        <div id="tab-Branches" class="tab-pane"><?!= include('Branches') ?></div>
+        <div id="tab-Departments" class="tab-pane"><?!= include('Departments') ?></div>
+        <div id="tab-LabServices" class="tab-pane"><?!= include('LabServices') ?></div>
+        <div id="tab-Packages" class="tab-pane"><?!= include('Packages') ?></div>
+        <div id="tab-Doctors" class="tab-pane"><?!= include('Doctors') ?></div>
+        <div id="tab-Patients" class="tab-pane"><?!= include('Patients') ?></div>
+        <div id="tab-MedTechs" class="tab-pane"><?!= include('MedTechs') ?></div>
+        <div id="tab-Admins" class="tab-pane"><?!= include('Admins') ?></div>
+        <div id="tab-BranchAdminChangePassword" class="tab-pane"><?!= include('BranchAdminChangePassword') ?></div>
       </div>
     </main>
   </div>
@@ -256,15 +261,49 @@
   </div>
 
   <script>
-    let baseUrl = '';
+    let baseUrl    = '';
     let alab_token = '';
+    var initializedTabs = {};
 
-    // ── Read token from URL param or localStorage ──────────────────
+    // ── Read token ─────────────────────────────────────────────────
     (function() {
       const params = new URLSearchParams(window.location.search);
       alab_token = params.get('token') || localStorage.getItem('alab_token') || '';
       if (alab_token) localStorage.setItem('alab_token', alab_token);
     })();
+
+    // ── Tab switching (the core engine) ────────────────────────────
+    function switchTab(pageName) {
+      document.querySelectorAll('.tab-pane').forEach(function(p) {
+        p.classList.remove('active');
+      });
+      var target = document.getElementById('tab-' + pageName);
+      if (target) target.classList.add('active');
+
+      var activeLink = document.querySelector('.nav-link.active');
+      if (activeLink) {
+        document.getElementById('page-title').textContent =
+          (activeLink.querySelector('.nav-label') || {}).textContent || pageName;
+      }
+
+      var initFn = 'init_' + pageName;
+      if (!initializedTabs[pageName] && typeof window[initFn] === 'function') {
+        initializedTabs[pageName] = true;
+        window[initFn]();
+      }
+    }
+
+    // ── Called from child pages to navigate programmatically ───────
+    function navigateTo(pageName) {
+      document.querySelectorAll('.nav-link').forEach(function(l) { l.classList.remove('active'); });
+      document.querySelectorAll('.nav-link').forEach(function(l) {
+        var label = (l.querySelector('.nav-label') || {}).textContent || '';
+        if (label.trim() === pageName || l.getAttribute('data-page') === pageName) {
+          l.classList.add('active');
+        }
+      });
+      switchTab(pageName);
+    }
 
     // ── Init ───────────────────────────────────────────────────────
     google.script.run
@@ -278,12 +317,10 @@
               return;
             }
             if (res.data) {
-              // Doctors → Doctor portal
               if (res.data.role === 'doctor') {
                 window.top.location.href = url + '?page=DoctorIndex&token=' + encodeURIComponent(alab_token);
                 return;
               }
-              // Technologists → Tech portal
               if (res.data.role === 'medtech') {
                 window.top.location.href = url + '?page=TechIndex&token=' + encodeURIComponent(alab_token);
                 return;
@@ -296,7 +333,8 @@
               applyNavRoles(res.data.role);
             }
             document.getElementById('init-loading').classList.add('hidden');
-            loadPage('Dashboard');
+            document.querySelector('.nav-link').classList.add('active');
+            switchTab('Dashboard');
           })
           .withFailureHandler(function() {
             localStorage.removeItem('alab_token');
@@ -310,41 +348,20 @@
       })
       .getScriptUrl();
 
-    // ── Navigation ─────────────────────────────────────────────────
-    function loadPage(pageName) {
-      if (!baseUrl) return;
-      const frame       = document.getElementById('content-frame');
-      const placeholder = document.getElementById('placeholder');
-      frame.src = baseUrl + '?page=' + pageName + '&token=' + encodeURIComponent(alab_token);
-      frame.classList.remove('hidden');
-      placeholder.classList.add('hidden');
-      placeholder.classList.remove('flex');
-    }
-
-    function loadPlaceholder(name) {
-      const frame       = document.getElementById('content-frame');
-      const placeholder = document.getElementById('placeholder');
-      frame.classList.add('hidden');
-      frame.src = '';
-      placeholder.classList.remove('hidden');
-      placeholder.classList.add('flex');
-      document.getElementById('placeholder-label').textContent = name + ' — Coming Soon';
-    }
-
+    // ── Nav helpers ────────────────────────────────────────────────
     function applyNavRoles(role) {
       if (role === 'branch_admin') {
         ['nav-branches', 'nav-admins'].forEach(function(id) {
           var el = document.getElementById(id);
           if (el) el.style.display = 'none';
         });
-        // Show change password link
         document.getElementById('nav-change-password').classList.remove('hidden');
         document.getElementById('nav-change-password').classList.add('flex');
       }
     }
 
     function setActive(el) {
-      document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+      document.querySelectorAll('.nav-link').forEach(function(l) { l.classList.remove('active'); });
       el.classList.add('active');
       document.getElementById('page-title').textContent =
         el.querySelector('.nav-label')?.textContent.trim() || 'Dashboard';
@@ -373,7 +390,6 @@
     function confirmLogout() {
       const btn = document.getElementById('confirm-logout-btn');
       btn.textContent = 'Signing out…'; btn.disabled = true;
-      // Fire-and-forget the server logout, redirect immediately using cached baseUrl
       google.script.run.handleAdminRequest('LOGOUT', {}, alab_token);
       localStorage.removeItem('alab_token');
       window.top.location.href = baseUrl + '?page=Login';
