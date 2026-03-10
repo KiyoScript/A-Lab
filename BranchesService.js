@@ -235,6 +235,10 @@ function _createBranchSpreadsheet(branchName, branchCode) {
 function getBranches(token) {
   try {
     const session = _getSession(token);
+
+    var cacheKey = 'BRANCHES_' + (session ? session.role : '') + '_' + (session ? session.branch_id || 'ALL' : 'ALL');
+    return _cacheGet(cacheKey, function() {
+
     const sh   = _getRegistrySheet();
     const data = sh.getDataRange().getValues();
     if (data.length <= 1) return { success: true, data: [] };
@@ -245,6 +249,8 @@ function getBranches(token) {
     }
 
     return { success: true, data: rows };
+
+    }); // end _cacheGet
   } catch (e) {
     return { success: false, error: e.message };
   }
@@ -265,6 +271,8 @@ function createBranch(payload) {
       payload.branch_name.trim(),
       payload.branch_code.trim().toUpperCase()
     );
+
+    _cacheClear('BRANCHES_super_admin_ALL');
 
     sh.appendRow([
       branchId,
@@ -336,7 +344,10 @@ function updateBranch(payload) {
       }
     } catch(_) {}
 
+    _cacheClear('BRANCHES_super_admin_ALL');
+
     return { success: true };
+
   } catch (e) {
     return { success: false, error: e.message };
   }
@@ -350,6 +361,9 @@ function deleteBranch(branchId) {
     const idx  = data.findIndex((r, i) => i > 0 && String(r[0]) === String(branchId));
     if (idx === -1) return { success: false, error: 'Branch not found: ' + branchId };
     sh.deleteRow(idx + 1);
+
+    _cacheClear('BRANCHES_super_admin_ALL');
+
     return { success: true };
   } catch (e) {
     return { success: false, error: e.message };

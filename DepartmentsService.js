@@ -65,6 +65,9 @@ function getDepartments(payload, token) {
     const session = _requireSession(token);
     if (!session) return { success: false, error: 'Session expired.', expired: true };
 
+    var cacheKey = 'DEPTS_' + session.role + '_' + (session.branch_id || 'ALL');
+    return _cacheGet(cacheKey, function() {
+
     const sh   = _getDeptSheet();
     const data = sh.getDataRange().getValues();
     if (data.length <= 1) return { success: true, data: [] };
@@ -113,6 +116,8 @@ function getDepartments(payload, token) {
     });
 
     return { success: true, data: depts };
+
+    }); // end _cacheGet
   } catch (e) {
     return { success: false, error: e.message };
   }
@@ -144,6 +149,9 @@ function createDepartment(payload, token) {
     const isActive = payload.is_active !== undefined ? Boolean(payload.is_active) : true;
 
     sh.appendRow([deptId, payload.dept_name.trim(), isActive, now, now]);
+
+    _cacheClear('DEPTS_super_admin_ALL');
+    _cacheClear('DEPTS_branch_admin_' + (session && session.branch_id || ''));
 
     return {
       success: true,
@@ -196,6 +204,8 @@ function updateDepartment(payload, token) {
     ]]);
     sh.getRange(row, 5).setValue(now);
 
+    _cacheClear('DEPTS_super_admin_ALL');
+
     return { success: true };
   } catch (e) {
     return { success: false, error: e.message };
@@ -227,12 +237,19 @@ function deleteDepartment(payload, token) {
     try {
       const mapSh   = _getDeptLabSheet();
       const mapData = mapSh.getDataRange().getValues();
-      for (var i = mapData.length - 1; i >= 1; i--) {
-        if (String(mapData[i][1] || '').trim() === String(payload.dept_id)) {
-          mapSh.deleteRow(i + 1);
+      var keepRows = [mapData[0]]; // header
+      for (var i = 1; i < mapData.length; i++) {
+        if (String(mapData[i][1] || '').trim() !== String(payload.dept_id)) {
+          keepRows.push(mapData[i]);
         }
       }
+      mapSh.clearContents();
+      if (keepRows.length > 0) {
+        mapSh.getRange(1, 1, keepRows.length, keepRows[0].length).setValues(keepRows);
+      }
     } catch(_) {}
+
+    _cacheClear('DEPTS_super_admin_ALL');
 
     return { success: true };
   } catch (e) {

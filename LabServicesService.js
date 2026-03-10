@@ -67,8 +67,11 @@ function getLabServices(token) {
     const session = _getSession(token);
     if (!session) return { success: false, error: 'Session expired.', expired: true };
 
+    var cacheKey = 'LABS_' + session.role + '_' + (session.branch_id || 'ALL');
+    return _cacheGet(cacheKey, function() {
+
     const sh   = _getLabSheet();
-    const data = sh.getDataRange().getValues();
+    const data = sh.getDataRange().getValues()
     var labs = data.slice(1)
       .filter(function(r) { return r[0] !== ''; })
       .map(function(r)    { return _labRowToObj(r); });
@@ -84,6 +87,8 @@ function getLabServices(token) {
     }
 
     return { success: true, data: labs };
+
+    }); // end _cacheGet
   } catch (e) {
     return { success: false, error: e.message };
   }
@@ -113,6 +118,8 @@ function createLabService(payload, token) {
 
     const now   = new Date().toISOString();
     const labId = 'LAB-' + Utilities.getUuid().substring(0, 8).toUpperCase();
+
+    _cacheClear('LABS_super_admin_ALL');
 
     sh.appendRow([
       labId,
@@ -177,6 +184,8 @@ function updateLabService(payload, token) {
     ]]);
     sh.getRange(row, 10).setValue(now);
 
+    _cacheClear('LABS_super_admin_ALL');
+
     return { success: true };
   } catch (e) {
     return { success: false, error: e.message };
@@ -215,14 +224,23 @@ function deleteLabService(labId, token) {
           const mapSh = ss.getSheetByName('Dept_LabServices');
           if (!mapSh) continue;
           const mapData = mapSh.getDataRange().getValues();
-          for (var i = mapData.length - 1; i >= 1; i--) {
-            if (String(mapData[i][2] || '').trim() === String(labId)) {
-              mapSh.deleteRow(i + 1);
+          var keepRows = [mapData[0]]; // header
+          for (var i = 1; i < mapData.length; i++) {
+            if (String(mapData[i][2] || '').trim() !== String(labId)) {
+              keepRows.push(mapData[i]);
+            }
+          }
+          if (keepRows.length < mapData.length) {
+            mapSh.clearContents();
+            if (keepRows.length > 0) {
+              mapSh.getRange(1, 1, keepRows.length, keepRows[0].length).setValues(keepRows);
             }
           }
         } catch(_) {}
       }
     } catch(_) {}
+
+    _cacheClear('LABS_super_admin_ALL');
 
     return { success: true };
   } catch (e) {

@@ -73,11 +73,16 @@ function saveDeptLabServices(payload, token) {
     const sh   = _getDeptLabSheet();
     const data = sh.getDataRange().getValues();
 
-    // Remove all existing rows for this dept_id (go backwards)
-    for (var i = data.length - 1; i >= 1; i--) {
-      if (String(data[i][1] || '').trim() === String(payload.dept_id)) {
-        sh.deleteRow(i + 1);
+    // Remove all existing rows for this dept_id (filter & rewrite)
+    var keepRows = [data[0]]; // header
+    for (var i = 1; i < data.length; i++) {
+      if (String(data[i][1] || '').trim() !== String(payload.dept_id)) {
+        keepRows.push(data[i]);
       }
+    }
+    sh.clearContents();
+    if (keepRows.length > 0) {
+      sh.getRange(1, 1, keepRows.length, keepRows[0].length).setValues(keepRows);
     }
 
     // Insert new mappings

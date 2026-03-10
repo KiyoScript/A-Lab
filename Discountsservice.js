@@ -72,16 +72,25 @@ function getDiscounts(token) {
     if (session.expired) return { success: false, error: 'Session expired.', expired: true };
     if (session.denied)  return { success: false, error: 'Access denied. Super admin only.' };
 
+    return _cacheGet('DISCOUNTS', function() {
+
     const sh   = _getDiscountSheet();
     const data = sh.getDataRange().getValues();
     if (data.length <= 1) return { success: true, data: [] };
 
     const rows = data.slice(1).filter(r => r[0] !== '').map(_discountRowToObj);
     return { success: true, data: rows };
+
+    }); // end _cacheGet
   } catch (e) {
     return { success: false, error: e.message };
   }
 }
+
+
+// ═══════════════════════════════════════════════════════════════
+// READ ALL — super_admin AND branch_admin
+
 
 // ═══════════════════════════════════════════════════════════════
 // READ ALL — super_admin AND branch_admin
@@ -94,12 +103,16 @@ function getDiscountsAll(token) {
     if (!['super_admin', 'branch_admin', 'medtech'].includes(session.role))
       return { success: false, error: 'Unauthorized.' };
 
+    return _cacheGet('DISCOUNTS', function() {
+
     const sh   = _getDiscountSheet();
     const data = sh.getDataRange().getValues();
     if (data.length <= 1) return { success: true, data: [] };
 
     const rows = data.slice(1).filter(r => r[0] !== '').map(_discountRowToObj);
     return { success: true, data: rows };
+
+    }); // end _cacheGet
   } catch (e) {
     return { success: false, error: e.message };
   }
@@ -134,6 +147,8 @@ function createDiscount(payload, token) {
     const now        = new Date().toISOString();
     const discountId = 'DISC-' + Utilities.getUuid().substring(0, 8).toUpperCase();
     const isActive   = payload.is_active !== undefined ? Boolean(payload.is_active) : true;
+
+    _cacheClear('DISCOUNTS');
 
     sh.appendRow([
       discountId,
@@ -207,6 +222,8 @@ function updateDiscount(payload, token) {
     ]]);
     sh.getRange(row, 8).setValue(now);
 
+    _cacheClear('DISCOUNTS');
+
     return { success: true };
   } catch (e) {
     return { success: false, error: e.message };
@@ -230,6 +247,9 @@ function deleteDiscount(discountId, token) {
     if (idx === -1) return { success: false, error: 'Discount not found.' };
 
     sh.deleteRow(idx + 1);
+
+    _cacheClear('DISCOUNTS');
+
     return { success: true };
   } catch (e) {
     return { success: false, error: e.message };

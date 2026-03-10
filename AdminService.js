@@ -15,6 +15,33 @@ function _hashPassword(plain) {
   return raw.map(b => ('0' + (b & 0xff).toString(16)).slice(-2)).join('');
 }
 
+// ─── Cache helpers (shared across all services) ──────────────────
+var _scriptCache = CacheService.getScriptCache();
+var CACHE_TTL = 300; // 5 minutes in seconds
+
+function _cacheGet(key, fetchFn) {
+  var cached = _scriptCache.get(key);
+  if (cached) {
+    try { return JSON.parse(cached); } catch(_) {}
+  }
+  var result = fetchFn();
+  try {
+    var json = JSON.stringify(result);
+    if (json.length < 100000) { // CacheService limit is 100KB per key
+      _scriptCache.put(key, json, CACHE_TTL);
+    }
+  } catch(_) {}
+  return result;
+}
+
+function _cacheClear(key) {
+  try { _scriptCache.remove(key); } catch(_) {}
+}
+
+function _cacheClearMulti(keys) {
+  try { _scriptCache.removeAll(keys); } catch(_) {}
+}
+
 // ─── Super Admin Sheet (in Registry SS) ──────────────────────────
 function _getSuperAdminSheet() {
   const ss = _getOrCreateRegistry();

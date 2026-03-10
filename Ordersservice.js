@@ -706,13 +706,18 @@ function deleteOrder(payload, token) {
     if (String(data[idx][6]) !== 'DRAFT')
       return { success: false, error: 'Only DRAFT orders can be deleted.' };
 
-    // Delete items first (reverse to preserve indices)
+    // Delete items for this order (filter & rewrite)
     const itemSh   = _getOrderItemSheet(ssId);
     const itemData = itemSh.getDataRange().getValues();
-    for (var i = itemData.length - 1; i >= 1; i--) {
-      if (String(itemData[i][1]) === String(payload.order_id)) {
-        itemSh.deleteRow(i + 1);
+    var keepItems = [itemData[0]]; // header
+    for (var i = 1; i < itemData.length; i++) {
+      if (String(itemData[i][1]) !== String(payload.order_id)) {
+        keepItems.push(itemData[i]);
       }
+    }
+    itemSh.clearContents();
+    if (keepItems.length > 0) {
+      itemSh.getRange(1, 1, keepItems.length, keepItems[0].length).setValues(keepItems);
     }
     sh.deleteRow(idx + 1);
 
