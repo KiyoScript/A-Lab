@@ -232,17 +232,17 @@
     }
     return false;
   }
-  function _checkExpired(res) { return _checkExpired_ls(res); }
+  function _ls_checkExpired(res) { return _checkExpired_ls(res); }
 
-  var allLabs        = [];
-  var currentSession = null;
-  var editingId      = null;
-  var deletingId     = null;
-  var isSuperAdmin   = false;
+  var _ls_allLabs        = [];
+  var _ls_currentSession = null;
+  var _ls_editingId      = null;
+  var _ls_deletingId     = null;
+  var _ls_isSuperAdmin   = false;
 
-  function init_LabServices() { initPage(); }
+  function init_LabServices() { _ls_initPage(); }
 
-  function initPage() {
+  function _ls_initPage() {
     google.script.run
       .withSuccessHandler(function(res) {
         if (_checkExpired(res)) return;

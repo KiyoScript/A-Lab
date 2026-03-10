@@ -346,7 +346,7 @@ function _pat_getToken() {
   return (typeof alab_token !== 'undefined' ? alab_token : null)
     || localStorage.getItem('alab_token') || '';
 }
-function _checkExpired(res) {
+function _pat_checkExpired(res) {
   if (res && res.expired) {
     localStorage.removeItem('alab_token');
     window.top.location.href = (typeof baseUrl !== 'undefined' ? baseUrl : '') + '?page=Login';
@@ -356,14 +356,14 @@ function _checkExpired(res) {
 }
 
 var _pat_listenersAttached = false;
-var allPatients    = [];
-var allDiscounts   = [];
-var allBranches    = [];
-var currentSession = null;
-var isSuperAdmin   = false;
-var editingId      = null;
-var editingBranchId = null;
-var deletingPayload = null;
+var _pat_allPatients    = [];
+var _pat_allDiscounts   = [];
+var _pat_allBranches    = [];
+var _pat_currentSession = null;
+var _pat_isSuperAdmin   = false;
+var _pat_editingId      = null;
+var _pat_editingBranchId = null;
+var _pat_deletingPayload = null;
 
 function init_Patients() {
   if (!_pat_listenersAttached) {

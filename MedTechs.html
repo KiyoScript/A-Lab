@@ -390,8 +390,7 @@
   var _mt__mt_selectedRole   = '';
 
   function _mt_getToken() {
-    return (typeof _mt_getToken() !== 'undefined' ? _mt_getToken() : null)
-      || localStorage.getItem('_mt_getToken()') || '';
+    return localStorage.getItem('alab_token') || '';
   }
   function _handleExpired() {
     localStorage.removeItem('_mt_getToken()');
