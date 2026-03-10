@@ -230,22 +230,27 @@
 <div id="toast"></div>
 
 <script>
-  var alab_token     = (new URLSearchParams(window.location.search)).get('token') || localStorage.getItem('alab_token') || '';
+  function _ls_getToken() {
+    return (typeof alab_token !== 'undefined' ? alab_token : null)
+      || localStorage.getItem('alab_token') || '';
+  }
+  function _checkExpired_ls(res) {
+    if (res && res.expired) {
+      localStorage.removeItem('alab_token');
+      window.top.location.href = (typeof baseUrl !== 'undefined' ? baseUrl : '') + '?page=Login';
+      return true;
+    }
+    return false;
+  }
+  function _checkExpired(res) { return _checkExpired_ls(res); }
+
   var allLabs        = [];
   var currentSession = null;
   var editingId      = null;
   var deletingId     = null;
   var isSuperAdmin   = false;
 
-  function _handleExpired() {
-    localStorage.removeItem('alab_token');
-    google.script.run.withSuccessHandler(function(url) {
-      window.top.location.href = url + '?page=Login';
-    }).getScriptUrl();
-  }
-  function _checkExpired(res) { if (res && res.expired) { _handleExpired(); return true; } return false; }
-
-  document.addEventListener('DOMContentLoaded', initPage);
+  function init_LabServices() { initPage(); }
 
   function initPage() {
     google.script.run

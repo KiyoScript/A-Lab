@@ -278,7 +278,21 @@
   }
   function _checkExpired(res) { if (res && res.expired) { _handleExpired(); return true; } return false; }
 
-  document.addEventListener('DOMContentLoaded', initPage);
+  function _pkg_getToken() {
+    return (typeof alab_token !== 'undefined' ? alab_token : null)
+      || localStorage.getItem('alab_token') || '';
+  }
+  function _checkExpired_pkg(res) {
+    if (res && res.expired) {
+      localStorage.removeItem('alab_token');
+      window.top.location.href = (typeof baseUrl !== 'undefined' ? baseUrl : '') + '?page=Login';
+      return true;
+    }
+    return false;
+  }
+  function _checkExpired(res) { return _checkExpired_pkg(res); }
+
+  function init_Packages() { initPage(); }
 
   function initPage() {
     google.script.run
@@ -293,7 +307,7 @@
         loadData();
       })
       .withFailureHandler(function() { loadData(); })
-      .handleAdminRequest('GET_SESSION', {}, alab_token);
+      .handleAdminRequest('GET_SESSION', {}, _pkg_getToken());
   }
 
   function applySessionUI() {

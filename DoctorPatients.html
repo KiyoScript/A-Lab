@@ -1,12 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>My Patients — A-Lab Doctor Portal</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-  <style>
+<style>
     * { font-family: 'DM Sans', sans-serif; }
     body { background: #f8fafc; color: #0f172a; min-height: 100vh; overflow: auto; }
     .card { background:#fff; border:1px solid #e2e8f0; border-radius:1rem; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
@@ -38,9 +30,7 @@
     .toast-error   { background:#ef4444; }
     @keyframes toastSlideUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
   </style>
-</head>
-<body class="p-6">
-<div class="max-w-7xl mx-auto">
+<div class="p-6">
 
   <!-- Header -->
   <div class="flex items-center justify-between mb-6 fade-up">
@@ -205,27 +195,27 @@
 <div id="toast"></div>
 
 <script>
-  var alab_token = (new URLSearchParams(window.location.search)).get('token') || localStorage.getItem('alab_token') || '';
-  var allPatients = [];
+  function _dp_getToken() {
+    return (typeof alab_token !== 'undefined' ? alab_token : null)
+      || localStorage.getItem('alab_token') || '';
+  }
 
   function _checkExpired(res) {
     if (res && res.expired) {
       localStorage.removeItem('alab_token');
-      google.script.run.withSuccessHandler(function(url) {
-        window.top.location.href = url + '?page=Login';
-      }).getScriptUrl();
+      window.top.location.href = (typeof baseUrl !== 'undefined' ? baseUrl : '') + '?page=Login';
       return true;
     }
     return false;
   }
 
-  document.addEventListener('DOMContentLoaded', function() {
-    // TODO: replace with GET_DOCTOR_PATIENTS once OrdersService is built
-    // For now show empty state — patients will be derived from orders
+  var allPatients = [];
+
+  function init_DoctorPatients() {
     showLoading(false);
     showEmpty('Patients from your referred orders will appear once Orders are set up.');
     updateStats([]);
-  });
+  }
 
   function showLoading(v) {
     document.getElementById('loading').classList.toggle('hidden', !v);
@@ -345,5 +335,3 @@
     if (e.key === 'Escape') closeViewModal();
   });
 </script>
-</body>
-</html>

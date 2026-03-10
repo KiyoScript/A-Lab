@@ -241,24 +241,28 @@
 <div id="toast"></div>
 
 <script>
-  const alab_token = (new URLSearchParams(window.location.search)).get('token') || localStorage.getItem('alab_token') || '';
-  let allDiscounts = [];
-  let editingId    = null;
-  let deletingId   = null;
-
-  function _handleExpired() {
-    localStorage.removeItem('alab_token');
-    google.script.run.withSuccessHandler(function(url) {
-      window.top.location.href = url + '?page=Login';
-    }).getScriptUrl();
+  function _disc_getToken() {
+    return (typeof alab_token !== 'undefined' ? alab_token : null)
+      || localStorage.getItem('alab_token') || '';
   }
-  function _checkExpired(res) { if (res && res.expired) { _handleExpired(); return true; } return false; }
+  function _checkExpired_disc(res) {
+    if (res && res.expired) {
+      localStorage.removeItem('alab_token');
+      window.top.location.href = (typeof baseUrl !== 'undefined' ? baseUrl : '') + '?page=Login';
+      return true;
+    }
+    return false;
+  }
+  function _checkExpired(res) { return _checkExpired_disc(res); }
 
-  let currentSession = null;
-  let isSuperAdmin   = false;
-  let isBranchAdmin  = false;
+  var allDiscounts = [];
+  var editingId    = null;
+  var deletingId   = null;
+  var currentSession = null;
+  var isSuperAdmin   = false;
+  var isBranchAdmin  = false;
 
-  window.addEventListener('DOMContentLoaded', function() {
+  function init_Discounts() {
     google.script.run
       .withSuccessHandler(function(res) {
         if (_checkExpired(res)) return;
@@ -271,8 +275,8 @@
         loadData();
       })
       .withFailureHandler(function() { loadData(); })
-      .handleAdminRequest('GET_SESSION', {}, alab_token);
-  });
+      .handleAdminRequest('GET_SESSION', {}, _disc_getToken());
+  }
 
   function applyRoleUI() {
     if (isSuperAdmin) {
