@@ -1,402 +1,403 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>A-Lab — Automation Hub</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-  <style>
-    * { font-family: 'DM Sans', sans-serif; }
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>A-Lab — Automation Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+    <style>
+      * { font-family: 'DM Sans', sans-serif; }
 
-    body { background: #f1f5f9; display: flex; height: 100vh; overflow: hidden; }
+      body { background: #f1f5f9; display: flex; height: 100vh; overflow: hidden; }
 
-    #sidebar {
-      background: #ffffff;
-      border-right: 1px solid #e2e8f0;
-      transition: width 0.25s cubic-bezier(.4,0,.2,1);
-    }
-    #sidebar.collapsed { width: 64px; }
-    #sidebar.collapsed .nav-label,
-    #sidebar.collapsed .brand-name,
-    #sidebar.collapsed .nav-section-label { display: none; }
-    #sidebar.collapsed .nav-link { justify-content: center; padding-left: 0; padding-right: 0; }
-    #sidebar.collapsed .logo-wrap { justify-content: center; }
+      #sidebar {
+        background: #ffffff;
+        border-right: 1px solid #e2e8f0;
+        transition: width 0.25s cubic-bezier(.4,0,.2,1);
+      }
+      #sidebar.collapsed { width: 64px; }
+      #sidebar.collapsed .nav-label,
+      #sidebar.collapsed .brand-name,
+      #sidebar.collapsed .nav-section-label { display: none; }
+      #sidebar.collapsed .nav-link { justify-content: center; padding-left: 0; padding-right: 0; }
+      #sidebar.collapsed .logo-wrap { justify-content: center; }
 
-    .nav-link { position: relative; transition: all 0.18s ease; color: #475569; }
-    .nav-link:hover { background: rgba(47,118,245,0.08); color: #2f76f5; }
-    .nav-link.active { background: rgba(47,118,245,0.12); color: #2f76f5; font-weight: 600; }
-    .nav-link.active::before {
-      content: ''; position: absolute; left:0; top:0; bottom:0;
-      width: 3px; background: #2f76f5; border-radius: 0 2px 2px 0;
-    }
-
-    .nav-section-label { color: #94a3b8; }
-    .sidebar-user { border-top: 1px solid #e2e8f0; }
-    .avatar-ring { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #2f76f5; }
-
-    ::-webkit-scrollbar { width: 5px; }
-    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
-
-    .tab-pane { display: none; width: 100%; height: 100%; overflow-y: auto; }
-    .tab-pane.active { display: block; animation: fadeIn 0.3s ease; }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-  </style>
-</head>
-<body>
-
-  <div id="sidebar-overlay" class="fixed inset-0 bg-black/30 z-20 hidden md:hidden" onclick="toggleSidebar()"></div>
-
-  <!-- SIDEBAR -->
-  <aside id="sidebar" class="fixed md:relative w-60 flex flex-col shrink-0 h-screen z-30 shadow-sm -translate-x-full md:translate-x-0 transition-transform duration-250">
-
-    <div class="logo-wrap flex items-center gap-3 px-5 py-5 border-b border-slate-100">
-      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shrink-0 shadow">
-        <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v8.5L4.5 18A2 2 0 006.4 21h11.2a2 2 0 001.9-2.5L15 11.5V3"/>
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9 3h6M8 15h8"/>
-        </svg>
-      </div>
-      <div class="brand-name">
-        <p class="text-base font-bold text-slate-800 leading-none">A-Lab</p>
-        <p class="text-[10px] text-slate-400 tracking-widest uppercase mt-0.5" style="font-family:'DM Mono',monospace">Automation Hub</p>
-      </div>
-    </div>
-
-    <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-0.5">
-
-      <p class="nav-section-label text-[10px] font-semibold uppercase tracking-widest px-3 mb-2 mt-1">Main</p>
-
-      <a href="#" onclick="setActive(this); switchTab('Dashboard'); return false;"
-         class="nav-link active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer">
-        <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
-          <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
-        </svg>
-        <span class="nav-label">Dashboard</span>
-      </a>
-
-      <p class="nav-section-label text-[10px] font-semibold uppercase tracking-widest px-3 mb-2 mt-4">Reference Data</p>
-
-      <a id="nav-branches" href="#" onclick="setActive(this); loadPage('Branches'); return false;"
-         class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer">
-        <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M9 21V7l3-4 3 4v14M9 11h6"/>
-        </svg>
-        <span class="nav-label">Branches</span>
-      </a>
-
-      <a id="nav-departments" href="#" onclick="setActive(this); loadPage('Departments'); return false;"
-         class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer">
-        <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0H5m14 0h2M5 21H3M10 9h4m-4 4h4"/>
-        </svg>
-        <span class="nav-label">Departments</span>
-      </a>
-
-      <a id="nav-lab-services" href="#" onclick="setActive(this); loadPage('LabServices'); return false;"
-         class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer">
-        <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v8.5L4.5 18A2 2 0 006.4 21h11.2a2 2 0 001.9-2.5L15 11.5V3M9 3h6"/>
-        </svg>
-        <span class="nav-label">Lab Services</span>
-      </a>
-
-      <!-- ── Packages (new) ── -->
-      <a id="nav-packages" href="#" onclick="setActive(this); loadPage('Packages'); return false;"
-         class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer">
-        <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-        </svg>
-        <span class="nav-label">Packages</span>
-      </a>
-
-      <a id="nav-discounts" href="#" onclick="setActive(this); loadPage('Discounts'); return false;"
-         class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer">
-        <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M17 17h.01M7.05 7.05l9.9 9.9M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        </svg>
-        <span class="nav-label">Discounts</span>
-      </a>
-
-      <a id="nav-orders" href="#" onclick="setActive(this); loadPage('Orders'); return false;"
-        class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer">
-        <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v8.5L4.5 18A2 2 0 006.4 21h11.2a2 2 0 001.9-2.5L15 11.5V3M9 3h6M8 15h8"/>
-        </svg>
-        <span class="nav-label">Orders</span>
-      </a>
-
-      <p class="nav-section-label text-[10px] font-semibold uppercase tracking-widest px-3 mb-2 mt-4">People</p>
-
-      <a id="nav-doctors" href="#" onclick="setActive(this); loadPage('Doctors'); return false;"
-         class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer">
-        <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A9 9 0 1118.88 6.196M15 11a3 3 0 11-6 0 3 3 0 016 0zm3 7v1a2 2 0 01-2 2h-1"/>
-        </svg>
-        <span class="nav-label">Doctors</span>
-      </a>
-
-      <a href="#" onclick="setActive(this); loadPage('Patients'); return false;"
-         class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer">
-        <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-1a4 4 0 00-5.196-3.762M9 11a4 4 0 100-8 4 4 0 000 8zm-6 9v-1a4 4 0 014-4h4a4 4 0 014 4v1"/>
-        </svg>
-        <span class="nav-label">Patients</span>
-      </a>
-
-      <a id="nav-medtechs" href="#" onclick="setActive(this); loadPage('MedTechs'); return false;"
-         class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer">
-        <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01m-.01 4h.01"/>
-        </svg>
-        <span class="nav-label">Technologists</span>
-      </a>
-
-      <a id="nav-change-password" href="#" onclick="setActive(this); loadPage('BranchAdminChangePassword'); return false;"
-         class="nav-link hidden flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer">
-        <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
-        </svg>
-        <span class="nav-label">Change Password</span>
-      </a>
-
-      <p class="nav-section-label text-[10px] font-semibold uppercase tracking-widest px-3 mb-2 mt-4">Management</p>
-
-      <a id="nav-admins" href="#" onclick="setActive(this); loadPage('Admins'); return false;"
-         class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer">
-        <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A9 9 0 1118.88 6.196M15 11a3 3 0 11-6 0 3 3 0 016 0zm3 7v1a2 2 0 01-2 2h-1"/>
-        </svg>
-        <span class="nav-label">Admins</span>
-      </a>
-
-    </nav>
-
-    <!-- Sidebar User + Logout -->
-    <div class="sidebar-user p-4 flex items-center gap-3">
-      <img src="https://ui-avatars.com/api/?name=Admin+User&background=2f76f5&color=fff&size=64&font-size=0.4"
-           class="w-8 h-8 rounded-full avatar-ring shrink-0" alt="User"/>
-      <div class="nav-label flex-1 min-w-0">
-        <p id="sidebar-name" class="text-xs font-semibold text-slate-700 truncate">Admin</p>
-        <p id="sidebar-role" class="text-[10px] text-slate-400 truncate">—</p>
-      </div>
-      <button onclick="openLogoutModal()"
-        class="nav-label text-slate-400 hover:text-red-500 transition-colors p-1 rounded-lg hover:bg-red-50"
-        title="Logout">
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1"/>
-        </svg>
-      </button>
-    </div>
-  </aside>
-
-  <!-- MAIN -->
-  <div id="main-wrapper" class="flex-1 flex flex-col overflow-hidden">
-
-    <header class="h-14 bg-white border-b border-slate-100 flex items-center px-5 gap-4 shrink-0 shadow-sm z-20">
-      <button onclick="toggleSidebar()" class="text-slate-400 hover:text-blue-500 transition-colors p-1 rounded-lg hover:bg-slate-50">
-        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
-        </svg>
-      </button>
-      <div class="flex items-center gap-2 text-sm">
-        <span class="text-slate-400">A-Lab</span>
-        <span class="text-slate-300">/</span>
-        <span id="page-title" class="text-slate-700 font-semibold">Dashboard</span>
-      </div>
-      <div class="flex-1"></div>
-      <img src="https://ui-avatars.com/api/?name=Admin+User&background=2f76f5&color=fff&size=64&font-size=0.4"
-           class="w-8 h-8 rounded-full avatar-ring" alt="User"/>
-    </header>
-
-    <main class="flex-1 overflow-hidden bg-slate-50 relative">
-      <!-- Init loading overlay — hidden after session loads -->
-      <div id="init-loading" class="absolute inset-0 bg-slate-50 flex flex-col items-center justify-center gap-3 z-10">
-        <div class="w-8 h-8 rounded-full animate-spin" style="border:2px solid #bbd8ff;border-top-color:#2f76f5"></div>
-        <p class="text-xs text-slate-400">Loading…</p>
-      </div>
-
-      <!-- Tab panes — all embedded, shown/hidden by switchTab() -->
-      <div id="tab-content" class="w-full h-full overflow-hidden">
-        <div id="tab-Dashboard" class="tab-pane"><?!= include('Dashboard') ?></div>
-        <div id="tab-Orders" class="tab-pane"><?!= include('Orders') ?></div>
-        <div id="tab-Branches" class="tab-pane"><?!= include('Branches') ?></div>
-        <div id="tab-Departments" class="tab-pane"><?!= include('Departments') ?></div>
-        <div id="tab-LabServices" class="tab-pane"><?!= include('LabServices') ?></div>
-        <div id="tab-Packages" class="tab-pane"><?!= include('Packages') ?></div>
-        <div id="tab-Doctors" class="tab-pane"><?!= include('Doctors') ?></div>
-        <div id="tab-Patients" class="tab-pane"><?!= include('Patients') ?></div>
-        <div id="tab-MedTechs" class="tab-pane"><?!= include('MedTechs') ?></div>
-        <div id="tab-Admins" class="tab-pane"><?!= include('Admins') ?></div>
-        <div id="tab-BranchAdminChangePassword" class="tab-pane"><?!= include('BranchAdminChangePassword') ?></div>
-      </div>
-    </main>
-  </div>
-
-  <!-- LOGOUT CONFIRM MODAL -->
-  <div id="logout-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center" onclick="event.stopPropagation()">
-      <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
-        <svg class="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1"/>
-        </svg>
-      </div>
-      <h3 class="text-base font-bold text-slate-800 mb-1">Sign out?</h3>
-      <p class="text-sm text-slate-500 mb-6">You will be redirected to the login page.</p>
-      <div class="flex gap-3">
-        <button onclick="closeLogoutModal()"
-          class="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors">
-          Cancel
-        </button>
-        <button id="confirm-logout-btn" onclick="confirmLogout()"
-          class="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition-colors">
-          Sign Out
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    let baseUrl    = '';
-    let alab_token = '';
-    var initializedTabs = {};
-
-    // ── Read token ─────────────────────────────────────────────────
-    (function() {
-      const params = new URLSearchParams(window.location.search);
-      alab_token = params.get('token') || localStorage.getItem('alab_token') || '';
-      if (alab_token) localStorage.setItem('alab_token', alab_token);
-    })();
-
-    // ── Tab switching (the core engine) ────────────────────────────
-    function switchTab(pageName) {
-      document.querySelectorAll('.tab-pane').forEach(function(p) {
-        p.classList.remove('active');
-      });
-      var target = document.getElementById('tab-' + pageName);
-      if (target) target.classList.add('active');
-
-      var activeLink = document.querySelector('.nav-link.active');
-      if (activeLink) {
-        document.getElementById('page-title').textContent =
-          (activeLink.querySelector('.nav-label') || {}).textContent || pageName;
+      .nav-link { position: relative; transition: all 0.18s ease; color: #475569; }
+      .nav-link:hover { background: rgba(47,118,245,0.08); color: #2f76f5; }
+      .nav-link.active { background: rgba(47,118,245,0.12); color: #2f76f5; font-weight: 600; }
+      .nav-link.active::before {
+        content: ''; position: absolute; left:0; top:0; bottom:0;
+        width: 3px; background: #2f76f5; border-radius: 0 2px 2px 0;
       }
 
-      var initFn = 'init_' + pageName;
-      if (!initializedTabs[pageName] && typeof window[initFn] === 'function') {
-        initializedTabs[pageName] = true;
-        window[initFn]();
-      }
-    }
+      .nav-section-label { color: #94a3b8; }
+      .sidebar-user { border-top: 1px solid #e2e8f0; }
+      .avatar-ring { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #2f76f5; }
 
-    // ── Called from child pages to navigate programmatically ───────
-    function navigateTo(pageName) {
-      document.querySelectorAll('.nav-link').forEach(function(l) { l.classList.remove('active'); });
-      document.querySelectorAll('.nav-link').forEach(function(l) {
-        var label = (l.querySelector('.nav-label') || {}).textContent || '';
-        if (label.trim() === pageName || l.getAttribute('data-page') === pageName) {
-          l.classList.add('active');
+      ::-webkit-scrollbar { width: 5px; }
+      ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+
+      .tab-pane { display: none; width: 100%; height: 100%; overflow-y: auto; }
+      .tab-pane.active { display: block; animation: fadeIn 0.3s ease; }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(6px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+    </style>
+  </head>
+  <body>
+
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/30 z-20 hidden md:hidden" onclick="toggleSidebar()"></div>
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="fixed md:relative w-60 flex flex-col shrink-0 h-screen z-30 shadow-sm -translate-x-full md:translate-x-0 transition-transform duration-250">
+
+      <div class="logo-wrap flex items-center gap-3 px-5 py-5 border-b border-slate-100">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shrink-0 shadow">
+          <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v8.5L4.5 18A2 2 0 006.4 21h11.2a2 2 0 001.9-2.5L15 11.5V3"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 3h6M8 15h8"/>
+          </svg>
+        </div>
+        <div class="brand-name">
+          <p class="text-base font-bold text-slate-800 leading-none">A-Lab</p>
+          <p class="text-[10px] text-slate-400 tracking-widest uppercase mt-0.5" style="font-family:'DM Mono',monospace">Automation Hub</p>
+        </div>
+      </div>
+
+      <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-0.5">
+
+        <p class="nav-section-label text-[10px] font-semibold uppercase tracking-widest px-3 mb-2 mt-1">Main</p>
+
+        <a href="#" onclick="setActive(this); switchTab('Dashboard'); return false;"
+          class="nav-link active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer">
+          <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
+            <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
+          </svg>
+          <span class="nav-label">Dashboard</span>
+        </a>
+
+        <p class="nav-section-label text-[10px] font-semibold uppercase tracking-widest px-3 mb-2 mt-4">Reference Data</p>
+
+        <a id="nav-branches" href="#" onclick="setActive(this); switchTab('Branches'); return false;"
+          class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer">
+          <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M9 21V7l3-4 3 4v14M9 11h6"/>
+          </svg>
+          <span class="nav-label">Branches</span>
+        </a>
+
+        <a id="nav-departments" href="#" onclick="setActive(this); switchTab('Departments'); return false;"
+          class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer">
+          <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0H5m14 0h2M5 21H3M10 9h4m-4 4h4"/>
+          </svg>
+          <span class="nav-label">Departments</span>
+        </a>
+
+        <a id="nav-lab-services" href="#" onclick="setActive(this); switchTab('LabServices'); return false;"
+          class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer">
+          <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v8.5L4.5 18A2 2 0 006.4 21h11.2a2 2 0 001.9-2.5L15 11.5V3M9 3h6"/>
+          </svg>
+          <span class="nav-label">Lab Services</span>
+        </a>
+
+        <!-- ── Packages (new) ── -->
+        <a id="nav-packages" href="#" onclick="setActive(this); switchTab('Packages'); return false;"
+          class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer">
+          <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+          </svg>
+          <span class="nav-label">Packages</span>
+        </a>
+
+        <a id="nav-discounts" href="#" onclick="setActive(this); switchTab('Discounts'); return false;"
+          class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer">
+          <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M17 17h.01M7.05 7.05l9.9 9.9M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span class="nav-label">Discounts</span>
+        </a>
+
+        <a id="nav-orders" href="#" onclick="setActive(this); switchTab('Orders'); return false;"
+          class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer">
+          <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v8.5L4.5 18A2 2 0 006.4 21h11.2a2 2 0 001.9-2.5L15 11.5V3M9 3h6M8 15h8"/>
+          </svg>
+          <span class="nav-label">Orders</span>
+        </a>
+
+        <p class="nav-section-label text-[10px] font-semibold uppercase tracking-widest px-3 mb-2 mt-4">People</p>
+
+        <a id="nav-doctors" href="#" onclick="setActive(this); switchTab('Doctors'); return false;"
+          class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer">
+          <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A9 9 0 1118.88 6.196M15 11a3 3 0 11-6 0 3 3 0 016 0zm3 7v1a2 2 0 01-2 2h-1"/>
+          </svg>
+          <span class="nav-label">Doctors</span>
+        </a>
+
+        <a href="#" onclick="setActive(this); switchTab('Patients'); return false;"
+          class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer">
+          <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-1a4 4 0 00-5.196-3.762M9 11a4 4 0 100-8 4 4 0 000 8zm-6 9v-1a4 4 0 014-4h4a4 4 0 014 4v1"/>
+          </svg>
+          <span class="nav-label">Patients</span>
+        </a>
+
+        <a id="nav-medtechs" href="#" onclick="setActive(this); switchTab('MedTechs'); return false;"
+          class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer">
+          <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01m-.01 4h.01"/>
+          </svg>
+          <span class="nav-label">Technologists</span>
+        </a>
+
+        <a id="nav-change-password" href="#" onclick="setActive(this); switchTab('BranchAdminChangePassword'); return false;"
+          class="nav-link hidden flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer">
+          <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+          </svg>
+          <span class="nav-label">Change Password</span>
+        </a>
+
+        <p class="nav-section-label text-[10px] font-semibold uppercase tracking-widest px-3 mb-2 mt-4">Management</p>
+
+        <a id="nav-admins" href="#" onclick="setActive(this); switchTab('Admins'); return false;"
+          class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer">
+          <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A9 9 0 1118.88 6.196M15 11a3 3 0 11-6 0 3 3 0 016 0zm3 7v1a2 2 0 01-2 2h-1"/>
+          </svg>
+          <span class="nav-label">Admins</span>
+        </a>
+
+      </nav>
+
+      <!-- Sidebar User + Logout -->
+      <div class="sidebar-user p-4 flex items-center gap-3">
+        <img src="https://ui-avatars.com/api/?name=Admin+User&background=2f76f5&color=fff&size=64&font-size=0.4"
+            class="w-8 h-8 rounded-full avatar-ring shrink-0" alt="User"/>
+        <div class="nav-label flex-1 min-w-0">
+          <p id="sidebar-name" class="text-xs font-semibold text-slate-700 truncate">Admin</p>
+          <p id="sidebar-role" class="text-[10px] text-slate-400 truncate">—</p>
+        </div>
+        <button onclick="openLogoutModal()"
+          class="nav-label text-slate-400 hover:text-red-500 transition-colors p-1 rounded-lg hover:bg-red-50"
+          title="Logout">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1"/>
+          </svg>
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <div id="main-wrapper" class="flex-1 flex flex-col overflow-hidden">
+
+      <header class="h-14 bg-white border-b border-slate-100 flex items-center px-5 gap-4 shrink-0 shadow-sm z-20">
+        <button onclick="toggleSidebar()" class="text-slate-400 hover:text-blue-500 transition-colors p-1 rounded-lg hover:bg-slate-50">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+        </button>
+        <div class="flex items-center gap-2 text-sm">
+          <span class="text-slate-400">A-Lab</span>
+          <span class="text-slate-300">/</span>
+          <span id="page-title" class="text-slate-700 font-semibold">Dashboard</span>
+        </div>
+        <div class="flex-1"></div>
+        <img src="https://ui-avatars.com/api/?name=Admin+User&background=2f76f5&color=fff&size=64&font-size=0.4"
+            class="w-8 h-8 rounded-full avatar-ring" alt="User"/>
+      </header>
+
+      <main class="flex-1 overflow-hidden bg-slate-50 relative">
+        <!-- Init loading overlay — hidden after session loads -->
+        <div id="init-loading" class="absolute inset-0 bg-slate-50 flex flex-col items-center justify-center gap-3 z-10">
+          <div class="w-8 h-8 rounded-full animate-spin" style="border:2px solid #bbd8ff;border-top-color:#2f76f5"></div>
+          <p class="text-xs text-slate-400">Loading…</p>
+        </div>
+
+        <!-- Tab panes — all embedded, shown/hidden by switchTab() -->
+        <div id="tab-content" class="w-full h-full overflow-hidden">
+          <div id="tab-Dashboard" class="tab-pane"><?!= include('Dashboard') ?></div>
+          <div id="tab-Orders" class="tab-pane"><?!= include('Orders') ?></div>
+          <div id="tab-Branches" class="tab-pane"><?!= include('Branches') ?></div>
+          <div id="tab-Departments" class="tab-pane"><?!= include('Departments') ?></div>
+          <div id="tab-LabServices" class="tab-pane"><?!= include('LabServices') ?></div>
+          <div id="tab-Packages" class="tab-pane"><?!= include('Packages') ?></div>
+          <div id="tab-Discounts" class="tab-pane"><?!= include('Discounts') ?></div>
+          <div id="tab-Doctors" class="tab-pane"><?!= include('Doctors') ?></div>
+          <div id="tab-Patients" class="tab-pane"><?!= include('Patients') ?></div>
+          <div id="tab-MedTechs" class="tab-pane"><?!= include('MedTechs') ?></div>
+          <div id="tab-Admins" class="tab-pane"><?!= include('Admins') ?></div>
+          <div id="tab-BranchAdminChangePassword" class="tab-pane"><?!= include('BranchAdminChangePassword') ?></div>
+        </div>
+      </main>
+    </div>
+
+    <!-- LOGOUT CONFIRM MODAL -->
+    <div id="logout-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center" onclick="event.stopPropagation()">
+        <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
+          <svg class="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1"/>
+          </svg>
+        </div>
+        <h3 class="text-base font-bold text-slate-800 mb-1">Sign out?</h3>
+        <p class="text-sm text-slate-500 mb-6">You will be redirected to the login page.</p>
+        <div class="flex gap-3">
+          <button onclick="closeLogoutModal()"
+            class="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors">
+            Cancel
+          </button>
+          <button id="confirm-logout-btn" onclick="confirmLogout()"
+            class="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition-colors">
+            Sign Out
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      var baseUrl         = '';
+      var alab_token      = '';
+      var initializedTabs = {};
+
+      // ── Read token ─────────────────────────────────────────────────
+      (function() {
+        const params = new URLSearchParams(window.location.search);
+        alab_token = params.get('token') || localStorage.getItem('alab_token') || '';
+        if (alab_token) localStorage.setItem('alab_token', alab_token);
+      })();
+
+      // ── Tab switching (the core engine) ────────────────────────────
+      function switchTab(pageName) {
+        document.querySelectorAll('.tab-pane').forEach(function(p) {
+          p.classList.remove('active');
+        });
+        var target = document.getElementById('tab-' + pageName);
+        if (target) target.classList.add('active');
+
+        var activeLink = document.querySelector('.nav-link.active');
+        if (activeLink) {
+          document.getElementById('page-title').textContent =
+            (activeLink.querySelector('.nav-label') || {}).textContent || pageName;
         }
-      });
-      switchTab(pageName);
-    }
 
-    // ── Init ───────────────────────────────────────────────────────
-    google.script.run
-      .withSuccessHandler(function(url) {
-        baseUrl = url;
-        google.script.run
-          .withSuccessHandler(function(res) {
-            if (!res.success) {
+        var initFn = 'init_' + pageName.replace(/-/g, '_');
+        if (!initializedTabs[pageName] && typeof window[initFn] === 'function') {
+          initializedTabs[pageName] = true;
+          window[initFn]();
+        }
+      }
+
+      // ── Called from child pages to navigate programmatically ───────
+      function navigateTo(pageName) {
+        document.querySelectorAll('.nav-link').forEach(function(l) { l.classList.remove('active'); });
+        document.querySelectorAll('.nav-link').forEach(function(l) {
+          var label = (l.querySelector('.nav-label') || {}).textContent || '';
+          if (label.trim() === pageName || l.getAttribute('data-page') === pageName) {
+            l.classList.add('active');
+          }
+        });
+        switchTab(pageName);
+      }
+
+      // ── Init ───────────────────────────────────────────────────────
+      google.script.run
+        .withSuccessHandler(function(url) {
+          baseUrl = url;
+          google.script.run
+            .withSuccessHandler(function(res) {
+              if (!res.success) {
+                localStorage.removeItem('alab_token');
+                window.top.location.href = url + '?page=Login';
+                return;
+              }
+              if (res.data) {
+                if (res.data.role === 'doctor') {
+                  window.top.location.href = url + '?page=DoctorIndex&token=' + encodeURIComponent(alab_token);
+                  return;
+                }
+                if (res.data.role === 'medtech') {
+                  window.top.location.href = url + '?page=TechIndex&token=' + encodeURIComponent(alab_token);
+                  return;
+                }
+                document.getElementById('sidebar-name').textContent = res.data.full_name || 'Admin';
+                document.getElementById('sidebar-role').textContent =
+                  res.data.role === 'super_admin'
+                    ? 'Super Admin'
+                    : (res.data.branch_name ? res.data.branch_name + ' Admin' : 'Branch Admin');
+                applyNavRoles(res.data.role);
+              }
+              document.getElementById('init-loading').classList.add('hidden');
+              document.querySelector('.nav-link').classList.add('active');
+              switchTab('Dashboard');
+            })
+            .withFailureHandler(function() {
               localStorage.removeItem('alab_token');
               window.top.location.href = url + '?page=Login';
-              return;
-            }
-            if (res.data) {
-              if (res.data.role === 'doctor') {
-                window.top.location.href = url + '?page=DoctorIndex&token=' + encodeURIComponent(alab_token);
-                return;
-              }
-              if (res.data.role === 'medtech') {
-                window.top.location.href = url + '?page=TechIndex&token=' + encodeURIComponent(alab_token);
-                return;
-              }
-              document.getElementById('sidebar-name').textContent = res.data.full_name || 'Admin';
-              document.getElementById('sidebar-role').textContent =
-                res.data.role === 'super_admin'
-                  ? 'Super Admin'
-                  : (res.data.branch_name ? res.data.branch_name + ' Admin' : 'Branch Admin');
-              applyNavRoles(res.data.role);
-            }
-            document.getElementById('init-loading').classList.add('hidden');
-            document.querySelector('.nav-link').classList.add('active');
-            switchTab('Dashboard');
-          })
-          .withFailureHandler(function() {
-            localStorage.removeItem('alab_token');
-            window.top.location.href = url + '?page=Login';
-          })
-          .handleAdminRequest('GET_SESSION', {}, alab_token);
-      })
-      .withFailureHandler(function(err) {
-        document.getElementById('init-loading').innerHTML =
-          '<p class="text-red-500 text-sm">Failed to initialize: ' + err.message + '</p>';
-      })
-      .getScriptUrl();
+            })
+            .handleAdminRequest('GET_SESSION', {}, alab_token);
+        })
+        .withFailureHandler(function(err) {
+          document.getElementById('init-loading').innerHTML =
+            '<p class="text-red-500 text-sm">Failed to initialize: ' + err.message + '</p>';
+        })
+        .getScriptUrl();
 
-    // ── Nav helpers ────────────────────────────────────────────────
-    function applyNavRoles(role) {
-      if (role === 'branch_admin') {
-        ['nav-branches', 'nav-admins'].forEach(function(id) {
-          var el = document.getElementById(id);
-          if (el) el.style.display = 'none';
-        });
-        document.getElementById('nav-change-password').classList.remove('hidden');
-        document.getElementById('nav-change-password').classList.add('flex');
+      // ── Nav helpers ────────────────────────────────────────────────
+      function applyNavRoles(role) {
+        if (role === 'branch_admin') {
+          ['nav-branches', 'nav-admins'].forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+          });
+          document.getElementById('nav-change-password').classList.remove('hidden');
+          document.getElementById('nav-change-password').classList.add('flex');
+        }
       }
-    }
 
-    function setActive(el) {
-      document.querySelectorAll('.nav-link').forEach(function(l) { l.classList.remove('active'); });
-      el.classList.add('active');
-      document.getElementById('page-title').textContent =
-        el.querySelector('.nav-label')?.textContent.trim() || 'Dashboard';
-      if (window.innerWidth < 768) {
-        document.getElementById('sidebar').classList.add('-translate-x-full');
-        document.getElementById('sidebar-overlay').classList.add('hidden');
+      function setActive(el) {
+        document.querySelectorAll('.nav-link').forEach(function(l) { l.classList.remove('active'); });
+        el.classList.add('active');
+        document.getElementById('page-title').textContent =
+          el.querySelector('.nav-label')?.textContent.trim() || 'Dashboard';
+        if (window.innerWidth < 768) {
+          document.getElementById('sidebar').classList.add('-translate-x-full');
+          document.getElementById('sidebar-overlay').classList.add('hidden');
+        }
       }
-    }
 
-    function toggleSidebar() {
-      const sidebar = document.getElementById('sidebar');
-      const overlay = document.getElementById('sidebar-overlay');
-      if (window.innerWidth < 768) {
-        const hidden = sidebar.classList.contains('-translate-x-full');
-        sidebar.classList.toggle('-translate-x-full', !hidden);
-        overlay.classList.toggle('hidden', !hidden);
-      } else {
-        sidebar.classList.toggle('collapsed');
+      function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        if (window.innerWidth < 768) {
+          const hidden = sidebar.classList.contains('-translate-x-full');
+          sidebar.classList.toggle('-translate-x-full', !hidden);
+          overlay.classList.toggle('hidden', !hidden);
+        } else {
+          sidebar.classList.toggle('collapsed');
+        }
       }
-    }
 
-    // ── Logout ─────────────────────────────────────────────────────
-    function openLogoutModal()  { document.getElementById('logout-modal').classList.remove('hidden'); }
-    function closeLogoutModal() { document.getElementById('logout-modal').classList.add('hidden'); }
+      // ── Logout ─────────────────────────────────────────────────────
+      function openLogoutModal()  { document.getElementById('logout-modal').classList.remove('hidden'); }
+      function closeLogoutModal() { document.getElementById('logout-modal').classList.add('hidden'); }
 
-    function confirmLogout() {
-      const btn = document.getElementById('confirm-logout-btn');
-      btn.textContent = 'Signing out…'; btn.disabled = true;
-      google.script.run.handleAdminRequest('LOGOUT', {}, alab_token);
-      localStorage.removeItem('alab_token');
-      window.top.location.href = baseUrl + '?page=Login';
-    }
+      function confirmLogout() {
+        const btn = document.getElementById('confirm-logout-btn');
+        btn.textContent = 'Signing out…'; btn.disabled = true;
+        google.script.run.handleAdminRequest('LOGOUT', {}, alab_token);
+        localStorage.removeItem('alab_token');
+        window.top.location.href = baseUrl + '?page=Login';
+      }
 
-    document.getElementById('logout-modal').addEventListener('click', closeLogoutModal);
-    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeLogoutModal(); });
-  </script>
-</body>
-</html>
+      document.getElementById('logout-modal').addEventListener('click', closeLogoutModal);
+      document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeLogoutModal(); });
+    </script>
+  </body>
+  </html>
