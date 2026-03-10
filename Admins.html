@@ -1,11 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admins — A-Lab</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+</head>
+<body>
   <style>
     * { font-family: 'DM Sans', sans-serif; }
     body { background: #f8fafc; color: #0f172a; height: 100vh; overflow: auto; }
@@ -56,8 +50,8 @@
     .toast-warning { background:#f59e0b; }
     @keyframes toastSlideUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
   </style>
-</head>
-<body>
+</body>
+</html>
 <div class="p-6 max-w-7xl mx-auto">
 
   <!-- Header -->
@@ -268,36 +262,66 @@
 
   function loadData() {
     showLoading(true);
+
+    // Track parallel call completions
+    var _loaded = { branches: false, branchAdmins: false, superAdmins: false };
+
+    function _tryRender() {
+      var superDone = isBranchAdmin || _loaded.superAdmins;
+      if (!_loaded.branches || !_loaded.branchAdmins || !superDone) return;
+      showLoading(false);
+      renderStats();
+      renderTable();
+    }
+
+    // Call 1: Branches
     google.script.run
-      .withSuccessHandler(res => {
+      .withSuccessHandler(function(res) {
         if (res.success) { allBranches = res.data || []; populateBranchDropdown(); }
-        google.script.run
-          .withSuccessHandler(res => {
-            allBranchAdmins = res.success ? (res.data || []) : [];
-
-            // Branch admin: skip loading super admins entirely
-            if (isBranchAdmin) {
-              showLoading(false);
-              // Filter to own branch only
-              allBranchAdmins = allBranchAdmins.filter(a => a.branch_id === currentSession.branch_id);
-              renderStats(); renderTable();
-              return;
-            }
-
-            google.script.run
-              .withSuccessHandler(res => {
-                showLoading(false);
-                allSuperAdmins = res.success ? (res.data || []) : [];
-                renderStats(); renderTable();
-              })
-              .withFailureHandler(err => { showLoading(false); showToast('Error loading super admins: ' + err.message, 'error'); renderTable(); })
-              .handleAdminRequest('GET_SUPER_ADMINS', {}, alab_token);
-          })
-          .withFailureHandler(err => { showLoading(false); showToast('Error loading branch admins: ' + err.message, 'error'); })
-          .handleAdminRequest('GET_BRANCH_ADMINS', {}, alab_token);
+        _loaded.branches = true;
+        _tryRender();
       })
-      .withFailureHandler(err => { showLoading(false); showToast('Error loading branches: ' + err.message, 'error'); })
+      .withFailureHandler(function(err) {
+        showToast('Error loading branches: ' + err.message, 'error');
+        _loaded.branches = true;
+        _tryRender();
+      })
       .handleBranchRequest('GET_BRANCHES', {}, alab_token);
+
+    // Call 2: Branch Admins
+    google.script.run
+      .withSuccessHandler(function(res) {
+        allBranchAdmins = res.success ? (res.data || []) : [];
+        if (isBranchAdmin && currentSession) {
+          allBranchAdmins = allBranchAdmins.filter(function(a) {
+            return a.branch_id === currentSession.branch_id;
+          });
+        }
+        _loaded.branchAdmins = true;
+        _tryRender();
+      })
+      .withFailureHandler(function(err) {
+        showToast('Error loading branch admins: ' + err.message, 'error');
+        _loaded.branchAdmins = true;
+        _tryRender();
+      })
+      .handleAdminRequest('GET_BRANCH_ADMINS', {}, alab_token);
+
+    // Call 3: Super Admins — skipped entirely for branch_admin role
+    if (!isBranchAdmin) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          allSuperAdmins = res.success ? (res.data || []) : [];
+          _loaded.superAdmins = true;
+          _tryRender();
+        })
+        .withFailureHandler(function(err) {
+          showToast('Error loading super admins: ' + err.message, 'error');
+          _loaded.superAdmins = true;
+          _tryRender();
+        })
+        .handleAdminRequest('GET_SUPER_ADMINS', {}, alab_token);
+    }
   }
 
   function populateBranchDropdown() {
