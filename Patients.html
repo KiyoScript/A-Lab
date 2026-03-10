@@ -1,12 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Patients — A-Lab</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-  <style>
+<style>
     * { font-family: 'DM Sans', sans-serif; }
     body { background: #f8fafc; color: #0f172a; overflow: auto; }
     .card { background:#fff; border:1px solid #e2e8f0; border-radius:1rem; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
@@ -53,9 +45,7 @@
     ::-webkit-scrollbar { width:5px; }
     ::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:99px; }
   </style>
-</head>
-<body>
-<div class="p-6 max-w-7xl mx-auto">
+<div class="p-6">
 
   <!-- Header -->
   <div class="flex items-center justify-between mb-6 fade-up">
@@ -352,40 +342,51 @@
 <div id="toast"></div>
 
 <script>
-  var alab_token     = (new URLSearchParams(window.location.search)).get('token') || localStorage.getItem('alab_token') || '';
-  var allPatients    = [];
-  var allDiscounts   = [];
-  var allBranches    = [];
-  var currentSession = null;
-  var isSuperAdmin   = false;
-  var editingId      = null;
-  var editingBranchId = null;
-  var deletingPayload = null;
-
-  function _handleExpired() {
+function _pat_getToken() {
+  return (typeof alab_token !== 'undefined' ? alab_token : null)
+    || localStorage.getItem('alab_token') || '';
+}
+function _checkExpired(res) {
+  if (res && res.expired) {
     localStorage.removeItem('alab_token');
-    google.script.run.withSuccessHandler(function(url) {
-      window.top.location.href = url + '?page=Login';
-    }).getScriptUrl();
+    window.top.location.href = (typeof baseUrl !== 'undefined' ? baseUrl : '') + '?page=Login';
+    return true;
   }
-  function _checkExpired(res) { if (res && res.expired) { _handleExpired(); return true; } return false; }
+  return false;
+}
 
-  document.addEventListener('DOMContentLoaded', initPage);
+var _pat_listenersAttached = false;
+var allPatients    = [];
+var allDiscounts   = [];
+var allBranches    = [];
+var currentSession = null;
+var isSuperAdmin   = false;
+var editingId      = null;
+var editingBranchId = null;
+var deletingPayload = null;
 
-  function initPage() {
-    google.script.run
-      .withSuccessHandler(function(res) {
-        if (_checkExpired(res)) return;
-        if (res.success) {
-          currentSession = res.data;
-          isSuperAdmin   = currentSession.role === 'super_admin';
-          applySessionUI();
-        }
-        loadData();
-      })
-      .withFailureHandler(function() { loadData(); })
-      .handleAdminRequest('GET_SESSION', {}, alab_token);
+function init_Patients() {
+  if (!_pat_listenersAttached) {
+    _pat_listenersAttached = true;
+    document.getElementById('modal-backdrop').addEventListener('click', closeModal);
+    document.getElementById('delete-modal').addEventListener('click', closeDeleteModal);
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') { closeModal(); closeDeleteModal(); }
+    });
   }
+  google.script.run
+    .withSuccessHandler(function(res) {
+      if (_checkExpired(res)) return;
+      if (res.success) {
+        currentSession = res.data;
+        isSuperAdmin   = currentSession.role === 'super_admin';
+        applySessionUI();
+      }
+      loadData();
+    })
+    .withFailureHandler(function() { loadData(); })
+    .handleAdminRequest('GET_SESSION', {}, _pat_getToken());
+}
 
   function applySessionUI() {
     if (isSuperAdmin) {
@@ -425,7 +426,7 @@
         branchDone = true; tryRender();
       })
       .withFailureHandler(function() { branchDone = true; tryRender(); })
-      .handleBranchRequest('GET_BRANCHES', {}, alab_token);
+      .handleBranchRequest('GET_BRANCHES', {}, _pat_getToken());
 
     // Load discounts (all admin roles)
     google.script.run
@@ -435,7 +436,7 @@
         discDone = true; tryRender();
       })
       .withFailureHandler(function() { discDone = true; tryRender(); })
-      .handleDiscountRequest('GET_DISCOUNTS_ALL', {}, alab_token);
+      .handleDiscountRequest('GET_DISCOUNTS_ALL', {}, _pat_getToken());
 
     // Load patients
     google.script.run
@@ -448,7 +449,7 @@
         patDone = true; tryRender();
         showToast('Error loading patients: ' + err.message, 'error');
       })
-      .handlePatientRequest('GET_PATIENTS', {}, alab_token);
+      .handlePatientRequest('GET_PATIENTS', {}, _pat_getToken());
   }
 
   function populateBranchFilter() {
@@ -741,7 +742,7 @@
         }
       })
       .withFailureHandler(function(err) { setSaving(false); showToast('Error: ' + err.message, 'error'); })
-      .handlePatientRequest(action, payload, alab_token);
+      .handlePatientRequest(action, payload, _pat_getToken());
   }
 
   function setSaving(v) {
@@ -775,7 +776,7 @@
         else showToast(res.error || 'Failed to delete.', 'error');
       })
       .withFailureHandler(function(err) { btn.textContent = 'Delete'; btn.disabled = false; showToast('Error: ' + err.message, 'error'); })
-      .handlePatientRequest('DELETE_PATIENT', deletingPayload, alab_token);
+      .handlePatientRequest('DELETE_PATIENT', deletingPayload, _pat_getToken());
   }
 
   function showLoading(v) {
@@ -827,9 +828,5 @@
 
   function escHtml(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-  document.getElementById('modal-backdrop').addEventListener('click', closeModal);
-  document.getElementById('delete-modal').addEventListener('click', closeDeleteModal);
-  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closeModal(); closeDeleteModal(); } });
-</script>
-</body>
-</html>
+  </script>
+</div>

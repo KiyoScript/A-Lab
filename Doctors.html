@@ -1,14 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Doctors</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
+<style>
     *, *::before, *::after { box-sizing: border-box; }
     body { font-family: 'DM Sans', sans-serif; background: #f8fafc; color: #1e293b; margin: 0; }
     .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.35); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; }
@@ -47,8 +37,7 @@
     .history-row { padding: 10px 0; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 12px; }
     .history-row:last-child { border-bottom: none; }
   </style>
-</head>
-<body class="p-5">
+<div class="p-5">
 
 <div id="toast"></div>
 
@@ -317,7 +306,20 @@
      SCRIPT
 ══════════════════════════════════════════════════════════ -->
 <script>
-  var alab_token     = localStorage.getItem('alab_token') || '';
+  function _dr_getToken() {
+    return (typeof alab_token !== 'undefined' ? alab_token : null)
+      || localStorage.getItem('alab_token') || '';
+  }
+  function _checkExpired(res) {
+    if (res && res.expired) {
+      localStorage.removeItem('alab_token');
+      window.top.location.href = (typeof baseUrl !== 'undefined' ? baseUrl : '') + '?page=Login';
+      return true;
+    }
+    return false;
+  }
+
+  var _dr_listenersAttached = false;
   var currentSession = null;
   var allDoctors     = [];
   var allBranches    = [];
@@ -325,19 +327,32 @@
   var isBranchAdmin  = false;
   var deletingId     = null;
 
-  // ── Bootstrap ─────────────────────────────────────────────
-  google.script.run
-    .withSuccessHandler(function(res) {
-      if (res && res.success) {
-        currentSession = res.data;
-        isSuperAdmin   = currentSession.role === 'super_admin';
-        isBranchAdmin  = currentSession.role === 'branch_admin';
-        applyRoleUI();
-      }
-      loadBranches();
-    })
-    .withFailureHandler(function() { loadBranches(); })
-    .handleAdminRequest('GET_SESSION', {}, alab_token);
+  function init_Doctors() {
+    if (!_dr_listenersAttached) {
+      _dr_listenersAttached = true;
+      document.getElementById('f-is-active').addEventListener('change', updateStatusLabel);
+      document.getElementById('modal-backdrop').addEventListener('click', closeModal);
+      document.getElementById('assign-modal').addEventListener('click', closeAssignModal);
+      document.getElementById('pw-modal').addEventListener('click', closePwModal);
+      document.getElementById('delete-modal').addEventListener('click', closeDeleteModal);
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') { closeModal(); closeAssignModal(); closePwModal(); closeDeleteModal(); }
+      });
+    }
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (_checkExpired(res)) return;
+        if (res && res.success) {
+          currentSession = res.data;
+          isSuperAdmin   = currentSession.role === 'super_admin';
+          isBranchAdmin  = currentSession.role === 'branch_admin';
+          applyRoleUI();
+        }
+        loadBranches();
+      })
+      .withFailureHandler(function() { loadBranches(); })
+      .handleAdminRequest('GET_SESSION', {}, _dr_getToken());
+  }
 
   function applyRoleUI() {
     if (isSuperAdmin) {
@@ -365,7 +380,7 @@
         loadData();
       })
       .withFailureHandler(function() { loadData(); })
-      .handleBranchRequest('GET_BRANCHES', {}, alab_token);
+      .handleBranchRequest('GET_BRANCHES', {}, _dr_getToken());
   }
 
   function populateBranchFilter() {
@@ -404,7 +419,7 @@
         showToast('Error: ' + err.message, 'error');
         renderTable([]);
       })
-      .handleDoctorRequest('GET_DOCTORS', {}, alab_token);
+      .handleDoctorRequest('GET_DOCTORS', {}, _dr_getToken());
   }
 
   // ── Stats ──────────────────────────────────────────────────
@@ -598,7 +613,7 @@
         btn.disabled = false; btn.textContent = id ? 'Save Changes' : 'Save Doctor';
         showToast('Error: ' + err.message, 'error');
       })
-      .handleDoctorRequest(action, payload, alab_token);
+      .handleDoctorRequest(action, payload, _dr_getToken());
   }
 
   // ── Assign / Reassign Modal ────────────────────────────────
@@ -634,7 +649,7 @@
         btn.disabled = false; btn.textContent = 'Assign';
         showToast('Error: ' + err.message, 'error');
       })
-      .handleDoctorRequest('ASSIGN_DOCTOR_TO_BRANCH', { doctor_id: doctorId, branch_id: branchId }, alab_token);
+      .handleDoctorRequest('ASSIGN_DOCTOR_TO_BRANCH', { doctor_id: doctorId, branch_id: branchId }, _dr_getToken());
   }
 
   // ── Change Password Modal ──────────────────────────────────
@@ -669,7 +684,7 @@
         btn.disabled = false; btn.textContent = 'Update Password';
         showToast('Error: ' + err.message, 'error');
       })
-      .handleDoctorRequest('CHANGE_DOCTOR_PASSWORD', { doctor_id: doctorId, new_password: newPw }, alab_token);
+      .handleDoctorRequest('CHANGE_DOCTOR_PASSWORD', { doctor_id: doctorId, new_password: newPw }, _dr_getToken());
   }
 
   // ── Delete ─────────────────────────────────────────────────
@@ -697,7 +712,7 @@
         closeDeleteModal();
         showToast('Error: ' + err.message, 'error');
       })
-      .handleDoctorRequest('DELETE_DOCTOR', { doctor_id: deletingId }, alab_token);
+      .handleDoctorRequest('DELETE_DOCTOR', { doctor_id: deletingId }, _dr_getToken());
   }
 
   // ── Helpers ────────────────────────────────────────────────
@@ -732,15 +747,5 @@
   function escHtml(str) {
     return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
-
-  document.getElementById('f-is-active').addEventListener('change', updateStatusLabel);
-  document.getElementById('modal-backdrop').addEventListener('click', closeModal);
-  document.getElementById('assign-modal').addEventListener('click', closeAssignModal);
-  document.getElementById('pw-modal').addEventListener('click', closePwModal);
-  document.getElementById('delete-modal').addEventListener('click', closeDeleteModal);
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') { closeModal(); closeAssignModal(); closePwModal(); closeDeleteModal(); }
-  });
 </script>
-</body>
-</html>
+</div>

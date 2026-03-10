@@ -745,10 +745,10 @@
         isSuperAdmin  = currentSession.role === 'super_admin';
         isDoctor      = currentSession.role === 'doctor';
 
-        var btn = document.getElementById('ord-create-btn');
+        var btn = document.getElementById('create-btn');
         if (isTech && btn) { btn.classList.remove('hidden'); btn.classList.add('flex'); }
 
-        var sub = document.getElementById('ord-header-sub');
+        var sub = document.getElementById('header-sub');
         if (sub) sub.textContent =
           isSuperAdmin ? 'All branches — read only.' :
           isDoctor     ? 'Your referrals — read only.' :
@@ -900,7 +900,7 @@
         }
       })
       .withFailureHandler(function(err) { showToast(err.message, 'error'); })
-      .handlePatientRequest('GET_PATIENTS', {}, alab_token);
+      .handlePatientRequest('GET_PATIENTS', {}, _ord_getToken());
   }
 
   function wLoadServices() {
@@ -915,10 +915,10 @@
             wRenderItemList('');
           })
           .withFailureHandler(function(){ wRenderItemList(''); })
-          .handlePackageRequest('GET_PACKAGES', {}, alab_token);
+          .handlePackageRequest('GET_PACKAGES', {}, _ord_getToken());
       })
       .withFailureHandler(function(){ wRenderItemList(''); })
-      .handleLabServiceRequest('GET_LAB_SERVICES', {}, alab_token);
+      .handleLabServiceRequest('GET_LAB_SERVICES', {}, _ord_getToken());
   }
 
   function wLoadDoctors() {
@@ -938,14 +938,14 @@
         }
       })
       .withFailureHandler(function(){})
-      .handleDoctorRequest('GET_DOCTORS', {}, alab_token);
+      .handleDoctorRequest('GET_DOCTORS', {}, _ord_getToken());
   }
 
   function wLoadDiscounts() {
     google.script.run
       .withSuccessHandler(function(res) { if (res && res.success) wAllDiscounts = res.data || []; })
       .withFailureHandler(function(){})
-      .handleDiscountRequest('GET_DISCOUNTS_ALL', {}, alab_token);
+      .handleDiscountRequest('GET_DISCOUNTS_ALL', {}, _ord_getToken());
   }
 
   // ── Step 1 — Patient ──────────────────────────────────────────
@@ -1068,7 +1068,7 @@
         last_name: last, first_name: first,
         middle_name: document.getElementById('we-middle').value.trim(),
         sex: sex, birth_date: bdate, contact_number: contact, address: address, discount_ids: []
-      }, alab_token);
+      }, _ord_getToken());
   }
 
   // ── Step navigation ───────────────────────────────────────────
@@ -1263,7 +1263,7 @@
         payment_discount:    disc,
         notes:               document.getElementById('w-notes').value.trim(),
         items:               items
-      }, alab_token);
+      }, _ord_getToken());
   }
 
   // ══════════════════════════════════════════════════════════════
@@ -1317,7 +1317,7 @@
         renderFooterActions();
       })
       .withFailureHandler(function() { document.getElementById('v-items').innerHTML = '<p class="text-xs text-red-400">Error loading items.</p>'; })
-      .handleOrderRequest('GET_ORDER_ITEMS', { order_id: orderId, branch_id: branchId || o.branch_id }, alab_token);
+      .handleOrderRequest('GET_ORDER_ITEMS', { order_id: orderId, branch_id: branchId || o.branch_id }, _ord_getToken());
 
     document.getElementById('view-modal').classList.remove('hidden');
   }
@@ -1431,7 +1431,7 @@
         else showToast(res.error || 'Action failed.', 'error');
       })
       .withFailureHandler(function(err){ showToast(err.message, 'error'); })
-      .handleOrderRequest(action, payload, alab_token);
+      .handleOrderRequest(action, payload, _ord_getToken());
   }
 
   // ── Payment Modal ─────────────────────────────────────────────
@@ -1469,7 +1469,7 @@
         else showToast(res.error || 'Payment failed.', 'error');
       })
       .withFailureHandler(function(err){ btn.disabled=false; btn.innerHTML='<span id="pay-label">Confirm Payment</span>'; showToast(err.message,'error'); })
-      .handleOrderRequest('RECORD_PAYMENT', { order_id: payingOrder.order_id, branch_id: payingOrder.branch_id, payment_method: method, amount_paid: amount }, alab_token);
+      .handleOrderRequest('RECORD_PAYMENT', { order_id: payingOrder.order_id, branch_id: payingOrder.branch_id, payment_method: method, amount_paid: amount }, _ord_getToken());
   }
 
   // ── Upload Modal ──────────────────────────────────────────────
@@ -1526,7 +1526,7 @@
           else { showToast(res.error||'Upload failed.', 'error'); document.getElementById('upload-progress').classList.add('hidden'); }
         })
         .withFailureHandler(function(err){ clearInterval(prog); btn.disabled=false; btn.innerHTML='<span id="upload-label">Upload Result</span>'; showToast(err.message,'error'); document.getElementById('upload-progress').classList.add('hidden'); })
-        .handleOrderRequest('UPLOAD_RESULT', { item_id: uploadingItem.item_id, order_id: uploadingItem.order_id, branch_id: uploadingItem.branch_id, file_data: base64, file_name: selectedFile.name, mime_type: selectedFile.type }, alab_token);
+        .handleOrderRequest('UPLOAD_RESULT', { item_id: uploadingItem.item_id, order_id: uploadingItem.order_id, branch_id: uploadingItem.branch_id, file_data: base64, file_name: selectedFile.name, mime_type: selectedFile.type }, _ord_getToken());
     };
     reader.readAsDataURL(selectedFile);
   }

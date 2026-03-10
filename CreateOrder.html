@@ -1,12 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>New Order — A-Lab</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-  <style>
+<style>
     *, *::before, *::after { box-sizing: border-box; }
     body { font-family: 'DM Sans', sans-serif; background: #f8fafc; color: #1e293b; margin: 0; min-height: 100vh; }
 
@@ -104,8 +96,7 @@
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
   </style>
-</head>
-<body class="p-5 pb-10">
+<div class="p-5 pb-10">
 <div id="toast"></div>
 
 <!-- ── PAGE HEADER ── -->
@@ -392,34 +383,43 @@
 </div>
 
 <script>
-  var alab_token     = (new URLSearchParams(window.location.search)).get('token') || localStorage.getItem('alab_token') || '';
-  var currentStep    = 1;
-  var selectedPatient = null;   // full patient object
-  var allPatients    = [];
-  var allServices    = [];
-  var allPackages    = [];
-  var allDiscounts   = [];
-  var selectedItems  = {};      // key → { item_type, item_ref_id, item_name_snapshot, fee }
+  function _co_getToken() {
+    return (typeof alab_token !== 'undefined' ? alab_token : null)
+      || localStorage.getItem('alab_token') || '';
+  }
 
-  // ── Session check ─────────────────────────────────────────────
   function _checkExpired(res) {
     if (res && res.expired) {
       localStorage.removeItem('alab_token');
-      google.script.run.withSuccessHandler(function(url) {
-        window.top.location.href = url + '?page=Login';
-      }).getScriptUrl();
+      window.top.location.href = (typeof baseUrl !== 'undefined' ? baseUrl : '') + '?page=Login';
       return true;
     }
     return false;
   }
 
-  // ── Init ──────────────────────────────────────────────────────
-  document.addEventListener('DOMContentLoaded', function() {
+  var currentStep     = 1;
+  var selectedPatient = null;
+  var allPatients     = [];
+  var allServices     = [];
+  var allPackages     = [];
+  var allDiscounts    = [];
+  var selectedItems   = {};
+
+  function init_CreateOrder() {
+    // Reset state each time the tab is opened
+    currentStep     = 1;
+    selectedPatient = null;
+    allPatients     = [];
+    allServices     = [];
+    allPackages     = [];
+    allDiscounts    = [];
+    selectedItems   = {};
+    setStep(1);
     loadPatients();
     loadServices();
     loadDoctors();
     loadDiscounts();
-  });
+  }
 
   // ── Load data ─────────────────────────────────────────────────
   function loadPatients() {
@@ -438,7 +438,7 @@
       .withFailureHandler(function(err) {
         showToast(err.message, 'error');
       })
-      .handlePatientRequest('GET_PATIENTS', {}, alab_token);
+      .handlePatientRequest('GET_PATIENTS', {}, _co_getToken());
   }
 
   function loadServices() {
@@ -453,10 +453,10 @@
             renderItemList('');
           })
           .withFailureHandler(function(){ renderItemList(''); })
-          .handlePackageRequest('GET_PACKAGES', {}, alab_token);
+          .handlePackageRequest('GET_PACKAGES', {}, _co_getToken());
       })
       .withFailureHandler(function(){ renderItemList(''); })
-      .handleLabServiceRequest('GET_LAB_SERVICES', {}, alab_token);
+      .handleLabServiceRequest('GET_LAB_SERVICES', {}, _co_getToken());
   }
 
   function loadDoctors() {
@@ -477,7 +477,7 @@
         }
       })
       .withFailureHandler(function(){})
-      .handleDoctorRequest('GET_DOCTORS', {}, alab_token);
+      .handleDoctorRequest('GET_DOCTORS', {}, _co_getToken());
   }
 
   function loadDiscounts() {
@@ -486,7 +486,7 @@
         if (res && res.success) allDiscounts = res.data || [];
       })
       .withFailureHandler(function(){})
-      .handleDiscountRequest('GET_DISCOUNTS_ALL', {}, alab_token);
+      .handleDiscountRequest('GET_DISCOUNTS_ALL', {}, _co_getToken());
   }
 
   // ── Step 1 — Patient search ───────────────────────────────────
@@ -643,7 +643,7 @@
         contact_number: contact,
         address:        address,
         discount_ids:   []
-      }, alab_token);
+      }, _co_getToken());
   }
 
   // ── Step navigation ───────────────────────────────────────────
@@ -885,21 +885,15 @@
         payment_discount:    disc,
         notes:               document.getElementById('f-notes').value.trim(),
         items:               items
-      }, alab_token);
+      }, _co_getToken());
   }
 
   // ── Navigation ────────────────────────────────────────────────
-    function goBack() {
-    try {
-        if (window.parent && typeof window.parent.navigateTo === 'function') {
-        window.parent.navigateTo('Orders');
-        return;
-        }
-    } catch(_) {}
-    google.script.run.withSuccessHandler(function(url) {
-        window.top.location.href = url + '?page=TechIndex&token=' + encodeURIComponent(alab_token);
-    }).catch(function(){});
+  function goBack() {
+    if (typeof navigateTo === 'function') {
+      navigateTo('Orders');
     }
+  }
 
   // ── Helpers ───────────────────────────────────────────────────
   function fmt(val) {
@@ -928,5 +922,4 @@
     if (e.key === 'Escape') goBack();
   });
 </script>
-</body>
-</html>
+</div>
