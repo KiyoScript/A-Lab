@@ -475,7 +475,7 @@ function updateBranchAdmin(payload) {
     // ── Same branch — just update in place ────────────────────────
     if (!newBranchId || newBranchId === currentBranchId) {
       const row = foundIdx + 1;
-      var pwHash = (payload.password && payload.password.trim() !== '')
+      const pwHash = (payload.password && payload.password.trim() !== '')
         ? _hashPassword(payload.password.trim())
         : String(existingRow[3]);
       foundAdminSh.getRange(row, 2, 1, 3).setValues([[
