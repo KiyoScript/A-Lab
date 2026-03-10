@@ -251,28 +251,19 @@
 <div id="toast"></div>
 
 <script>
-  var alab_token     = (new URLSearchParams(window.location.search)).get('token') || localStorage.getItem('alab_token') || '';
-  var allPackages    = [];
-  var allLabServices = [];
-  var currentSession = null;
-  var isSuperAdmin   = false;
-  var isBranchAdmin  = false;
-  var editingId      = null;
-  var deletingId     = null;
-
-  function _handleExpired() {
-    localStorage.removeItem('alab_token');
-    google.script.run.withSuccessHandler(function(url) {
-      window.top.location.href = url + '?page=Login';
-    }).getScriptUrl();
-  }
-  function _checkExpired(res) { if (res && res.expired) { _handleExpired(); return true; } return false; }
+  var _pkg__pkg_allPackages    = [];
+  var _pkg__pkg_allLabServices = [];
+  var _pkg__pkg_currentSession = null;
+  var _pkg__pkg_isSuperAdmin   = false;
+  var _pkg__pkg_isBranchAdmin  = false;
+  var _pkg__pkg_editingId      = null;
+  var _pkg__pkg_deletingId     = null;
 
   function _pkg_getToken() {
     return (typeof alab_token !== 'undefined' ? alab_token : null)
       || localStorage.getItem('alab_token') || '';
   }
-  function _checkExpired_pkg(res) {
+  function _pkg_pkg_checkExpired(res) {
     if (res && res.expired) {
       localStorage.removeItem('alab_token');
       window.top.location.href = (typeof baseUrl !== 'undefined' ? baseUrl : '') + '?page=Login';
@@ -280,18 +271,17 @@
     }
     return false;
   }
-  function _checkExpired(res) { return _checkExpired_pkg(res); }
 
   function init_Packages() { initPage(); }
 
   function initPage() {
     google.script.run
       .withSuccessHandler(function(res) {
-        if (_checkExpired(res)) return;
+        if (_pkg_checkExpired(res)) return;
         if (res.success) {
-          currentSession = res.data;
-          isSuperAdmin   = currentSession.role === 'super_admin';
-          isBranchAdmin  = currentSession.role === 'branch_admin';
+          _pkg_currentSession = res.data;
+          _pkg_isSuperAdmin   = _pkg_currentSession.role === 'super_admin';
+          _pkg_isBranchAdmin  = _pkg_currentSession.role === 'branch_admin';
           applySessionUI();
         }
         loadData();
@@ -301,11 +291,11 @@
   }
 
   function applySessionUI() {
-    if (isSuperAdmin) {
+    if (_pkg_isSuperAdmin) {
       document.getElementById('add-pkg-btn').classList.remove('hidden');
       document.getElementById('add-pkg-btn').classList.add('flex');
       document.getElementById('actions-col').classList.remove('hidden');
-    } else if (isBranchAdmin) {
+    } else if (_pkg_isBranchAdmin) {
       document.getElementById('add-pkg-btn').classList.remove('hidden');
       document.getElementById('add-pkg-btn').classList.add('flex');
       document.getElementById('actions-col').classList.remove('hidden');
@@ -321,16 +311,16 @@
 
     function tryRender() {
       if (!pkgDone || !labDone) return;
-      allPackages    = pkgData;
-      allLabServices = labData;
+      _pkg_allPackages    = pkgData;
+      _pkg_allLabServices = labData;
       showLoading(false);
-      renderTable(allPackages);
-      updateStats(allPackages);
+      renderTable(_pkg_allPackages);
+      updateStats(_pkg_allPackages);
     }
 
     google.script.run
       .withSuccessHandler(function(res) {
-        if (_checkExpired(res)) return;
+        if (_pkg_checkExpired(res)) return;
         if (res.success) pkgData = res.data || [];
         pkgDone = true; tryRender();
       })
@@ -367,18 +357,18 @@
       var disabledCount = (p.disabled_labs && p.disabled_labs.length) ? p.disabled_labs.length : 0;
       var availCount    = labCount - disabledCount;
       var labBadge = labCount > 0
-        ? (disabledCount > 0 && isBranchAdmin
+        ? (disabledCount > 0 && _pkg_isBranchAdmin
             ? '<span class="text-xs font-semibold text-amber-600 bg-amber-50 px-2 py-1 rounded-lg" title="' + disabledCount + ' service(s) unavailable at your branch">' +
                 availCount + ' / ' + labCount + ' available</span>'
             : '<span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">' + labCount + ' service' + (labCount !== 1 ? 's' : '') + '</span>')
         : '<span class="text-xs text-slate-300 italic">None</span>';
 
       // Branch admin: can only edit/delete their own branch packages
-      var isOwnPackage  = isBranchAdmin && p.branch_id === currentSession.branch_id;
+      var isOwnPackage  = _pkg_isBranchAdmin && p.branch_id === _pkg_currentSession.branch_id;
       var isGlobal      = !p.branch_id;
-      var canEditDelete  = isSuperAdmin || isOwnPackage;
+      var canEditDelete  = _pkg_isSuperAdmin || isOwnPackage;
 
-      var ownerBadge = isBranchAdmin
+      var ownerBadge = _pkg_isBranchAdmin
         ? (isGlobal
             ? '<span class="text-[10px] font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full ml-1">Global</span>'
             : '<span class="text-[10px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full ml-1">My Branch</span>')
@@ -401,7 +391,7 @@
       var disabledTip   = disabledCount > 0
         ? p.disabled_labs.map(function(l) { return escHtml(l.lab_name); }).join(', ')
         : '';
-      var unavailableBadge = (isBranchAdmin && disabledCount > 0)
+      var unavailableBadge = (_pkg_isBranchAdmin && disabledCount > 0)
         ? '<div class="flex items-center gap-1 mt-1">' +
             '<svg class="w-3 h-3 text-amber-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">' +
               '<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>' +
@@ -438,7 +428,7 @@
   function filterTable() {
     var q  = document.getElementById('search-input').value.toLowerCase();
     var st = document.getElementById('status-filter').value;
-    renderTable(allPackages.filter(function(p) {
+    renderTable(_pkg_allPackages.filter(function(p) {
       var mq = !q || p.package_name.toLowerCase().includes(q) ||
                (p.package_code || '').toLowerCase().includes(q) ||
                (p.description  || '').toLowerCase().includes(q);
@@ -449,23 +439,23 @@
 
   // ── Modal ──────────────────────────────────────────────────────
   function openModal(pkgId) {
-    if (!isSuperAdmin && !isBranchAdmin) return;
+    if (!_pkg_isSuperAdmin && !_pkg_isBranchAdmin) return;
     // Branch admin cannot open global packages for editing
-    if (isBranchAdmin && pkgId) {
-      var pkg = allPackages.find(function(x) { return x.package_id === pkgId; });
+    if (_pkg_isBranchAdmin && pkgId) {
+      var pkg = _pkg_allPackages.find(function(x) { return x.package_id === pkgId; });
       if (pkg && !pkg.branch_id) return;
     }
-    editingId = pkgId || null;
+    _pkg_editingId = pkgId || null;
     clearForm();
 
-    document.getElementById('modal-title').textContent    = editingId ? 'Edit Package' : 'Add Package';
-    document.getElementById('modal-subtitle').textContent = editingId ? 'Update package details and included lab services.' : 'Create a new lab service package.';
-    document.getElementById('save-label').textContent     = editingId ? 'Update Package' : 'Save Package';
+    document.getElementById('modal-title').textContent    = _pkg_editingId ? 'Edit Package' : 'Add Package';
+    document.getElementById('modal-subtitle').textContent = _pkg_editingId ? 'Update package details and included lab services.' : 'Create a new lab service package.';
+    document.getElementById('save-label').textContent     = _pkg_editingId ? 'Update Package' : 'Save Package';
 
     // Pre-populate if editing
     var assignedIds = [];
-    if (editingId) {
-      var pkg = allPackages.find(function(x) { return x.package_id === editingId; });
+    if (_pkg_editingId) {
+      var pkg = _pkg_allPackages.find(function(x) { return x.package_id === _pkg_editingId; });
       if (pkg) {
         document.getElementById('f-pkg-id').value       = pkg.package_id;
         document.getElementById('f-pkg-code').value     = pkg.package_code;
@@ -478,12 +468,12 @@
     }
 
     document.getElementById('modal-backdrop').classList.remove('hidden');
-    renderLabChecklist(allLabServices, assignedIds);
+    renderLabChecklist(_pkg_allLabServices, assignedIds);
   }
 
   function closeModal() {
     document.getElementById('modal-backdrop').classList.add('hidden');
-    clearForm(); editingId = null;
+    clearForm(); _pkg_editingId = null;
   }
 
   function clearForm() {
@@ -574,7 +564,7 @@
 
   // ── Save ───────────────────────────────────────────────────────
   function savePackage() {
-    if (!isSuperAdmin && !isBranchAdmin) return;
+    if (!_pkg_isSuperAdmin && !_pkg_isBranchAdmin) return;
     var pkgName = document.getElementById('f-pkg-name').value.trim();
     var fee     = parseFloat(document.getElementById('f-default-fee').value) || 0;
     if (!pkgName) { showToast('Package name is required.', 'error'); return; }
@@ -595,14 +585,14 @@
     };
 
     setSaving(true);
-    var action = editingId ? 'UPDATE_PACKAGE' : 'CREATE_PACKAGE';
+    var action = _pkg_editingId ? 'UPDATE_PACKAGE' : 'CREATE_PACKAGE';
     google.script.run
       .withSuccessHandler(function(res) {
         setSaving(false);
-        if (_checkExpired(res)) return;
+        if (_pkg_checkExpired(res)) return;
         if (res.success) {
           closeModal();
-          showToast(editingId ? 'Package updated!' : 'Package created!', 'success');
+          showToast(_pkg_editingId ? 'Package updated!' : 'Package created!', 'success');
           loadData();
         } else {
           showToast(res.error || 'Failed to save.', 'error');
@@ -615,19 +605,19 @@
   function setSaving(v) {
     var btn = document.getElementById('save-btn');
     btn.disabled = v;
-    btn.innerHTML = v ? '<span class="spinner"></span>' : '<span id="save-label">' + (editingId ? 'Update Package' : 'Save Package') + '</span>';
+    btn.innerHTML = v ? '<span class="spinner"></span>' : '<span id="save-label">' + (_pkg_editingId ? 'Update Package' : 'Save Package') + '</span>';
   }
 
   // ── Delete ─────────────────────────────────────────────────────
   function openDeleteModal(id, name) {
-    if (!isSuperAdmin && !isBranchAdmin) return;
-    deletingId = id;
+    if (!_pkg_isSuperAdmin && !_pkg_isBranchAdmin) return;
+    _pkg_deletingId = id;
     document.getElementById('delete-name').textContent = name;
     document.getElementById('delete-modal').classList.remove('hidden');
   }
 
   function closeDeleteModal() {
-    deletingId = null;
+    _pkg_deletingId = null;
     document.getElementById('delete-modal').classList.add('hidden');
   }
 
@@ -638,12 +628,12 @@
       .withSuccessHandler(function(res) {
         btn.textContent = 'Delete'; btn.disabled = false;
         closeDeleteModal();
-        if (_checkExpired(res)) return;
+        if (_pkg_checkExpired(res)) return;
         if (res.success) { showToast('Package deleted.', 'success'); loadData(); }
         else showToast(res.error || 'Failed to delete.', 'error');
       })
       .withFailureHandler(function(err) { btn.textContent = 'Delete'; btn.disabled = false; showToast('Error: ' + err.message, 'error'); })
-      .handlePackageRequest('DELETE_PACKAGE', { package_id: deletingId }, alab_token);
+      .handlePackageRequest('DELETE_PACKAGE', { package_id: _pkg_deletingId }, alab_token);
   }
 
   function showLoading(v) {

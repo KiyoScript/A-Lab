@@ -380,52 +380,50 @@
   };
 
   // ── State ────────────────────────────────────────────────────────
-  const params     = new URLSearchParams(window.location.search);
-  const alab_token = params.get('token') || localStorage.getItem('alab_token') || '';
+  var _mt__mt_allMedTechs    = [];
+  var _mt__mt_allBranches    = [];
+  var _mt__mt_currentSession = null;
+  var _mt__mt_isBranchAdmin  = false;
+  var _mt__mt_isSuperAdmin   = false;
+  var _mt__mt_editingId      = null;
+  var _mt__mt_deletingId     = null;
+  var _mt__mt_selectedRole   = '';
 
-  let allMedTechs    = [];
-  let allBranches    = [];
-  let currentSession = null;
-  let isBranchAdmin  = false;   // ← the key flag
-  let isSuperAdmin   = false;
-  let editingId      = null;
-  let deletingId     = null;
-  let selectedRole   = '';
-
-  // ── Helpers ──────────────────────────────────────────────────────
+  function _mt_getToken() {
+    return (typeof _mt_getToken() !== 'undefined' ? _mt_getToken() : null)
+      || localStorage.getItem('_mt_getToken()') || '';
+  }
   function _handleExpired() {
-    localStorage.removeItem('alab_token');
+    localStorage.removeItem('_mt_getToken()');
     google.script.run.withSuccessHandler(url => {
       window.top.location.href = url + '?page=Login';
     }).getScriptUrl();
   }
-  function _checkExpired(res) {
+  function _mt_mt_checkExpired(res) {
     if (res && res.expired) { _handleExpired(); return true; }
     return false;
   }
 
-  // ── Init ─────────────────────────────────────────────────────────
-  window.addEventListener('DOMContentLoaded', () => {
+  function init_MedTechs() {
     buildRoleGrid();
-
     google.script.run
       .withSuccessHandler(res => {
-        if (_checkExpired(res)) return;
+        if (_mt_mt_checkExpired(res)) return;
         if (res.success) {
-          currentSession = res.data;
-          isBranchAdmin  = currentSession.role === 'branch_admin';
-          isSuperAdmin   = currentSession.role === 'super_admin';
+          _mt__mt_currentSession = res.data;
+          _mt__mt_isBranchAdmin  = _mt__mt_currentSession.role === 'branch_admin';
+          _mt__mt_isSuperAdmin   = _mt__mt_currentSession.role === 'super_admin';
           applyRoleUI();
         }
         loadBranches();
       })
       .withFailureHandler(() => loadBranches())
-      .handleAdminRequest('GET_SESSION', {}, alab_token);
-  });
+      .handleAdminRequest('GET_SESSION', {}, _mt_getToken());
+  }
 
   // ── Apply role-based UI ──────────────────────────────────────────
   function applyRoleUI() {
-    if (isBranchAdmin) {
+    if (_mt_isBranchAdmin) {
       // Show enroll button and actions column
       document.getElementById('enroll-btn').classList.remove('hidden');
       document.getElementById('enroll-btn').classList.add('flex');
@@ -433,14 +431,14 @@
 
       // Show branch badge (auto-assigned)
       document.getElementById('branch-badge-wrap').classList.remove('hidden');
-      const myBranch = allBranches.find(b => b.branch_id === currentSession.branch_id);
+      const myBranch = _mt_allBranches.find(b => b.branch_id === _mt_currentSession.branch_id);
       document.getElementById('branch-badge-label').textContent =
-        myBranch ? myBranch.branch_name + ' (' + myBranch.branch_code + ')' : currentSession.branch_name || '—';
+        myBranch ? myBranch.branch_name + ' (' + myBranch.branch_code + ')' : _mt_currentSession.branch_name || '—';
 
       document.getElementById('header-subtitle').textContent =
         'Manage technologist accounts for your branch.';
 
-    } else if (isSuperAdmin) {
+    } else if (_mt_isSuperAdmin) {
       // Super admin: read-only
       document.getElementById('readonly-notice').classList.remove('hidden');
       document.getElementById('branch-filter').classList.remove('hidden');
@@ -454,12 +452,12 @@
     google.script.run
       .withSuccessHandler(res => {
         if (res && res.success) {
-          allBranches = (res.data || []).filter(b => b.status === 'Active');
+          _mt_allBranches = (res.data || []).filter(b => b.status === 'Active');
           populateBranchFilter();
         }
         // Re-apply branch badge now that branches are loaded
-        if (isBranchAdmin) {
-          const myBranch = allBranches.find(b => b.branch_id === currentSession.branch_id);
+        if (_mt_isBranchAdmin) {
+          const myBranch = _mt_allBranches.find(b => b.branch_id === _mt_currentSession.branch_id);
           if (myBranch) {
             document.getElementById('branch-badge-label').textContent =
               myBranch.branch_name + ' (' + myBranch.branch_code + ')';
@@ -468,7 +466,7 @@
         loadMedTechs();
       })
       .withFailureHandler(() => loadMedTechs())
-      .handleBranchRequest('GET_BRANCHES', {}, alab_token);
+      .handleBranchRequest('GET_BRANCHES', {}, _mt_getToken());
   }
 
   function loadMedTechs() {
@@ -476,12 +474,12 @@
     google.script.run
       .withSuccessHandler(res => {
         showLoading(false);
-        if (_checkExpired(res)) return;
+        if (_mt_checkExpired(res)) return;
         if (res.success) {
-          allMedTechs = res.data || [];
+          _mt_allMedTechs = res.data || [];
           buildRoleFilter();
-          renderTable(allMedTechs);
-          updateStats(allMedTechs);
+          renderTable(_mt_allMedTechs);
+          updateStats(_mt_allMedTechs);
         } else {
           showToast('Failed to load: ' + res.error, 'error');
         }
@@ -490,7 +488,7 @@
         showLoading(false);
         showToast('Error: ' + err.message, 'error');
       })
-      .handleMedTechRequest('GET_MEDTECHS', {}, alab_token);
+      .handleMedTechRequest('GET_MEDTECHS', {}, _mt_getToken());
   }
 
   // ── Render table ─────────────────────────────────────────────────
@@ -508,9 +506,9 @@
     if (!data.length) {
       wrap.classList.add('hidden');
       empty.classList.remove('hidden'); empty.classList.add('flex');
-      sub.textContent = allMedTechs.length
+      sub.textContent = _mt_allMedTechs.length
         ? 'No results match your filters.'
-        : isBranchAdmin
+        : _mt_isBranchAdmin
           ? 'Enroll the first technologist to get started.'
           : 'No technologists have been enrolled in any branch yet.';
       return;
@@ -523,7 +521,7 @@
       const initials = ((mt.first_name || '')[0] || '') + ((mt.last_name || '')[0] || '');
 
       // Actions: only rendered for branch_admin
-      const actionsCell = isBranchAdmin ? `
+      const actionsCell = _mt_isBranchAdmin ? `
         <td class="px-5 py-3.5 text-right">
           <div class="flex items-center justify-end gap-1.5">
             <button onclick="openPwModal('${escHtml(mt.medtech_id)}','${escHtml(mt.first_name + ' ' + mt.last_name)}')"
@@ -589,7 +587,7 @@
   // ── Filters ──────────────────────────────────────────────────────
   function buildRoleFilter() {
     const sel   = document.getElementById('role-filter');
-    const roles = [...new Set(allMedTechs.map(m => m.role))].filter(Boolean);
+    const roles = [...new Set(_mt_allMedTechs.map(m => m.role))].filter(Boolean);
     sel.innerHTML = '<option value="">All Roles</option>';
     roles.forEach(r => { sel.innerHTML += `<option value="${escHtml(r)}">${escHtml(r)}</option>`; });
   }
@@ -597,7 +595,7 @@
   function populateBranchFilter() {
     const sel = document.getElementById('branch-filter');
     sel.innerHTML = '<option value="">All Branches</option>';
-    allBranches.forEach(b => {
+    _mt_allBranches.forEach(b => {
       sel.innerHTML += `<option value="${escHtml(b.branch_id)}">${escHtml(b.branch_name)}</option>`;
     });
   }
@@ -608,7 +606,7 @@
     const rl = document.getElementById('role-filter').value;
     const br = document.getElementById('branch-filter').value;
 
-    const filtered = allMedTechs.filter(m => {
+    const filtered = _mt_allMedTechs.filter(m => {
       const name = (m.last_name + ' ' + m.first_name + ' ' + m.middle_name).toLowerCase();
       const mq   = !q  || name.includes(q) || (m.email || '').toLowerCase().includes(q);
       const ms   = !st || m.status === st;
@@ -631,7 +629,7 @@
   }
 
   function selectRole(roleKey) {
-    selectedRole = roleKey;
+    _mt_selectedRole = roleKey;
     document.getElementById('f-role').value = roleKey;
     ROLES.forEach(r => {
       const btn = document.getElementById('rb-' + r.key.replace(/\s+/g,'-'));
@@ -651,8 +649,8 @@
 
   // ── Modal (branch_admin only) ────────────────────────────────────
   function openModal(medtechId) {
-    if (!isBranchAdmin) return;  // guard
-    editingId = null;
+    if (!_mt_isBranchAdmin) return;  // guard
+    _mt_editingId = null;
     clearForm();
     const isEdit = !!medtechId;
 
@@ -663,8 +661,8 @@
     document.getElementById('pw-hint').classList.toggle('hidden', isEdit);
 
     if (isEdit) {
-      editingId = medtechId;
-      const mt = allMedTechs.find(m => m.medtech_id === medtechId);
+      _mt_editingId = medtechId;
+      const mt = _mt_allMedTechs.find(m => m.medtech_id === medtechId);
       if (!mt) return;
       document.getElementById('f-medtech-id').value  = mt.medtech_id;
       document.getElementById('f-last-name').value   = mt.last_name;
@@ -683,14 +681,14 @@
   function closeModal() {
     document.getElementById('modal-backdrop').classList.add('hidden');
     clearForm();
-    editingId = null;
+    _mt_editingId = null;
   }
 
   function clearForm() {
     ['f-medtech-id','f-last-name','f-first-name','f-middle-name','f-email','f-password','f-role']
       .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
     document.getElementById('f-status').value = 'Active';
-    selectedRole = '';
+    _mt_selectedRole = '';
     ROLES.forEach(r => {
       const btn = document.getElementById('rb-' + r.key.replace(/\s+/g,'-'));
       if (btn) { btn.style.borderColor = ''; btn.style.background = ''; btn.style.color = ''; }
@@ -699,31 +697,31 @@
 
   // ── Save (branch_admin only) ─────────────────────────────────────
   function saveMedTech() {
-    if (!isBranchAdmin) return;  // hard guard
+    if (!_mt_isBranchAdmin) return;  // hard guard
 
     const lastName   = document.getElementById('f-last-name').value.trim();
     const firstName  = document.getElementById('f-first-name').value.trim();
     const middleName = document.getElementById('f-middle-name').value.trim();
     const email      = document.getElementById('f-email').value.trim();
     const password   = document.getElementById('f-password').value;
-    const role       = document.getElementById('f-role').value || selectedRole;
+    const role       = document.getElementById('f-role').value || _mt_selectedRole;
     const status     = document.getElementById('f-status').value;
 
     if (!lastName)  { showToast('Last name is required.',  'error'); return; }
     if (!firstName) { showToast('First name is required.', 'error'); return; }
     if (!email)     { showToast('Email is required.',      'error'); return; }
     if (!role)      { showToast('Please select a role.',   'error'); return; }
-    if (!editingId && !password)            { showToast('Password is required.',                    'error'); return; }
-    if (!editingId && password.length < 6)  { showToast('Password must be at least 6 characters.', 'error'); return; }
+    if (!_mt_editingId && !password)            { showToast('Password is required.',                    'error'); return; }
+    if (!_mt_editingId && password.length < 6)  { showToast('Password must be at least 6 characters.', 'error'); return; }
 
     // branch_id comes from session — auto-assigned
     const payload = {
-      medtech_id:  editingId || '',
+      medtech_id:  _mt_editingId || '',
       last_name:   lastName,
       first_name:  firstName,
       middle_name: middleName,
       email, role, status,
-      branch_id: currentSession.branch_id   // always from session
+      branch_id: _mt_currentSession.branch_id   // always from session
     };
     if (password) payload.password = password;
 
@@ -731,15 +729,15 @@
     google.script.run
       .withSuccessHandler(res => {
         setSaving(false);
-        if (_checkExpired(res)) return;
+        if (_mt_checkExpired(res)) return;
         if (res.success) {
           closeModal();
-          showToast(editingId ? 'Technologist updated!' : 'Technologist enrolled! 🎉', 'success');
+          showToast(_mt_editingId ? 'Technologist updated!' : 'Technologist enrolled! 🎉', 'success');
           loadMedTechs();
         } else showToast('Error: ' + res.error, 'error');
       })
       .withFailureHandler(err => { setSaving(false); showToast('Error: ' + err.message, 'error'); })
-      .handleMedTechRequest(editingId ? 'UPDATE_MEDTECH' : 'CREATE_MEDTECH', payload, alab_token);
+      .handleMedTechRequest(_mt_editingId ? 'UPDATE_MEDTECH' : 'CREATE_MEDTECH', payload, _mt_getToken());
   }
 
   function setSaving(v) {
@@ -747,12 +745,12 @@
     btn.disabled = v;
     btn.innerHTML = v
       ? '<span class="spinner"></span>'
-      : `<span id="save-label">${editingId ? 'Update Technologist' : 'Save Technologist'}</span>`;
+      : `<span id="save-label">${_mt_editingId ? 'Update Technologist' : 'Save Technologist'}</span>`;
   }
 
   // ── Change Password Modal (branch_admin only) ────────────────────
   function openPwModal(medtechId, name) {
-    if (!isBranchAdmin) return;
+    if (!_mt_isBranchAdmin) return;
     document.getElementById('pw-medtech-id').value      = medtechId;
     document.getElementById('pw-modal-name').textContent = name;
     document.getElementById('f-new-password').value     = '';
@@ -782,7 +780,7 @@
       .withSuccessHandler(res => {
         btn.disabled = false;
         btn.innerHTML = '<span id="pw-save-label">Update Password</span>';
-        if (_checkExpired(res)) return;
+        if (_mt_checkExpired(res)) return;
         if (res.success) { closePwModal(); showToast('Password updated!', 'success'); }
         else showToast('Error: ' + res.error, 'error');
       })
@@ -791,31 +789,31 @@
         btn.innerHTML = '<span id="pw-save-label">Update Password</span>';
         showToast('Error: ' + err.message, 'error');
       })
-      .handleMedTechRequest('CHANGE_MT_PASSWORD', { medtech_id: medtechId, new_password: newPw }, alab_token);
+      .handleMedTechRequest('CHANGE_MT_PASSWORD', { medtech_id: medtechId, new_password: newPw }, _mt_getToken());
   }
 
   // ── Delete Modal (branch_admin only) ────────────────────────────
   function openDeleteModal(medtechId, name) {
-    if (!isBranchAdmin) return;
-    deletingId = medtechId;
+    if (!_mt_isBranchAdmin) return;
+    _mt_deletingId = medtechId;
     document.getElementById('del-name').textContent = name;
     document.getElementById('del-modal').classList.remove('hidden');
   }
 
   function closeDeleteModal() {
     document.getElementById('del-modal').classList.add('hidden');
-    deletingId = null;
+    _mt_deletingId = null;
   }
 
   function confirmDelete() {
-    if (!deletingId || !isBranchAdmin) return;
+    if (!_mt_deletingId || !_mt_isBranchAdmin) return;
     const btn = document.getElementById('confirm-del-btn');
     btn.disabled = true; btn.textContent = 'Removing…';
 
     google.script.run
       .withSuccessHandler(res => {
         btn.disabled = false; btn.textContent = 'Remove';
-        if (_checkExpired(res)) return;
+        if (_mt_checkExpired(res)) return;
         if (res.success) { closeDeleteModal(); showToast('Technologist removed.', 'success'); loadMedTechs(); }
         else showToast('Error: ' + res.error, 'error');
       })
@@ -823,7 +821,7 @@
         btn.disabled = false; btn.textContent = 'Remove';
         showToast('Error: ' + err.message, 'error');
       })
-      .handleMedTechRequest('DELETE_MEDTECH', { medtech_id: deletingId }, alab_token);
+      .handleMedTechRequest('DELETE_MEDTECH', { medtech_id: _mt_deletingId }, _mt_getToken());
   }
 
   // ── PW visibility toggles ────────────────────────────────────────

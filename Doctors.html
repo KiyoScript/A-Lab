@@ -320,12 +320,12 @@
   }
 
   var _dr_listenersAttached = false;
-  var currentSession = null;
-  var allDoctors     = [];
-  var allBranches    = [];
-  var isSuperAdmin   = false;
-  var isBranchAdmin  = false;
-  var deletingId     = null;
+  var _dr__dr_currentSession    = null;
+  var _dr__dr__dr_allDoctors        = [];
+  var _dr__dr_allBranches       = [];
+  var _dr__dr_isSuperAdmin      = false;
+  var _dr__dr_isBranchAdmin     = false;
+  var _dr__dr_deletingId        = null;
 
   function init_Doctors() {
     if (!_dr_listenersAttached) {
@@ -343,9 +343,9 @@
       .withSuccessHandler(function(res) {
         if (_checkExpired(res)) return;
         if (res && res.success) {
-          currentSession = res.data;
-          isSuperAdmin   = currentSession.role === 'super_admin';
-          isBranchAdmin  = currentSession.role === 'branch_admin';
+          _dr_currentSession = res.data;
+          _dr_isSuperAdmin   = _dr_currentSession.role === 'super_admin';
+          _dr_isBranchAdmin  = _dr_currentSession.role === 'branch_admin';
           applyRoleUI();
         }
         loadBranches();
@@ -355,11 +355,11 @@
   }
 
   function applyRoleUI() {
-    if (isSuperAdmin) {
+    if (_dr_isSuperAdmin) {
       document.getElementById('add-btn').classList.remove('hidden');
       document.getElementById('add-btn').classList.add('flex');
       document.getElementById('th-actions').classList.remove('hidden');
-    } else if (isBranchAdmin) {
+    } else if (_dr_isBranchAdmin) {
       document.getElementById('add-btn').classList.remove('hidden');
       document.getElementById('add-btn').classList.add('flex');
       document.getElementById('th-actions').classList.remove('hidden');
@@ -373,7 +373,7 @@
     google.script.run
       .withSuccessHandler(function(res) {
         if (res && res.success) {
-          allBranches = (res.data || []).filter(function(b) { return b.status === 'Active'; });
+          _dr_allBranches = (res.data || []).filter(function(b) { return b.status === 'Active'; });
           populateBranchFilter();
           populateAssignBranchSelect();
         }
@@ -386,7 +386,7 @@
   function populateBranchFilter() {
     var sel = document.getElementById('branch-filter');
     sel.innerHTML = '<option value="">All Branches</option><option value="__none__">Unassigned</option>';
-    allBranches.forEach(function(b) {
+    _dr_allBranches.forEach(function(b) {
       sel.insertAdjacentHTML('beforeend', '<option value="' + escHtml(b.branch_id) + '">' + escHtml(b.branch_name) + '</option>');
     });
   }
@@ -394,7 +394,7 @@
   function populateAssignBranchSelect() {
     var sel = document.getElementById('assign-branch-select');
     sel.innerHTML = '<option value="">Select branch…</option>';
-    allBranches.forEach(function(b) {
+    _dr_allBranches.forEach(function(b) {
       sel.insertAdjacentHTML('beforeend', '<option value="' + escHtml(b.branch_id) + '">' + escHtml(b.branch_name) + '</option>');
     });
   }
@@ -406,8 +406,8 @@
       .withSuccessHandler(function(res) {
         showLoading(false);
         if (res && res.success) {
-          allDoctors = res.data || [];
-          updateStats(allDoctors);
+          _dr__dr_allDoctors = res.data || [];
+          updateStats(_dr__dr_allDoctors);
           filterTable();
         } else {
           showToast(res.error || 'Failed to load doctors.', 'error');
@@ -439,7 +439,7 @@
     var status  = document.getElementById('status-filter').value;
     var branch  = document.getElementById('branch-filter').value;
 
-    var filtered = allDoctors.filter(function(d) {
+    var filtered = _dr__dr_allDoctors.filter(function(d) {
       var name = (d.last_name + ' ' + d.first_name + ' ' + d.middle_name).toLowerCase();
       var matchQ  = !q || name.includes(q) || d.license_no.toLowerCase().includes(q) ||
                     d.specialty.toLowerCase().includes(q) || d.username.toLowerCase().includes(q);
@@ -456,7 +456,7 @@
     renderTable(filtered);
     document.getElementById('empty-sub').textContent =
       (q || status || branch) ? 'No doctors match your filters.' :
-      (isSuperAdmin ? 'Add the first doctor to get started.' : 'No doctors registered yet.');
+      (_dr_isSuperAdmin ? 'Add the first doctor to get started.' : 'No doctors registered yet.');
   }
 
   // ── Render table ───────────────────────────────────────────
@@ -506,13 +506,13 @@
           '</button>';
 
       // Assign button: super admin only
-      var assignButton = isSuperAdmin
+      var assignButton = _dr_isSuperAdmin
           ? '<button onclick=\'openAssignModal(' + JSON.stringify({id:d.doctor_id, name:'Dr. '+d.last_name+', '+d.first_name, branch_id:d.branch_id, branch_name:d.branch_name}) + ')\' title="' + (d.branch_id ? 'Reassign Branch' : 'Assign Branch') + '" class="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition">' +
               '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>' +
             '</button>'
           : '';
 
-      var actionsCell = (isSuperAdmin || isBranchAdmin)
+      var actionsCell = (_dr_isSuperAdmin || _dr_isBranchAdmin)
         ? '<td class="px-5 py-3.5 text-right"><div class="flex items-center justify-end gap-1">' +
             sharedButtons + assignButton +
           '</div></td>'
@@ -689,15 +689,15 @@
 
   // ── Delete ─────────────────────────────────────────────────
   function openDeleteModal(info) {
-    deletingId = info.id;
+    _dr_deletingId = info.id;
     document.getElementById('delete-name').textContent = info.name;
     document.getElementById('delete-modal').classList.remove('hidden');
   }
 
-  function closeDeleteModal() { deletingId = null; document.getElementById('delete-modal').classList.add('hidden'); }
+  function closeDeleteModal() { _dr_deletingId = null; document.getElementById('delete-modal').classList.add('hidden'); }
 
   function confirmDelete() {
-    if (!deletingId) return;
+    if (!_dr_deletingId) return;
     var btn = document.getElementById('confirm-delete-btn');
     btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Deleting…';
 
@@ -712,7 +712,7 @@
         closeDeleteModal();
         showToast('Error: ' + err.message, 'error');
       })
-      .handleDoctorRequest('DELETE_DOCTOR', { doctor_id: deletingId }, _dr_getToken());
+      .handleDoctorRequest('DELETE_DOCTOR', { doctor_id: _dr_deletingId }, _dr_getToken());
   }
 
   // ── Helpers ────────────────────────────────────────────────
