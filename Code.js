@@ -185,7 +185,7 @@ function handleOrderRequest(action, payload, token) {
 
 // ─── Admin requests ───────────────────────────────────────────────
 function handleAdminRequest(action, payload, token) {
-  if (action === 'LOGIN') return login(payload.username, payload.password);
+  if (action === 'LOGIN') return login(payload.username, payload.password, payload.role_hint);
   if (action === 'GET_SESSION') return getSession(token);
   if (!_getSession(token)) return { success: false, error: 'Session expired. Please log in again.', expired: true };
 

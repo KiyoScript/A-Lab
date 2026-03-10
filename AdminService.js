@@ -142,13 +142,34 @@ function _cleanExpiredSessions() {
 // AUTH
 // ═══════════════════════════════════════════════════════════════
 
-function login(username, password) {
+function login(username, password, roleHint) {
   try {
     if (!username || !password) return { success: false, error: 'Username and password are required.' };
 
     // Housekeep expired sessions occasionally
     try { if (Math.random() < 0.05) _cleanExpiredSessions(); } catch(e) {}
 
+    var hint = String(roleHint || '').toLowerCase();
+
+    // ── Doctor fast path ──────────────────────────────────────
+    if (hint === 'doctor') {
+      try {
+        var doctorResult = doctorLogin(username, password);
+        if (doctorResult !== null) return doctorResult;
+      } catch(_) {}
+      return { success: false, error: 'Invalid username or password.' };
+    }
+
+    // ── MedTech fast path ─────────────────────────────────────
+    if (hint === 'medtech') {
+      try {
+        var medtechResult = medtechLogin(username, password);
+        if (medtechResult !== null) return medtechResult;
+      } catch(_) {}
+      return { success: false, error: 'Invalid username or password.' };
+    }
+
+    // ── Admin path (hint === 'admin' or no hint — full scan) ──
     const hashed  = _hashPassword(password.trim());
     const uname   = username.trim().toLowerCase();
     const isEmail = uname.indexOf('@') !== -1;
@@ -204,19 +225,22 @@ function login(username, password) {
       } catch(_) { /* skip unreadable branch SS */ }
     }
 
-        // ── 3. Check Doctors ──────────────────────────────────────
     } // end if (!isEmail) — branch admin check
 
-        // ── 3. Check Doctors ──────────────────────────────────────
-    try {
-      const doctorResult = doctorLogin(username, password);
-      if (doctorResult !== null) return doctorResult;
-    } catch(_) { /* DoctorsService not available — skip */ }
+    // If hint is 'admin', don't fall through to doctor/medtech
+    if (hint === 'admin') {
+      return { success: false, error: 'Invalid username or password.' };
+    }
 
-    // ── 4. Check MedTechs (Technologists) ─────────────────────
+    // ── No hint: fall through to full scan (backward compatible) ──
+    try {
+      var doctorResult = doctorLogin(username, password);
+      if (doctorResult !== null) return doctorResult;
+    } catch(_) {}
+
     if (isEmail) {
       try {
-        const medtechResult = medtechLogin(username, password);
+        var medtechResult = medtechLogin(username, password);
         if (medtechResult !== null) return medtechResult;
       } catch(_) {}
     }
@@ -304,7 +328,7 @@ function updateSuperAdmin(payload) {
     const row = idx + 1;
     var pwHash = (payload.password && payload.password.trim() !== '')
       ? _hashPassword(payload.password.trim())
-      : String(data[idx]);
+      : String(data[idx][3]);
     sh.getRange(row, 2, 1, 4).setValues([[
       payload.full_name.trim(),
       payload.username.trim().toLowerCase(),
@@ -453,7 +477,7 @@ function updateBranchAdmin(payload) {
       const row = foundIdx + 1;
       var pwHash = (payload.password && payload.password.trim() !== '')
         ? _hashPassword(payload.password.trim())
-        : String(existingRow);
+        : String(existingRow[3]);
       foundAdminSh.getRange(row, 2, 1, 3).setValues([[
         payload.full_name.trim(),
         payload.username.trim().toLowerCase(),
@@ -581,7 +605,7 @@ function changeOwnBranchAdminPassword(payload, token) {
 function handleAdminRequest(action, payload) {
   switch (action) {
     // Auth
-    case 'LOGIN':              return login(payload.username, payload.password);
+    case 'LOGIN':              return login(payload.username, payload.password, payload.role_hint);
     case 'LOGOUT':             return logout();
     case 'GET_SESSION':        return getSession();
     // Super Admins

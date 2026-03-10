@@ -134,6 +134,8 @@
       if (!scriptUrl) { showError('Page still loading, please try again.'); return; }
       setLoading(true); hideError();
 
+      var roleHint = username.indexOf('@') !== -1 ? 'medtech' : '';
+
       google.script.run
         .withSuccessHandler(function(res) {
           setLoading(false);
@@ -150,7 +152,7 @@
           }
         })
         .withFailureHandler(function(err) { setLoading(false); showError('Error: ' + err.message); })
-        .handleAdminRequest('LOGIN', { username: username, password: password }, '');
+        .handleAdminRequest('LOGIN', { username: username, password: password, role_hint: roleHint }, '');
     }
 
     function setLoading(v) {
