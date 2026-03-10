@@ -602,26 +602,6 @@ function changeOwnBranchAdminPassword(payload, token) {
   }
 }
 
-function handleAdminRequest(action, payload) {
-  switch (action) {
-    // Auth
-    case 'LOGIN':              return login(payload.username, payload.password, payload.role_hint);
-    case 'LOGOUT':             return logout();
-    case 'GET_SESSION':        return getSession();
-    // Super Admins
-    case 'GET_SUPER_ADMINS':   return getSuperAdmins();
-    case 'CREATE_SUPER_ADMIN': return createSuperAdmin(payload);
-    case 'UPDATE_SUPER_ADMIN': return updateSuperAdmin(payload);
-    case 'DELETE_SUPER_ADMIN': return deleteSuperAdmin(payload.admin_id);
-    // Branch Admins
-    case 'GET_BRANCH_ADMINS':  return getBranchAdmins();
-    case 'CREATE_BRANCH_ADMIN':return createBranchAdmin(payload);
-    case 'UPDATE_BRANCH_ADMIN':return updateBranchAdmin(payload);
-    case 'DELETE_BRANCH_ADMIN':return deleteBranchAdmin(payload.admin_id);
-    default: return { success: false, error: 'Unknown action: ' + action };
-  }
-}
-
 // ─── Run once to bootstrap the first Super Admin ─────────────────
 function bootstrapSuperAdmin() {
   const result = createSuperAdmin({

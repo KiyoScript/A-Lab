@@ -38,6 +38,13 @@ function getScriptUrl() {
   return ScriptApp.getService().getUrl();
 }
 
+function getAppInitData(token) {
+  return {
+    url:     ScriptApp.getService().getUrl(),
+    session: getSession(token)
+  };
+}
+
 // ─── Lab Service requests ────────────────────────────────────────
 function handleLabServiceRequest(action, payload, token) {
   if (!_getSession(token)) return { success: false, error: 'Session expired. Please log in again.', expired: true };
