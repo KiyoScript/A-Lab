@@ -1,4 +1,4 @@
-  </head>
+</head>
   <body>
     <style>
       * { font-family: 'DM Sans', sans-serif; }
@@ -37,7 +37,6 @@
         background:#fff; border:1px solid #e2e8f0; color:#475569;
         border-radius:0.75rem; padding:0.5rem 0.75rem; font-size:0.875rem; outline:none;
       }
-      /* ── Toast ── */
       #toast { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
       .toast-item {
         display:flex; align-items:center; gap:10px; padding:12px 18px;
@@ -147,13 +146,10 @@
           </svg>
         </button>
       </div>
-
-      <!-- Role selector -->
       <div class="px-6 pt-4 pb-2 flex gap-2" id="role-selector">
         <button id="role-btn-branch" class="role-btn flex-1 py-2 rounded-xl border-2 border-blue-500 bg-blue-50 text-blue-700 text-xs font-bold" onclick="setRole('branch_admin')">Branch Admin</button>
-        <button id="role-btn-super"  class="role-btn flex-1 py-2 rounded-xl border-2 border-slate-200 text-slate-500 text-xs font-bold"          onclick="setRole('super_admin')">Super Admin</button>
+        <button id="role-btn-super"  class="role-btn flex-1 py-2 rounded-xl border-2 border-slate-200 text-slate-500 text-xs font-bold" onclick="setRole('super_admin')">Super Admin</button>
       </div>
-
       <div class="px-6 py-4 space-y-3">
         <input type="hidden" id="f-admin-id"/>
         <div id="branch-field">
@@ -211,6 +207,7 @@
   <div id="toast"></div>
 
   <script>
+    // ── State (all prefixed _adm_ to avoid global collisions) ────────
     var _adm_allBranchAdmins = [];
     var _adm_isBranchAdmin   = false;
     var _adm_currentSession  = null;
@@ -224,73 +221,77 @@
     var _adm_selectedRole    = 'branch_admin';
 
     function _adm_getToken() {
-      return (typeof _adm_getToken() !== 'undefined' ? _adm_getToken() : null)
-        || localStorage.getItem('_adm_getToken()') || '';
+      return localStorage.getItem('alab_token') || '';
     }
+
     function _adm_handleExpired() {
-      localStorage.removeItem('_adm_getToken()');
+      localStorage.removeItem('alab_token');
       google.script.run.withSuccessHandler(function(url) {
         window.top.location.href = url + '?page=Login';
       }).getScriptUrl();
     }
-    function _adm_adm_checkExpired(res) { if (res && res.expired) { _adm_handleExpired(); return true; } return false; }
 
+    function _adm_checkExpired(res) {
+      if (res && res.expired) { _adm_handleExpired(); return true; }
+      return false;
+    }
+
+    // ── Init — called by Index.html switchTab() ──────────────────────
     function init_Admins() {
       google.script.run
-        .withSuccessHandler(res => {
+        .withSuccessHandler(function(res) {
+          if (_adm_checkExpired(res)) return;
           if (res.success) {
             _adm_currentSession = res.data;
             _adm_isBranchAdmin  = _adm_currentSession.role === 'branch_admin';
           }
-          applyRoleUI();
-          loadData();
+          _adm_applyRoleUI();
+          _adm_loadData();
         })
-        .withFailureHandler(() => loadData())
+        .withFailureHandler(function() { _adm_loadData(); })
         .handleAdminRequest('GET_SESSION', {}, _adm_getToken());
     }
 
-    function applyRoleUI() {
+    function _adm_applyRoleUI() {
       if (_adm_isBranchAdmin) {
-        // Hide Super Admin tab
-        document.getElementById('tab-super').style.display = 'none';
-        // Hide branch filter — branch admin only sees their own branch
-        document.getElementById('branch-filter').style.display = 'none';
-        // Hide branch column header — not needed for single branch view
+        document.getElementById('tab-super').style.display        = 'none';
+        document.getElementById('branch-filter').style.display    = 'none';
         document.getElementById('branch-col-header').style.display = 'none';
       }
     }
 
-    function loadData() {
-      showLoading(true);
+    function _adm_loadData() {
+      _adm_showLoading(true);
 
-      // Track parallel call completions
       var _loaded = { branches: false, branchAdmins: false, superAdmins: false };
 
       function _tryRender() {
         var superDone = _adm_isBranchAdmin || _loaded.superAdmins;
         if (!_loaded.branches || !_loaded.branchAdmins || !superDone) return;
-        showLoading(false);
-        renderStats();
-        renderTable();
+        _adm_showLoading(false);
+        _adm_renderStats();
+        _adm_renderTable();
       }
 
-      // Call 1: Branches
+      // Branches
       google.script.run
         .withSuccessHandler(function(res) {
-          if (res.success) { _adm_allBranches = res.data || []; populateBranchDropdown(); }
+          if (_adm_checkExpired(res)) return;
+          if (res.success) { _adm_allBranches = res.data || []; _adm_populateBranchDropdown(); }
           _loaded.branches = true;
           _tryRender();
         })
         .withFailureHandler(function(err) {
-          showToast('Error loading branches: ' + err.message, 'error');
+          _adm_showToast('Error loading branches: ' + err.message, 'error');
           _loaded.branches = true;
           _tryRender();
         })
         .handleBranchRequest('GET_BRANCHES', {}, _adm_getToken());
 
-      // Call 2: Branch Admins
+      // Branch Admins
       google.script.run
         .withSuccessHandler(function(res) {
+          if (_adm_checkExpired(res)) return;
           _adm_allBranchAdmins = res.success ? (res.data || []) : [];
           if (_adm_isBranchAdmin && _adm_currentSession) {
             _adm_allBranchAdmins = _adm_allBranchAdmins.filter(function(a) {
@@ -301,22 +302,23 @@
           _tryRender();
         })
         .withFailureHandler(function(err) {
-          showToast('Error loading branch admins: ' + err.message, 'error');
+          _adm_showToast('Error loading branch admins: ' + err.message, 'error');
           _loaded.branchAdmins = true;
           _tryRender();
         })
         .handleAdminRequest('GET_BRANCH_ADMINS', {}, _adm_getToken());
 
-      // Call 3: Super Admins — skipped entirely for branch_admin role
+      // Super Admins — skipped for branch_admin
       if (!_adm_isBranchAdmin) {
         google.script.run
           .withSuccessHandler(function(res) {
+            if (_adm_checkExpired(res)) return;
             _adm_allSuperAdmins = res.success ? (res.data || []) : [];
             _loaded.superAdmins = true;
             _tryRender();
           })
           .withFailureHandler(function(err) {
-            showToast('Error loading super admins: ' + err.message, 'error');
+            _adm_showToast('Error loading super admins: ' + err.message, 'error');
             _loaded.superAdmins = true;
             _tryRender();
           })
@@ -324,14 +326,14 @@
       }
     }
 
-    function populateBranchDropdown() {
-      const sel = document.getElementById('f-branch-id');
-      const filterSel = document.getElementById('branch-filter');
-      sel.innerHTML = '<option value="">Select branch…</option>';
+    function _adm_populateBranchDropdown() {
+      var sel       = document.getElementById('f-branch-id');
+      var filterSel = document.getElementById('branch-filter');
+      sel.innerHTML       = '<option value="">Select branch…</option>';
       filterSel.innerHTML = '<option value="">All Branches</option>';
-      _adm_allBranches.filter(b => b.status === 'Active').forEach(b => {
-        sel.insertAdjacentHTML('beforeend', `<option value="${b.branch_id}">${escHtml(b.branch_name)}</option>`);
-        filterSel.insertAdjacentHTML('beforeend', `<option value="${b.branch_id}">${escHtml(b.branch_name)}</option>`);
+      _adm_allBranches.filter(function(b) { return b.status === 'Active'; }).forEach(function(b) {
+        sel.insertAdjacentHTML('beforeend', '<option value="' + _adm_escHtml(b.branch_id) + '">' + _adm_escHtml(b.branch_name) + '</option>');
+        filterSel.insertAdjacentHTML('beforeend', '<option value="' + _adm_escHtml(b.branch_id) + '">' + _adm_escHtml(b.branch_name) + '</option>');
       });
     }
 
@@ -340,59 +342,71 @@
       document.getElementById('tab-branch').classList.toggle('active', tab === 'branch');
       document.getElementById('tab-super').classList.toggle('active', tab === 'super');
       document.getElementById('branch-col-header').style.display = tab === 'branch' ? '' : 'none';
-      document.getElementById('branch-filter').style.display = tab === 'branch' ? '' : 'none';
-      renderStats(); renderTable();
+      document.getElementById('branch-filter').style.display     = tab === 'branch' ? '' : 'none';
+      _adm_renderStats();
+      _adm_renderTable();
     }
 
-    function renderStats() {
-      const list = _adm_currentTab === 'branch' ? _adm_allBranchAdmins : _adm_allSuperAdmins;
-      const active = list.filter(a => a.status === 'Active').length;
+    function _adm_renderStats() {
+      var list   = _adm_currentTab === 'branch' ? _adm_allBranchAdmins : _adm_allSuperAdmins;
+      var active = list.filter(function(a) { return a.status === 'Active'; }).length;
       document.getElementById('stat-total').textContent    = list.length;
       document.getElementById('stat-active').textContent   = active;
       document.getElementById('stat-inactive').textContent = list.length - active;
     }
 
-    function renderTable() {
-      const list  = _adm_currentTab === 'branch' ? _adm_allBranchAdmins : _adm_allSuperAdmins;
-      const q      = document.getElementById('search-input').value.toLowerCase();
-      const status = document.getElementById('status-filter').value;
-      const branch = document.getElementById('branch-filter').value;
-      const filtered = list.filter(a => {
-        const matchQ = !q || a.full_name.toLowerCase().includes(q) || a.username.toLowerCase().includes(q);
-        const matchS = !status || a.status === status;
-        const matchB = !branch || _adm_currentTab === 'super' || a.branch_id === branch;
+    function _adm_renderTable() {
+      var list     = _adm_currentTab === 'branch' ? _adm_allBranchAdmins : _adm_allSuperAdmins;
+      var q        = document.getElementById('search-input').value.toLowerCase();
+      var status   = document.getElementById('status-filter').value;
+      var branch   = document.getElementById('branch-filter').value;
+      var filtered = list.filter(function(a) {
+        var matchQ = !q      || a.full_name.toLowerCase().includes(q) || a.username.toLowerCase().includes(q);
+        var matchS = !status || a.status === status;
+        var matchB = !branch || _adm_currentTab === 'super' || a.branch_id === branch;
         return matchQ && matchS && matchB;
       });
-      const tbody = document.getElementById('admin-tbody');
-      const wrap  = document.getElementById('table-wrap');
-      const empty = document.getElementById('empty-state');
+
+      var tbody = document.getElementById('admin-tbody');
+      var wrap  = document.getElementById('table-wrap');
+      var empty = document.getElementById('empty-state');
       tbody.innerHTML = '';
+
       if (!filtered.length) {
-        wrap.classList.add('hidden'); empty.classList.remove('hidden'); empty.classList.add('flex'); return;
+        wrap.classList.add('hidden');
+        empty.classList.remove('hidden'); empty.classList.add('flex');
+        return;
       }
-      empty.classList.add('hidden'); empty.classList.remove('flex'); wrap.classList.remove('hidden');
-      filtered.forEach(a => {
-        const statusBadge = a.status === 'Active' ? '<span class="badge badge-active">Active</span>' : '<span class="badge badge-inactive">Inactive</span>';
-        const roleBadge   = _adm_currentTab === 'super'  ? '<span class="badge badge-super">Super Admin</span>' : '<span class="badge badge-branch">Branch Admin</span>';
-        const branchCell  = _adm_currentTab === 'branch' ? `<td class="px-3 py-3 text-sm text-slate-500">${escHtml(a.branch_name || '—')}</td>` : '<td class="px-3 py-3 text-slate-300 text-xs" style="display:none">—</td>';
-        tbody.insertAdjacentHTML('beforeend', `
-          <tr class="data-row">
-            <td class="px-5 py-3 font-semibold text-slate-800">${escHtml(a.full_name)}</td>
-            <td class="px-3 py-3 font-mono text-xs text-slate-500">${escHtml(a.username)}</td>
-            ${branchCell}
-            <td class="px-3 py-3">${roleBadge}</td>
-            <td class="px-3 py-3">${statusBadge}</td>
-            <td class="px-5 py-3 text-right">
-              <div class="flex gap-1.5 justify-end">
-                <button onclick='openModal(${JSON.stringify(a).replace(/'/g,"&#39;")})' class="text-xs font-semibold text-blue-600 hover:text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-50">Edit</button>
-                <button onclick="openDeleteModal('${a.admin_id}','${escHtml(a.full_name)}','${_adm_currentTab}')" class="text-xs font-semibold text-red-500 hover:text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-50">Delete</button>
-              </div>
-            </td>
-          </tr>`);
+      empty.classList.add('hidden'); empty.classList.remove('flex');
+      wrap.classList.remove('hidden');
+
+      filtered.forEach(function(a) {
+        var statusBadge = a.status === 'Active'
+          ? '<span class="badge badge-active">Active</span>'
+          : '<span class="badge badge-inactive">Inactive</span>';
+        var roleBadge = _adm_currentTab === 'super'
+          ? '<span class="badge badge-super">Super Admin</span>'
+          : '<span class="badge badge-branch">Branch Admin</span>';
+        var branchCell = _adm_currentTab === 'branch'
+          ? '<td class="px-3 py-3 text-sm text-slate-500">' + _adm_escHtml(a.branch_name || '—') + '</td>'
+          : '<td class="px-3 py-3 text-slate-300 text-xs" style="display:none">—</td>';
+        tbody.insertAdjacentHTML('beforeend',
+          '<tr class="data-row">' +
+          '<td class="px-5 py-3 font-semibold text-slate-800">' + _adm_escHtml(a.full_name) + '</td>' +
+          '<td class="px-3 py-3 font-mono text-xs text-slate-500">' + _adm_escHtml(a.username) + '</td>' +
+          branchCell +
+          '<td class="px-3 py-3">' + roleBadge + '</td>' +
+          '<td class="px-3 py-3">' + statusBadge + '</td>' +
+          '<td class="px-5 py-3 text-right"><div class="flex gap-1.5 justify-end">' +
+          '<button onclick=\'openModal(' + JSON.stringify(a).replace(/'/g,"&#39;") + ')\' class="text-xs font-semibold text-blue-600 hover:text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-50">Edit</button>' +
+          '<button onclick="openDeleteModal(\'' + _adm_escHtml(a.admin_id) + '\',\'' + _adm_escHtml(a.full_name) + '\',\'' + _adm_currentTab + '\')" class="text-xs font-semibold text-red-500 hover:text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-50">Delete</button>' +
+          '</div></td>' +
+          '</tr>'
+        );
       });
     }
 
-    function filterTable() { renderStats(); renderTable(); }
+    function filterTable() { _adm_renderStats(); _adm_renderTable(); }
 
     function setRole(role) {
       _adm_selectedRole = role;
@@ -406,118 +420,143 @@
       _adm_editingRole = admin ? (admin.role || _adm_currentTab + '_admin') : null;
       document.getElementById('modal-title').textContent    = admin ? 'Edit Admin' : 'Add Admin';
       document.getElementById('modal-subtitle').textContent = admin ? 'Update admin details below.' : 'Fill in the details below.';
-      document.getElementById('f-admin-id').value  = admin?.admin_id  || '';
-      document.getElementById('f-full-name').value = admin?.full_name || '';
-      document.getElementById('f-username').value  = admin?.username  || '';
+      document.getElementById('f-admin-id').value  = (admin && admin.admin_id)  || '';
+      document.getElementById('f-full-name').value = (admin && admin.full_name) || '';
+      document.getElementById('f-username').value  = (admin && admin.username)  || '';
       document.getElementById('f-password').value  = '';
-      document.getElementById('f-status').value    = admin?.status    || 'Active';
+      document.getElementById('f-status').value    = (admin && admin.status)    || 'Active';
       document.getElementById('pw-note').classList.toggle('hidden', !admin);
       document.getElementById('pw-hint').classList.toggle('hidden', !!admin);
 
       if (_adm_isBranchAdmin) {
-        // Branch admin: always creating/editing branch admins for their own branch
-        // Hide role selector and branch field entirely
         document.getElementById('role-selector').style.display = 'none';
         document.getElementById('branch-field').style.display  = 'none';
         _adm_editingRole = 'branch_admin';
       } else {
-        // Super admin: show role selector when adding new
         document.getElementById('role-selector').style.display = admin ? 'none' : '';
         if (admin && admin.branch_id) document.getElementById('f-branch-id').value = admin.branch_id;
         if (!admin) setRole('branch_admin');
         else document.getElementById('branch-field').style.display = (admin.role || '') === 'super_admin' ? 'none' : '';
       }
-
       document.getElementById('modal-backdrop').classList.remove('hidden');
     }
 
-    function closeModal() { _adm_editingId = null; _adm_editingRole = null; document.getElementById('modal-backdrop').classList.add('hidden'); }
+    function closeModal() {
+      _adm_editingId = null;
+      _adm_editingRole = null;
+      document.getElementById('modal-backdrop').classList.add('hidden');
+    }
 
     function saveAdmin() {
-      const fullName = document.getElementById('f-full-name').value.trim();
-      const username = document.getElementById('f-username').value.trim();
-      const password = document.getElementById('f-password').value;
-      const role     = _adm_editingId ? _adm_editingRole : _adm_selectedRole;
-      if (!fullName) { showToast('Full name is required.', 'error'); return; }
-      if (!username) { showToast('Username is required.', 'error'); return; }
-      if (!_adm_editingId && !password) { showToast('Password is required.', 'error'); return; }
-      if (role === 'branch_admin' && !document.getElementById('f-branch-id').value) { showToast('Please select a branch.', 'error'); return; }
-      const payload = {
+      var fullName = document.getElementById('f-full-name').value.trim();
+      var username = document.getElementById('f-username').value.trim();
+      var password = document.getElementById('f-password').value;
+      var role     = _adm_editingId ? _adm_editingRole : _adm_selectedRole;
+
+      if (!fullName) { _adm_showToast('Full name is required.', 'error'); return; }
+      if (!username) { _adm_showToast('Username is required.', 'error'); return; }
+      if (!_adm_editingId && !password) { _adm_showToast('Password is required.', 'error'); return; }
+      if (role === 'branch_admin' && !document.getElementById('f-branch-id').value) { _adm_showToast('Please select a branch.', 'error'); return; }
+
+      var payload = {
         admin_id:  document.getElementById('f-admin-id').value,
         full_name: fullName,
-        username,
-        password,
+        username:  username,
+        password:  password,
         status:    document.getElementById('f-status').value,
         branch_id: document.getElementById('f-branch-id').value,
-        role
+        role:      role
       };
-      setSaving(true);
-      const action = _adm_editingId
+
+      _adm_setSaving(true);
+      var action = _adm_editingId
         ? (role === 'super_admin' ? 'UPDATE_SUPER_ADMIN' : 'UPDATE_BRANCH_ADMIN')
         : (role === 'super_admin' ? 'CREATE_SUPER_ADMIN' : 'CREATE_BRANCH_ADMIN');
+
       google.script.run
-        .withSuccessHandler(res => {
-          setSaving(false);
+        .withSuccessHandler(function(res) {
+          _adm_setSaving(false);
           if (_adm_checkExpired(res)) return;
-          if (res.success) { closeModal(); showToast(_adm_editingId ? 'Admin updated!' : 'Admin created!', 'success'); loadData(); }
-          else showToast('Error: ' + res.error, 'error');
+          if (res.success) { closeModal(); _adm_showToast(_adm_editingId ? 'Admin updated!' : 'Admin created!', 'success'); _adm_loadData(); }
+          else _adm_showToast('Error: ' + res.error, 'error');
         })
-        .withFailureHandler(err => { setSaving(false); showToast('Error: ' + err.message, 'error'); })
+        .withFailureHandler(function(err) { _adm_setSaving(false); _adm_showToast('Error: ' + err.message, 'error'); })
         .handleAdminRequest(action, payload, _adm_getToken());
     }
 
-    function setSaving(v) {
-      const btn = document.getElementById('save-btn');
+    function _adm_setSaving(v) {
+      var btn = document.getElementById('save-btn');
       btn.disabled = v;
-      btn.innerHTML = v ? '<span class="spinner"></span>' : `<span id="save-label">${_adm_editingId ? 'Update Admin' : 'Save Admin'}</span>`;
+      btn.innerHTML = v
+        ? '<span class="spinner"></span>'
+        : '<span id="save-label">' + (_adm_editingId ? 'Update Admin' : 'Save Admin') + '</span>';
     }
 
-    function openDeleteModal(id, name, tab) { _adm_deletingId = id; _adm_deletingRole = tab + '_admin'; document.getElementById('delete-name').textContent = name; document.getElementById('delete-modal').classList.remove('hidden'); }
-    function closeDeleteModal() { _adm_deletingId = null; _adm_deletingRole = null; document.getElementById('delete-modal').classList.add('hidden'); }
+    function openDeleteModal(id, name, tab) {
+      _adm_deletingId   = id;
+      _adm_deletingRole = tab + '_admin';
+      document.getElementById('delete-name').textContent = name;
+      document.getElementById('delete-modal').classList.remove('hidden');
+    }
+
+    function closeDeleteModal() {
+      _adm_deletingId   = null;
+      _adm_deletingRole = null;
+      document.getElementById('delete-modal').classList.add('hidden');
+    }
 
     function confirmDelete() {
-      const btn = document.getElementById('confirm-delete-btn');
+      var btn    = document.getElementById('confirm-delete-btn');
       btn.textContent = 'Deleting…'; btn.disabled = true;
-      const action = _adm_deletingRole === 'super_admin' ? 'DELETE_SUPER_ADMIN' : 'DELETE_BRANCH_ADMIN';
+      var action = _adm_deletingRole === 'super_admin' ? 'DELETE_SUPER_ADMIN' : 'DELETE_BRANCH_ADMIN';
       google.script.run
-        .withSuccessHandler(res => {
-          closeDeleteModal(); btn.textContent='Delete'; btn.disabled=false;
+        .withSuccessHandler(function(res) {
+          closeDeleteModal(); btn.textContent = 'Delete'; btn.disabled = false;
           if (_adm_checkExpired(res)) return;
-          if (res.success) { showToast('Admin deleted.','success'); loadData(); }
-          else showToast('Error: '+res.error,'error');
+          if (res.success) { _adm_showToast('Admin deleted.', 'success'); _adm_loadData(); }
+          else _adm_showToast('Error: ' + res.error, 'error');
         })
-        .withFailureHandler(err => { closeDeleteModal(); btn.textContent='Delete'; btn.disabled=false; showToast('Error: '+err.message,'error'); })
-        .handleAdminRequest(action, { admin_id:_adm_deletingId }, _adm_getToken());
+        .withFailureHandler(function(err) {
+          closeDeleteModal(); btn.textContent = 'Delete'; btn.disabled = false;
+          _adm_showToast('Error: ' + err.message, 'error');
+        })
+        .handleAdminRequest(action, { admin_id: _adm_deletingId }, _adm_getToken());
     }
 
-    function showLoading(v) {
-      document.getElementById('loading-state').classList.toggle('hidden',!v);
-      if (v) { document.getElementById('table-wrap').classList.add('hidden'); document.getElementById('empty-state').classList.add('hidden'); document.getElementById('empty-state').classList.remove('flex'); }
+    function _adm_showLoading(v) {
+      document.getElementById('loading-state').classList.toggle('hidden', !v);
+      if (v) {
+        document.getElementById('table-wrap').classList.add('hidden');
+        document.getElementById('empty-state').classList.add('hidden');
+        document.getElementById('empty-state').classList.remove('flex');
+      }
     }
 
-    // ── Toast ─────────────────────────────────────────────────────────
-    function showToast(msg, type = 'success') {
-      const icons = {
+    function _adm_showToast(msg, type) {
+      var icons = {
         success: '<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>',
         error:   '<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>',
         warning: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>'
       };
-      const item = document.createElement('div');
-      item.className = `toast-item toast-${type}`;
-      item.innerHTML = `
-        <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-          ${icons[type] || icons.success}
-        </svg>
-        <span>${escHtml(String(msg))}</span>`;
+      var item = document.createElement('div');
+      item.className = 'toast-item toast-' + (type || 'success');
+      item.innerHTML =
+        '<svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">' +
+        (icons[type] || icons.success) + '</svg>' +
+        '<span>' + _adm_escHtml(String(msg)) + '</span>';
       document.getElementById('toast').appendChild(item);
-      setTimeout(() => item.remove(), 3800);
+      setTimeout(function() { item.remove(); }, 3800);
     }
 
-    function escHtml(str) { return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    function _adm_escHtml(str) {
+      return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
 
     document.getElementById('modal-backdrop').addEventListener('click', closeModal);
     document.getElementById('delete-modal').addEventListener('click', closeDeleteModal);
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeDeleteModal(); } });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') { closeModal(); closeDeleteModal(); }
+    });
   </script>
   </body>
   </html>
