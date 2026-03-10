@@ -31,7 +31,8 @@
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
 
-    iframe { border: none; animation: fadeIn 0.3s ease; }
+    .tab-pane { display: none; width: 100%; height: 100%; overflow-y: auto; }
+    .tab-pane.active { display: block; animation: fadeIn 0.3s ease; }
     @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
   </style>
 </head>
@@ -61,7 +62,7 @@
 
       <p class="nav-section-label text-[10px] font-semibold uppercase tracking-widest px-3 mb-2 mt-1">Main</p>
 
-      <a href="#" onclick="setActive(this); loadPage('TechDashboard'); return false;"
+      <a href="#" onclick="setActive(this); switchTab('TechDashboard'); return false;"
          class="nav-link active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer">
         <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <rect x="3" y="3" width="7" height="7" rx="1.5"/>
@@ -72,7 +73,7 @@
         <span>Dashboard</span>
       </a>
 
-      <a href="#" onclick="setActive(this); loadPage('Orders'); return false;"
+      <a href="#" onclick="setActive(this); switchTab('Orders'); return false;"
          class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer">
         <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v8.5L4.5 18A2 2 0 006.4 21h11.2a2 2 0 001.9-2.5L15 11.5V3M9 3h6M8 15h8"/>
@@ -80,7 +81,7 @@
         <span>Orders</span>
       </a>
 
-      <a href="#" onclick="setActive(this); loadPage('Patients'); return false;"
+      <a href="#" onclick="setActive(this); switchTab('Patients'); return false;"
          class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer">
         <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-1a4 4 0 00-5.196-3.762M9 11a4 4 0 100-8 4 4 0 000 8zm-6 9v-1a4 4 0 014-4h4a4 4 0 014 4v1"/>
@@ -90,7 +91,7 @@
 
       <p class="nav-section-label text-[10px] font-semibold uppercase tracking-widest px-3 mb-2 mt-4">Account</p>
 
-      <a href="#" onclick="setActive(this); loadPage('TechChangePassword'); return false;"
+      <a href="#" onclick="setActive(this); switchTab('TechChangePassword'); return false;"
          class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer">
         <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
@@ -144,7 +145,12 @@
         <div class="w-8 h-8 rounded-full animate-spin" style="border:2px solid #6ee7b7;border-top-color:#059669"></div>
         <p class="text-xs text-slate-400">Loading…</p>
       </div>
-      <iframe id="content-frame" name="content-frame" src="" class="w-full h-full hidden"></iframe>
+      <div id="tab-content" class="w-full h-full overflow-hidden">
+        <div id="tab-TechDashboard"      class="tab-pane"><?!= include('TechDashboard') ?></div>
+        <div id="tab-Orders"             class="tab-pane"><?!= include('Orders') ?></div>
+        <div id="tab-Patients"           class="tab-pane"><?!= include('Patients') ?></div>
+        <div id="tab-TechChangePassword" class="tab-pane"><?!= include('TechChangePassword') ?></div>
+      </div>
     </main>
   </div>
 
@@ -166,11 +172,12 @@
   </div>
 
   <script>
-    let baseUrl    = '';
-    let alab_token = '';
+    var baseUrl         = '';
+    var alab_token      = '';
+    var initializedTabs = {};
 
     (function() {
-      const params = new URLSearchParams(window.location.search);
+      var params = new URLSearchParams(window.location.search);
       alab_token = params.get('token') || localStorage.getItem('alab_token') || '';
       if (alab_token) localStorage.setItem('alab_token', alab_token);
     })();
@@ -185,21 +192,19 @@
               window.top.location.href = url + '?page=Login';
               return;
             }
-            const d = res.data;
+            var d = res.data;
 
-            // Sidebar identity
             document.getElementById('sidebar-name').textContent = d.full_name || 'Technologist';
             document.getElementById('sidebar-role').textContent = d.branch_name || d.medtech_role || 'Technologist';
 
-            // Avatars
-            const avatarUrl = 'https://ui-avatars.com/api/?name=' +
+            var avatarUrl = 'https://ui-avatars.com/api/?name=' +
               encodeURIComponent(d.full_name || 'Tech') +
               '&background=059669&color=fff&size=64&font-size=0.4';
             document.getElementById('sidebar-avatar').src = avatarUrl;
             document.getElementById('header-avatar').src  = avatarUrl;
 
             document.getElementById('init-loading').classList.add('hidden');
-            loadPage('TechDashboard');
+            switchTab('TechDashboard');
           })
           .withFailureHandler(function() {
             localStorage.removeItem('alab_token');
@@ -213,19 +218,26 @@
       })
       .getScriptUrl();
 
-    function loadPage(pageName) {
-      if (!baseUrl) return;
-      const frame = document.getElementById('content-frame');
-      frame.src = baseUrl + '?page=' + pageName + '&token=' + encodeURIComponent(alab_token);
-      frame.classList.remove('hidden');
+    function switchTab(pageName) {
+      document.querySelectorAll('#tab-content .tab-pane').forEach(function(p) {
+        p.classList.remove('active');
+      });
+      var pane = document.getElementById('tab-' + pageName);
+      if (pane) pane.classList.add('active');
+
+      if (!initializedTabs[pageName]) {
+        initializedTabs[pageName] = true;
+        var initFn = 'init_' + pageName.replace(/-/g, '_');
+        if (typeof window[initFn] === 'function') window[initFn]();
+      }
     }
 
     function navigateTo(pageName) {
-      loadPage(pageName);
-      document.querySelectorAll('.nav-link').forEach(function(l) { l.classList.remove('active'); });
+      switchTab(pageName);
       var pageToNav = pageName === 'CreateOrder' ? 'Orders' : pageName;
+      document.querySelectorAll('.nav-link').forEach(function(l) { l.classList.remove('active'); });
       document.querySelectorAll('.nav-link').forEach(function(l) {
-        if ((l.querySelector('span') || {}).textContent === pageToNav) l.classList.add('active');
+        if ((l.querySelector('span') || {}).textContent.trim() === pageToNav) l.classList.add('active');
       });
       document.getElementById('page-title').textContent =
         pageName === 'CreateOrder' ? 'New Order' : pageName;
@@ -235,7 +247,7 @@
       document.querySelectorAll('.nav-link').forEach(function(l) { l.classList.remove('active'); });
       el.classList.add('active');
       document.getElementById('page-title').textContent =
-        el.querySelector('span')?.textContent.trim() || 'Dashboard';
+        (el.querySelector('span') || {}).textContent.trim() || 'Dashboard';
       if (window.innerWidth < 768) {
         document.getElementById('sidebar').classList.add('-translate-x-full');
         document.getElementById('sidebar-overlay').classList.add('hidden');
@@ -243,10 +255,10 @@
     }
 
     function toggleSidebar() {
-      const sidebar = document.getElementById('sidebar');
-      const overlay = document.getElementById('sidebar-overlay');
+      var sidebar = document.getElementById('sidebar');
+      var overlay = document.getElementById('sidebar-overlay');
       if (window.innerWidth < 768) {
-        const hidden = sidebar.classList.contains('-translate-x-full');
+        var hidden = sidebar.classList.contains('-translate-x-full');
         sidebar.classList.toggle('-translate-x-full', !hidden);
         overlay.classList.toggle('hidden', !hidden);
       }
@@ -256,7 +268,7 @@
     function closeLogoutModal() { document.getElementById('logout-modal').classList.add('hidden'); }
 
     function confirmLogout() {
-      const btn = document.getElementById('confirm-logout-btn');
+      var btn = document.getElementById('confirm-logout-btn');
       btn.textContent = 'Signing out…'; btn.disabled = true;
       google.script.run.handleAdminRequest('LOGOUT', {}, alab_token);
       localStorage.removeItem('alab_token');
