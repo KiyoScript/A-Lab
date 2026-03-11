@@ -5,11 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* ── Base ──────────────────────────────────────────────────── */
     * { box-sizing: border-box; }
     body { font-family: 'Inter', system-ui, sans-serif; background: #f8fafc; margin: 0; padding: 0; }
 
-    /* ── Table ─────────────────────────────────────────────────── */
     table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
     thead tr { background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
     thead th { padding: 10px 12px; text-align: left; font-size: 11px; font-weight: 600;
@@ -18,7 +16,6 @@
     tbody tr.data-row:last-child { border-bottom: none; }
     tbody tr.data-row:hover { background: #f8fafc; }
 
-    /* ── Badges ────────────────────────────────────────────────── */
     .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px;
              font-weight: 600; padding: 2px 8px; border-radius: 9999px; }
     .badge-active   { background: #dcfce7; color: #16a34a; }
@@ -26,56 +23,58 @@
     .role-pill { display: inline-block; font-size: 11px; font-weight: 600;
                  padding: 2px 9px; border-radius: 9999px; }
 
-    /* ── Modal ─────────────────────────────────────────────────── */
     .modal-card { background: white; border-radius: 1.25rem; box-shadow: 0 20px 60px rgba(0,0,0,0.15);
                   max-height: 90vh; overflow-y: auto; }
 
-    /* ── Form ──────────────────────────────────────────────────── */
-    .field-label { display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 6px; }
-    .field-input  { width: 100%; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 8px 12px;
-                   font-size: 0.8125rem; color: #1e293b; outline: none; transition: border 0.15s, box-shadow 0.15s;
-                   background: #fff; }
+    .field-label { font-size: 11px; font-weight: 600; color: #475569; text-transform: uppercase;
+                   letter-spacing: 0.04em; margin-bottom: 4px; display: block; }
+    .field-input { width: 100%; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 9px 12px;
+                   font-size: 0.8125rem; color: #1e293b; outline: none;
+                   transition: border-color 0.15s, box-shadow 0.15s; background: #fff; }
     .field-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
-    .form-section { font-size: 10px; font-weight: 700; text-transform: uppercase;
-                    letter-spacing: 0.08em; color: #94a3b8; border-bottom: 1px solid #f1f5f9;
-                    padding-bottom: 6px; margin-top: 4px; }
+    select.field-input { cursor: pointer; }
+
+    .stat-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 1rem 1.25rem; }
+
+    .form-section { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+                    color: #94a3b8; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px; margin: 12px 0 10px; }
+
     .role-btn { transition: all 0.15s; }
+    .role-btn:hover { border-color: #94a3b8 !important; }
 
-    /* ── Stat cards ────────────────────────────────────────────── */
-    .stat-card { background: white; border-radius: 1rem; border: 1px solid #e8eef4;
-                 padding: 1rem 1.25rem; }
+    .spinner { display: inline-block; width: 14px; height: 14px;
+               border: 2px solid rgba(255,255,255,0.35); border-top-color: #fff;
+               border-radius: 50%; animation: mt-spin 0.6s linear infinite; }
+    @keyframes mt-spin { to { transform: rotate(360deg); } }
 
-    /* ── Spinner ───────────────────────────────────────────────── */
-    .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3);
-               border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ── Toast ─────────────────────────────────────────────────── */
-    #toast { position: fixed; bottom: 24px; right: 24px; z-index: 9999;
-             display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+    #mt-toast { position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+                display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
     .toast-item { display: flex; align-items: center; gap: 10px; padding: 10px 16px;
                   border-radius: 12px; font-size: 13px; font-weight: 500; max-width: 320px;
-                  box-shadow: 0 4px 20px rgba(0,0,0,0.12); animation: toastIn 0.3s ease; }
+                  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+                  animation: mt-toastIn 0.3s ease; pointer-events: none; }
     .toast-success { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
     .toast-error   { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
     .toast-warning { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
-    @keyframes toastIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes mt-toastIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* ── Read-only banner ──────────────────────────────────────── */
     .readonly-banner { background: #eff6ff; border: 1px solid #bfdbfe;
                        border-radius: 10px; padding: 10px 14px; display: flex;
                        align-items: center; gap: 10px; font-size: 12px; color: #1d4ed8; font-weight: 500; }
   </style>
 </head>
+
+<div id="mt-toast"></div>
+
 <div class="p-6">
 
-<!-- ── PAGE HEADER ──────────────────────────────────────────────── -->
+<!-- PAGE HEADER -->
 <div class="flex items-start justify-between mb-6 gap-4 flex-wrap">
   <div>
     <h1 class="text-xl font-bold text-slate-800">Technologists</h1>
-    <p id="header-subtitle" class="text-sm text-slate-400 mt-0.5">Manage medical technologist accounts per branch.</p>
+    <p id="mt-header-subtitle" class="text-sm text-slate-400 mt-0.5">Manage medical technologist accounts per branch.</p>
   </div>
-  <button id="enroll-btn" onclick="openModal(null)"
+  <button id="mt-enroll-btn" onclick="mt_openModal(null)"
     class="hidden items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-sm">
     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
       <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
@@ -84,53 +83,52 @@
   </button>
 </div>
 
-<div id="readonly-notice" class="readonly-banner mb-5 hidden">
+<div id="mt-readonly-notice" class="readonly-banner mb-5 hidden">
   <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-    <path stroke-linecap="round" stroke-linejoin="round"
-      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
   </svg>
   <span>You are viewing in <strong>read-only mode</strong>. Only Branch Admins can add or manage technologists.</span>
 </div>
 
-<!-- ── STAT CARDS ───────────────────────────────────────────────── -->
+<!-- STAT CARDS -->
 <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
   <div class="stat-card">
     <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-1">Total</p>
-    <p id="stat-total" class="text-2xl font-bold text-slate-800">—</p>
+    <p id="mt-stat-total" class="text-2xl font-bold text-slate-800">—</p>
   </div>
   <div class="stat-card">
     <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-1">Active</p>
-    <p id="stat-active" class="text-2xl font-bold text-emerald-600">—</p>
+    <p id="mt-stat-active" class="text-2xl font-bold text-emerald-600">—</p>
   </div>
   <div class="stat-card">
     <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-1">Inactive</p>
-    <p id="stat-inactive" class="text-2xl font-bold text-slate-400">—</p>
+    <p id="mt-stat-inactive" class="text-2xl font-bold text-slate-400">—</p>
   </div>
   <div class="stat-card">
     <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-1">Roles</p>
-    <p id="stat-roles" class="text-2xl font-bold text-violet-600">—</p>
+    <p id="mt-stat-roles" class="text-2xl font-bold text-violet-600">—</p>
   </div>
 </div>
 
-<!-- ── FILTERS ───────────────────────────────────────────────────── -->
+<!-- FILTERS -->
 <div class="flex flex-wrap gap-2 mb-4 items-center">
-  <input id="search-input" oninput="filterTable()" type="text" placeholder="Search name or email…"
+  <input id="mt-search-input" oninput="mt_filterTable()" type="text" placeholder="Search name or email…"
     class="field-input flex-1 min-w-[180px] max-w-xs"/>
-  <select id="status-filter" onchange="filterTable()" class="field-input w-auto text-sm">
+  <select id="mt-status-filter" onchange="mt_filterTable()" class="field-input w-auto text-sm">
     <option value="">All Status</option>
     <option value="Active">Active</option>
     <option value="Inactive">Inactive</option>
   </select>
-  <select id="role-filter" onchange="filterTable()" class="field-input w-auto text-sm">
+  <select id="mt-role-filter" onchange="mt_filterTable()" class="field-input w-auto text-sm">
     <option value="">All Roles</option>
   </select>
-  <select id="branch-filter" onchange="filterTable()" class="field-input w-auto text-sm hidden">
+  <select id="mt-branch-filter" onchange="mt_filterTable()" class="field-input w-auto text-sm hidden">
     <option value="">All Branches</option>
   </select>
 </div>
 
-<!-- ── TABLE ─────────────────────────────────────────────────────── -->
-<div id="table-wrap" class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hidden">
+<!-- TABLE -->
+<div id="mt-table-wrap" class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hidden">
   <div class="overflow-x-auto">
     <table>
       <thead>
@@ -140,7 +138,7 @@
           <th class="px-3">Role</th>
           <th class="px-3 hidden md:table-cell">Branch</th>
           <th class="px-3">Status</th>
-          <th id="th-actions" class="px-5 text-right hidden">Actions</th>
+          <th id="mt-th-actions" class="px-5 text-right hidden">Actions</th>
         </tr>
       </thead>
       <tbody id="mt-tbody"></tbody>
@@ -148,7 +146,7 @@
   </div>
 </div>
 
-<div id="empty-state" class="hidden flex-col items-center justify-center py-20 text-center">
+<div id="mt-empty-state" class="hidden flex-col items-center justify-center py-20 text-center">
   <div class="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4">
     <svg class="w-8 h-8 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
       <path stroke-linecap="round" stroke-linejoin="round"
@@ -156,23 +154,26 @@
     </svg>
   </div>
   <p class="text-slate-600 font-semibold text-sm">No Technologists Found</p>
-  <p class="text-slate-400 text-xs mt-1" id="empty-sub">No technologists have been enrolled yet.</p>
+  <p class="text-slate-400 text-xs mt-1" id="mt-empty-sub">No technologists have been enrolled yet.</p>
 </div>
 
-<div id="loading-state" class="flex flex-col items-center justify-center py-20">
+<div id="mt-loading-state" class="flex flex-col items-center justify-center py-20">
   <div class="w-8 h-8 rounded-full animate-spin mb-3" style="border:2px solid #bbd8ff;border-top-color:#2f76f5"></div>
   <p class="text-xs text-slate-400">Loading Technologists…</p>
 </div>
 
-<!-- ── ENROLL / EDIT MODAL ───────────────────────────────────────── -->
-<div id="modal-backdrop" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden" onclick="closeModal()">
+</div><!-- end .p-6 -->
+
+
+<!-- ENROLL / EDIT MODAL -->
+<div id="mt-modal-backdrop" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden" onclick="mt_closeModal()">
   <div class="modal-card w-full max-w-lg" onclick="event.stopPropagation()">
     <div class="flex items-start justify-between p-6 pb-4 border-b border-slate-100">
       <div>
-        <h2 id="modal-title" class="text-base font-bold text-slate-800">Enroll Technologist</h2>
-        <p id="modal-subtitle" class="text-xs text-slate-400 mt-0.5">Fill in the technologist's details below.</p>
+        <h2 id="mt-modal-title" class="text-base font-bold text-slate-800">Enroll Technologist</h2>
+        <p id="mt-modal-subtitle" class="text-xs text-slate-400 mt-0.5">Fill in the technologist's details below.</p>
       </div>
-      <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-1.5 rounded-lg transition-colors">
+      <button onclick="mt_closeModal()" class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-1.5 rounded-lg transition-colors">
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
         </svg>
@@ -180,13 +181,13 @@
     </div>
     <div class="p-6 space-y-4">
       <input type="hidden" id="f-medtech-id"/>
-      <div id="branch-badge-wrap" class="hidden">
+      <div id="mt-branch-badge-wrap" class="hidden">
         <label class="field-label">Branch</label>
         <div class="flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-100 rounded-xl">
           <svg class="w-3.5 h-3.5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M9 21V7l3-4 3 4v14M9 11h6"/>
           </svg>
-          <span id="branch-badge-label" class="text-xs font-semibold text-blue-700">—</span>
+          <span id="mt-branch-badge-label" class="text-xs font-semibold text-blue-700">—</span>
           <span class="text-[10px] text-blue-400 ml-1">(auto-assigned)</span>
         </div>
       </div>
@@ -212,18 +213,18 @@
       </div>
       <div>
         <label class="field-label">Role <span class="text-red-400">*</span></label>
-        <div id="role-grid" class="grid grid-cols-3 gap-2 mt-1"></div>
+        <div id="mt-role-grid" class="grid grid-cols-3 gap-2 mt-1"></div>
         <input type="hidden" id="f-role"/>
       </div>
       <div>
         <label class="field-label">
           Password
-          <span id="pw-hint" class="text-red-400">*</span>
-          <span id="pw-note" class="hidden text-slate-400 font-normal">(leave blank to keep current)</span>
+          <span id="mt-pw-hint" class="text-red-400">*</span>
+          <span id="mt-pw-note" class="hidden text-slate-400 font-normal">(leave blank to keep current)</span>
         </label>
         <div class="relative">
           <input id="f-password" type="password" placeholder="••••••••" class="field-input pr-10" autocomplete="new-password"/>
-          <button type="button" onclick="togglePwVisibility()"
+          <button type="button" onclick="mt_togglePwVisibility()"
             class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -242,39 +243,39 @@
       </div>
     </div>
     <div class="flex gap-3 px-6 pb-6">
-      <button onclick="closeModal()"
+      <button onclick="mt_closeModal()"
         class="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors">
         Cancel
       </button>
-      <button id="save-btn" onclick="saveMedTech()"
+      <button id="mt-save-btn" onclick="mt_saveMedTech()"
         class="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2">
-        <span id="save-label">Save Technologist</span>
+        <span id="mt-save-label">Save Technologist</span>
       </button>
     </div>
   </div>
 </div>
 
-<!-- ── CHANGE PASSWORD MODAL ─────────────────────────────────────── -->
-<div id="pw-modal-backdrop" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden" onclick="closePwModal()">
+<!-- CHANGE PASSWORD MODAL -->
+<div id="mt-pw-modal-backdrop" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden" onclick="mt_closePwModal()">
   <div class="modal-card w-full max-w-sm" onclick="event.stopPropagation()">
     <div class="flex items-start justify-between p-6 pb-4 border-b border-slate-100">
       <div>
         <h2 class="text-base font-bold text-slate-800">Change Password</h2>
-        <p id="pw-modal-name" class="text-xs text-slate-400 mt-0.5">—</p>
+        <p id="mt-pw-modal-name" class="text-xs text-slate-400 mt-0.5">—</p>
       </div>
-      <button onclick="closePwModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+      <button onclick="mt_closePwModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
         </svg>
       </button>
     </div>
     <div class="p-6 space-y-4">
-      <input type="hidden" id="pw-medtech-id"/>
+      <input type="hidden" id="mt-pw-medtech-id"/>
       <div>
         <label class="field-label">New Password <span class="text-red-400">*</span></label>
         <div class="relative">
           <input id="f-new-password" type="password" placeholder="••••••••" class="field-input pr-10" autocomplete="new-password"/>
-          <button type="button" onclick="toggleNewPwVisibility()"
+          <button type="button" onclick="mt_toggleNewPwVisibility()"
             class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -289,61 +290,48 @@
       </div>
     </div>
     <div class="flex gap-3 px-6 pb-6">
-      <button onclick="closePwModal()"
+      <button onclick="mt_closePwModal()"
         class="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
-      <button id="pw-save-btn" onclick="submitPasswordChange()"
+      <button id="mt-pw-save-btn" onclick="mt_submitPasswordChange()"
         class="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold flex items-center justify-center">
-        <span id="pw-save-label">Update Password</span>
+        <span id="mt-pw-save-label">Update Password</span>
       </button>
     </div>
   </div>
 </div>
 
-<!-- ── DELETE MODAL ──────────────────────────────────────────────── -->
-<div id="del-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden" onclick="closeDeleteModal()">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center" onclick="event.stopPropagation()">
-    <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
-      <svg class="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-      </svg>
-    </div>
-    <h3 class="text-base font-bold text-slate-800 mb-1">Remove Technologist?</h3>
-    <p class="text-sm text-slate-500 mb-1">You are about to remove:</p>
-    <p id="del-name" class="text-sm font-bold text-slate-800 mb-3">—</p>
-    <p class="text-xs text-slate-400 mb-5">This action cannot be undone.</p>
+<!-- DELETE MODAL -->
+<div id="mt-del-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden" onclick="mt_closeDeleteModal()">
+  <div class="modal-card w-full max-w-sm p-6" onclick="event.stopPropagation()">
+    <h3 class="text-base font-bold text-slate-800 mb-1">Remove Technologist</h3>
+    <p class="text-sm text-slate-500 mb-4">Remove <span id="mt-del-name" class="font-semibold text-slate-700">—</span>? This action cannot be undone.</p>
     <div class="flex gap-3">
-      <button onclick="closeDeleteModal()"
-        class="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
-      <button id="confirm-del-btn" onclick="confirmDelete()"
-        class="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold">Remove</button>
+      <button onclick="mt_closeDeleteModal()" class="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
+      <button id="mt-confirm-del-btn" onclick="mt_confirmDelete()" class="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold">Remove</button>
     </div>
   </div>
 </div>
 
-<!-- TOAST -->
-<div id="toast"></div>
-
 <script>
-  // ── Role config ──────────────────────────────────────────────────
   var MT_ROLES = [
-    { key: 'Medical Technologist', color: 'blue'    },
-    { key: 'Senior Med Tech',      color: 'violet'  },
-    { key: 'Lab Supervisor',       color: 'emerald' },
-    { key: 'Pathologist',          color: 'rose'    },
-    { key: 'Lab Assistant',        color: 'amber'   },
-    { key: 'Quality Analyst',      color: 'cyan'    },
+    { key: 'Medical Technologist',    color: 'blue'    },
+    { key: 'Medical Laboratory Aide', color: 'violet'  },
+    { key: 'Phlebotomist',            color: 'emerald' },
+    { key: 'Pathologist',             color: 'rose'    },
+    { key: 'Lab Supervisor',          color: 'amber'   },
+    { key: 'Lab Assistant',           color: 'cyan'    },
   ];
   var MT_ROLE_COLORS = {
-    blue:    { bg: 'rgba(47,118,245,0.10)',  text: '#2f76f5' },
+    blue:    { bg: 'rgba(59,130,246,0.10)',  text: '#2563eb' },
     violet:  { bg: 'rgba(124,58,237,0.10)',  text: '#7c3aed' },
-    emerald: { bg: 'rgba(5,150,105,0.10)',   text: '#059669' },
-    rose:    { bg: 'rgba(244,63,94,0.10)',   text: '#f43f5e' },
+    emerald: { bg: 'rgba(16,185,129,0.10)',  text: '#059669' },
+    rose:    { bg: 'rgba(244,63,94,0.10)',   text: '#e11d48' },
     amber:   { bg: 'rgba(245,158,11,0.10)',  text: '#d97706' },
     cyan:    { bg: 'rgba(8,145,178,0.10)',   text: '#0891b2' },
     default: { bg: 'rgba(100,116,139,0.10)', text: '#64748b' },
   };
 
-  // ── State (all prefixed _mt_ to avoid global collisions) ─────────
+  // ── State — already prefixed _mt_ ────────────────────────────────
   var _mt_allMedTechs    = [];
   var _mt_allBranches    = [];
   var _mt_currentSession = null;
@@ -354,24 +342,22 @@
   var _mt_selectedRole   = '';
 
   function _mt_getToken() {
-    return localStorage.getItem('alab_token') || '';
-  }
-
-  function _mt_handleExpired() {
-    localStorage.removeItem('alab_token');
-    google.script.run.withSuccessHandler(function(url) {
-      window.top.location.href = url + '?page=Login';
-    }).getScriptUrl();
+    return (typeof alab_token !== 'undefined' ? alab_token : null)
+      || localStorage.getItem('alab_token') || '';
   }
 
   function _mt_checkExpired(res) {
-    if (res && res.expired) { _mt_handleExpired(); return true; }
+    if (res && res.expired) {
+      localStorage.removeItem('alab_token');
+      window.top.location.href = (typeof baseUrl !== 'undefined' ? baseUrl : '') + '?page=Login';
+      return true;
+    }
     return false;
   }
 
-  // ── Init — called by Index.html switchTab() ──────────────────────
+  // ── Entry point ──────────────────────────────────────────────────
   function init_MedTechs() {
-    buildRoleGrid();
+    _mt_buildRoleGrid();
     google.script.run
       .withSuccessHandler(function(res) {
         if (_mt_checkExpired(res)) return;
@@ -379,7 +365,7 @@
           _mt_currentSession = res.data;
           _mt_isBranchAdmin  = _mt_currentSession.role === 'branch_admin';
           _mt_isSuperAdmin   = _mt_currentSession.role === 'super_admin';
-          applyMtRoleUI();
+          _mt_applyRoleUI();
         }
         _mt_loadBranches();
       })
@@ -387,21 +373,20 @@
       .handleAdminRequest('GET_SESSION', {}, _mt_getToken());
   }
 
-  // ── Role UI ──────────────────────────────────────────────────────
-  function applyMtRoleUI() {
+  function _mt_applyRoleUI() {
     if (_mt_isBranchAdmin) {
-      document.getElementById('enroll-btn').classList.remove('hidden');
-      document.getElementById('enroll-btn').classList.add('flex');
-      document.getElementById('th-actions').classList.remove('hidden');
-      document.getElementById('branch-badge-wrap').classList.remove('hidden');
+      document.getElementById('mt-enroll-btn').classList.remove('hidden');
+      document.getElementById('mt-enroll-btn').classList.add('flex');
+      document.getElementById('mt-th-actions').classList.remove('hidden');
+      document.getElementById('mt-branch-badge-wrap').classList.remove('hidden');
       var myBranch = _mt_allBranches.find(function(b) { return b.branch_id === _mt_currentSession.branch_id; });
-      document.getElementById('branch-badge-label').textContent =
+      document.getElementById('mt-branch-badge-label').textContent =
         myBranch ? myBranch.branch_name + ' (' + myBranch.branch_code + ')' : _mt_currentSession.branch_name || '—';
-      document.getElementById('header-subtitle').textContent = 'Manage technologist accounts for your branch.';
+      document.getElementById('mt-header-subtitle').textContent = 'Manage technologist accounts for your branch.';
     } else if (_mt_isSuperAdmin) {
-      document.getElementById('readonly-notice').classList.remove('hidden');
-      document.getElementById('branch-filter').classList.remove('hidden');
-      document.getElementById('header-subtitle').textContent = 'View all technologist accounts across branches.';
+      document.getElementById('mt-readonly-notice').classList.remove('hidden');
+      document.getElementById('mt-branch-filter').classList.remove('hidden');
+      document.getElementById('mt-header-subtitle').textContent = 'View all technologist accounts across branches.';
     }
   }
 
@@ -416,7 +401,7 @@
         if (_mt_isBranchAdmin) {
           var myBranch = _mt_allBranches.find(function(b) { return b.branch_id === _mt_currentSession.branch_id; });
           if (myBranch) {
-            document.getElementById('branch-badge-label').textContent =
+            document.getElementById('mt-branch-badge-label').textContent =
               myBranch.branch_name + ' (' + myBranch.branch_code + ')';
           }
         }
@@ -434,9 +419,9 @@
         if (_mt_checkExpired(res)) return;
         if (res.success) {
           _mt_allMedTechs = res.data || [];
-          buildRoleFilter();
-          renderTable(_mt_allMedTechs);
-          updateStats(_mt_allMedTechs);
+          _mt_buildRoleFilter();
+          _mt_renderTable(_mt_allMedTechs);
+          _mt_updateStats(_mt_allMedTechs);
         } else {
           _mt_showToast('Failed to load: ' + res.error, 'error');
         }
@@ -448,17 +433,17 @@
       .handleMedTechRequest('GET_MEDTECHS', {}, _mt_getToken());
   }
 
-  // ── Render table ─────────────────────────────────────────────────
+  // ── Render ───────────────────────────────────────────────────────
   function _mt_getRoleStyle(roleKey) {
     var found = MT_ROLES.find(function(r) { return r.key === roleKey; });
     return found ? MT_ROLE_COLORS[found.color] : MT_ROLE_COLORS.default;
   }
 
-  function renderTable(data) {
+  function _mt_renderTable(data) {
     var tbody = document.getElementById('mt-tbody');
-    var wrap  = document.getElementById('table-wrap');
-    var empty = document.getElementById('empty-state');
-    var sub   = document.getElementById('empty-sub');
+    var wrap  = document.getElementById('mt-table-wrap');
+    var empty = document.getElementById('mt-empty-state');
+    var sub   = document.getElementById('mt-empty-sub');
 
     if (!data.length) {
       wrap.classList.add('hidden');
@@ -479,14 +464,17 @@
       var actionsCell = _mt_isBranchAdmin ? (
         '<td class="px-5 py-3.5 text-right">' +
         '<div class="flex items-center justify-end gap-1.5">' +
-        '<button onclick="openPwModal(\'' + _mt_escHtml(mt.medtech_id) + '\',\'' + _mt_escHtml(mt.first_name + ' ' + mt.last_name) + '\')" class="p-1.5 text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-colors" title="Change Password"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg></button>' +
-        '<button onclick="openModal(\'' + _mt_escHtml(mt.medtech_id) + '\')" class="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors" title="Edit"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>' +
-        '<button onclick="openDeleteModal(\'' + _mt_escHtml(mt.medtech_id) + '\',\'' + _mt_escHtml(mt.first_name + ' ' + mt.last_name) + '\')" class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Remove"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>' +
+        '<button onclick="mt_openPwModal(\'' + _mt_escHtml(mt.medtech_id) + '\',\'' + _mt_escHtml(mt.first_name + ' ' + mt.last_name) + '\')" class="p-1.5 text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-colors" title="Change Password"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg></button>' +
+        '<button onclick="mt_openModal(\'' + _mt_escHtml(mt.medtech_id) + '\')" class="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors" title="Edit"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>' +
+        '<button onclick="mt_openDeleteModal(\'' + _mt_escHtml(mt.medtech_id) + '\',\'' + _mt_escHtml(mt.first_name + ' ' + mt.last_name) + '\')" class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Remove"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>' +
         '</div></td>'
       ) : '';
 
       return '<tr class="data-row">' +
-        '<td class="px-5 py-3.5"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0" style="background:linear-gradient(135deg,#2f76f5,#7c3aed)">' + _mt_escHtml(initials.toUpperCase()) + '</div><div><p class="font-semibold text-sm text-slate-800">' + _mt_escHtml(mt.last_name) + ', ' + _mt_escHtml(mt.first_name) + (mt.middle_name ? ' ' + _mt_escHtml(mt.middle_name[0]) + '.' : '') + '</p><p class="text-[11px] text-slate-400 font-mono mt-0.5">' + _mt_escHtml(mt.medtech_id) + '</p></div></div></td>' +
+        '<td class="px-5 py-3.5"><div class="flex items-center gap-3">' +
+          '<div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0" style="background:linear-gradient(135deg,#2f76f5,#7c3aed)">' + _mt_escHtml(initials.toUpperCase()) + '</div>' +
+          '<div><p class="font-semibold text-sm text-slate-800">' + _mt_escHtml(mt.last_name) + ', ' + _mt_escHtml(mt.first_name) + (mt.middle_name ? ' ' + _mt_escHtml(mt.middle_name[0]) + '.' : '') + '</p>' +
+          '<p class="text-[11px] text-slate-400 font-mono mt-0.5">' + _mt_escHtml(mt.medtech_id) + '</p></div></div></td>' +
         '<td class="px-3 py-3.5 text-sm text-slate-500">' + _mt_escHtml(mt.email) + '</td>' +
         '<td class="px-3 py-3.5"><span class="role-pill" style="background:' + rs.bg + ';color:' + rs.text + '">' + _mt_escHtml(mt.role) + '</span></td>' +
         '<td class="px-3 py-3.5 text-sm text-slate-500 hidden md:table-cell">' + _mt_escHtml(mt.branch_name || '—') + '</td>' +
@@ -496,57 +484,58 @@
     }).join('');
   }
 
-  function updateStats(data) {
-    document.getElementById('stat-total').textContent    = data.length;
-    document.getElementById('stat-active').textContent   = data.filter(function(m) { return m.status === 'Active'; }).length;
-    document.getElementById('stat-inactive').textContent = data.filter(function(m) { return m.status !== 'Active'; }).length;
-    document.getElementById('stat-roles').textContent    = new Set(data.map(function(m) { return m.role; })).size;
+  function _mt_updateStats(data) {
+    document.getElementById('mt-stat-total').textContent    = data.length;
+    document.getElementById('mt-stat-active').textContent   = data.filter(function(m) { return m.status === 'Active'; }).length;
+    document.getElementById('mt-stat-inactive').textContent = data.filter(function(m) { return m.status !== 'Active'; }).length;
+    document.getElementById('mt-stat-roles').textContent    = new Set(data.map(function(m) { return m.role; })).size;
   }
 
   // ── Filters ──────────────────────────────────────────────────────
-  function buildRoleFilter() {
-    var sel   = document.getElementById('role-filter');
+  function _mt_buildRoleFilter() {
+    var sel   = document.getElementById('mt-role-filter');
     var roles = _mt_allMedTechs.map(function(m) { return m.role; }).filter(function(r, i, a) { return r && a.indexOf(r) === i; });
     sel.innerHTML = '<option value="">All Roles</option>';
     roles.forEach(function(r) { sel.innerHTML += '<option value="' + _mt_escHtml(r) + '">' + _mt_escHtml(r) + '</option>'; });
   }
 
   function _mt_populateBranchFilter() {
-    var sel = document.getElementById('branch-filter');
+    var sel = document.getElementById('mt-branch-filter');
     sel.innerHTML = '<option value="">All Branches</option>';
     _mt_allBranches.forEach(function(b) {
       sel.innerHTML += '<option value="' + _mt_escHtml(b.branch_id) + '">' + _mt_escHtml(b.branch_name) + '</option>';
     });
   }
 
-  function filterTable() {
-    var q  = document.getElementById('search-input').value.toLowerCase();
-    var st = document.getElementById('status-filter').value;
-    var rl = document.getElementById('role-filter').value;
-    var br = document.getElementById('branch-filter').value;
+  // Public — called from oninput/onchange in HTML
+  function mt_filterTable() {
+    var q  = document.getElementById('mt-search-input').value.toLowerCase();
+    var st = document.getElementById('mt-status-filter').value;
+    var rl = document.getElementById('mt-role-filter').value;
+    var br = document.getElementById('mt-branch-filter').value;
     var filtered = _mt_allMedTechs.filter(function(m) {
-      var name = (m.last_name + ' ' + m.first_name + ' ' + m.middle_name).toLowerCase();
+      var name = (m.last_name + ' ' + m.first_name + ' ' + (m.middle_name || '')).toLowerCase();
       return (!q  || name.includes(q) || (m.email || '').toLowerCase().includes(q)) &&
              (!st || m.status === st) &&
              (!rl || m.role === rl) &&
              (!br || m.branch_id === br);
     });
-    renderTable(filtered);
-    updateStats(filtered);
+    _mt_renderTable(filtered);
+    _mt_updateStats(filtered);
   }
 
   // ── Role Grid ────────────────────────────────────────────────────
-  function buildRoleGrid() {
-    document.getElementById('role-grid').innerHTML = MT_ROLES.map(function(r) {
-      return '<button type="button" id="rb-' + r.key.replace(/\s+/g,'-') + '" onclick="selectRole(\'' + r.key + '\')" class="role-btn border-2 rounded-xl py-2 px-2 text-xs font-semibold text-center border-slate-200 text-slate-500 hover:border-slate-300 transition-all leading-tight">' + r.key + '</button>';
+  function _mt_buildRoleGrid() {
+    document.getElementById('mt-role-grid').innerHTML = MT_ROLES.map(function(r) {
+      return '<button type="button" id="mt-rb-' + r.key.replace(/\s+/g,'-') + '" onclick="mt_selectRole(\'' + r.key + '\')" class="role-btn border-2 rounded-xl py-2 px-2 text-xs font-semibold text-center border-slate-200 text-slate-500 hover:border-slate-300 transition-all leading-tight">' + r.key + '</button>';
     }).join('');
   }
 
-  function selectRole(roleKey) {
+  function mt_selectRole(roleKey) {
     _mt_selectedRole = roleKey;
     document.getElementById('f-role').value = roleKey;
     MT_ROLES.forEach(function(r) {
-      var btn = document.getElementById('rb-' + r.key.replace(/\s+/g,'-'));
+      var btn = document.getElementById('mt-rb-' + r.key.replace(/\s+/g,'-'));
       if (!btn) return;
       var c = MT_ROLE_COLORS[r.color];
       if (r.key === roleKey) {
@@ -562,16 +551,16 @@
   }
 
   // ── Modal ────────────────────────────────────────────────────────
-  function openModal(medtechId) {
+  function mt_openModal(medtechId) {
     if (!_mt_isBranchAdmin) return;
     _mt_editingId = null;
     _mt_clearForm();
     var isEdit = !!medtechId;
-    document.getElementById('modal-title').textContent    = isEdit ? 'Edit Technologist' : 'Enroll Technologist';
-    document.getElementById('modal-subtitle').textContent = isEdit ? 'Update technologist account details.' : 'Fill in the technologist\'s details below.';
-    document.getElementById('save-label').textContent     = isEdit ? 'Update Technologist' : 'Save Technologist';
-    document.getElementById('pw-note').classList.toggle('hidden', !isEdit);
-    document.getElementById('pw-hint').classList.toggle('hidden', isEdit);
+    document.getElementById('mt-modal-title').textContent    = isEdit ? 'Edit Technologist' : 'Enroll Technologist';
+    document.getElementById('mt-modal-subtitle').textContent = isEdit ? 'Update technologist account details.' : 'Fill in the technologist\'s details below.';
+    document.getElementById('mt-save-label').textContent     = isEdit ? 'Update Technologist' : 'Save Technologist';
+    document.getElementById('mt-pw-note').classList.toggle('hidden', !isEdit);
+    document.getElementById('mt-pw-hint').classList.toggle('hidden', isEdit);
     if (isEdit) {
       _mt_editingId = medtechId;
       var mt = _mt_allMedTechs.find(function(m) { return m.medtech_id === medtechId; });
@@ -579,18 +568,18 @@
       document.getElementById('f-medtech-id').value  = mt.medtech_id;
       document.getElementById('f-last-name').value   = mt.last_name;
       document.getElementById('f-first-name').value  = mt.first_name;
-      document.getElementById('f-middle-name').value = mt.middle_name;
+      document.getElementById('f-middle-name').value = mt.middle_name || '';
       document.getElementById('f-email').value       = mt.email;
       document.getElementById('f-status').value      = mt.status;
-      selectRole(mt.role);
+      mt_selectRole(mt.role);
     } else {
-      selectRole('Medical Technologist');
+      mt_selectRole('Medical Technologist');
     }
-    document.getElementById('modal-backdrop').classList.remove('hidden');
+    document.getElementById('mt-modal-backdrop').classList.remove('hidden');
   }
 
-  function closeModal() {
-    document.getElementById('modal-backdrop').classList.add('hidden');
+  function mt_closeModal() {
+    document.getElementById('mt-modal-backdrop').classList.add('hidden');
     _mt_clearForm();
     _mt_editingId = null;
   }
@@ -601,13 +590,13 @@
     document.getElementById('f-status').value = 'Active';
     _mt_selectedRole = '';
     MT_ROLES.forEach(function(r) {
-      var btn = document.getElementById('rb-' + r.key.replace(/\s+/g,'-'));
+      var btn = document.getElementById('mt-rb-' + r.key.replace(/\s+/g,'-'));
       if (btn) { btn.style.borderColor = ''; btn.style.background = ''; btn.style.color = ''; }
     });
   }
 
   // ── Save ─────────────────────────────────────────────────────────
-  function saveMedTech() {
+  function mt_saveMedTech() {
     if (!_mt_isBranchAdmin) return;
     var lastName   = document.getElementById('f-last-name').value.trim();
     var firstName  = document.getElementById('f-first-name').value.trim();
@@ -640,7 +629,7 @@
         _mt_setSaving(false);
         if (_mt_checkExpired(res)) return;
         if (res.success) {
-          closeModal();
+          mt_closeModal();
           _mt_showToast(_mt_editingId ? 'Technologist updated!' : 'Technologist enrolled!', 'success');
           _mt_loadMedTechs();
         } else _mt_showToast('Error: ' + res.error, 'error');
@@ -650,77 +639,77 @@
   }
 
   function _mt_setSaving(v) {
-    var btn = document.getElementById('save-btn');
+    var btn = document.getElementById('mt-save-btn');
     btn.disabled = v;
     btn.innerHTML = v
       ? '<span class="spinner"></span>'
-      : '<span id="save-label">' + (_mt_editingId ? 'Update Technologist' : 'Save Technologist') + '</span>';
+      : '<span id="mt-save-label">' + (_mt_editingId ? 'Update Technologist' : 'Save Technologist') + '</span>';
   }
 
   // ── Change Password Modal ────────────────────────────────────────
-  function openPwModal(medtechId, name) {
+  function mt_openPwModal(medtechId, name) {
     if (!_mt_isBranchAdmin) return;
-    document.getElementById('pw-medtech-id').value       = medtechId;
-    document.getElementById('pw-modal-name').textContent = name;
+    document.getElementById('mt-pw-medtech-id').value       = medtechId;
+    document.getElementById('mt-pw-modal-name').textContent = name;
     document.getElementById('f-new-password').value      = '';
     document.getElementById('f-confirm-password').value  = '';
-    document.getElementById('pw-modal-backdrop').classList.remove('hidden');
+    document.getElementById('mt-pw-modal-backdrop').classList.remove('hidden');
   }
 
-  function closePwModal() {
-    document.getElementById('pw-modal-backdrop').classList.add('hidden');
+  function mt_closePwModal() {
+    document.getElementById('mt-pw-modal-backdrop').classList.add('hidden');
     document.getElementById('f-new-password').value     = '';
     document.getElementById('f-confirm-password').value = '';
   }
 
-  function submitPasswordChange() {
-    var medtechId = document.getElementById('pw-medtech-id').value;
+  function mt_submitPasswordChange() {
+    var medtechId = document.getElementById('mt-pw-medtech-id').value;
     var newPw     = document.getElementById('f-new-password').value;
     var confirmPw = document.getElementById('f-confirm-password').value;
     if (!newPw || newPw.length < 6) { _mt_showToast('Password must be at least 6 characters.', 'error'); return; }
     if (newPw !== confirmPw)         { _mt_showToast('Passwords do not match.', 'error'); return; }
 
-    var btn = document.getElementById('pw-save-btn');
+    var btn = document.getElementById('mt-pw-save-btn');
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span>';
     google.script.run
       .withSuccessHandler(function(res) {
         btn.disabled = false;
-        btn.innerHTML = '<span id="pw-save-label">Update Password</span>';
+        btn.innerHTML = '<span id="mt-pw-save-label">Update Password</span>';
         if (_mt_checkExpired(res)) return;
-        if (res.success) { closePwModal(); _mt_showToast('Password updated!', 'success'); }
+        if (res.success) { mt_closePwModal(); _mt_showToast('Password updated!', 'success'); }
         else _mt_showToast('Error: ' + res.error, 'error');
       })
       .withFailureHandler(function(err) {
         btn.disabled = false;
-        btn.innerHTML = '<span id="pw-save-label">Update Password</span>';
+        btn.innerHTML = '<span id="mt-pw-save-label">Update Password</span>';
         _mt_showToast('Error: ' + err.message, 'error');
       })
       .handleMedTechRequest('CHANGE_MT_PASSWORD', { medtech_id: medtechId, new_password: newPw }, _mt_getToken());
   }
 
   // ── Delete Modal ─────────────────────────────────────────────────
-  function openDeleteModal(medtechId, name) {
+  function mt_openDeleteModal(medtechId, name) {
     if (!_mt_isBranchAdmin) return;
     _mt_deletingId = medtechId;
-    document.getElementById('del-name').textContent = name;
-    document.getElementById('del-modal').classList.remove('hidden');
+    document.getElementById('mt-del-name').textContent = name;
+    document.getElementById('mt-del-modal').classList.remove('hidden');
   }
 
-  function closeDeleteModal() {
-    document.getElementById('del-modal').classList.add('hidden');
+  function mt_closeDeleteModal() {
+    document.getElementById('mt-del-modal').classList.add('hidden');
     _mt_deletingId = null;
   }
 
-  function confirmDelete() {
+  function mt_confirmDelete() {
     if (!_mt_deletingId || !_mt_isBranchAdmin) return;
-    var btn = document.getElementById('confirm-del-btn');
+    var btn = document.getElementById('mt-confirm-del-btn');
     btn.disabled = true; btn.textContent = 'Removing…';
     google.script.run
       .withSuccessHandler(function(res) {
         btn.disabled = false; btn.textContent = 'Remove';
         if (_mt_checkExpired(res)) return;
-        if (res.success) { closeDeleteModal(); _mt_showToast('Technologist removed.', 'success'); _mt_loadMedTechs(); }
+        if (res.success) { mt_closeDeleteModal(); _mt_showToast('Technologist removed.', 'success'); _mt_loadMedTechs(); }
         else _mt_showToast('Error: ' + res.error, 'error');
       })
       .withFailureHandler(function(err) {
@@ -731,21 +720,21 @@
   }
 
   // ── PW visibility ────────────────────────────────────────────────
-  function togglePwVisibility() {
+  function mt_togglePwVisibility() {
     var inp = document.getElementById('f-password');
     inp.type = inp.type === 'password' ? 'text' : 'password';
   }
-  function toggleNewPwVisibility() {
+  function mt_toggleNewPwVisibility() {
     var inp = document.getElementById('f-new-password');
     inp.type = inp.type === 'password' ? 'text' : 'password';
   }
 
   // ── UI helpers ───────────────────────────────────────────────────
   function _mt_showLoading(v) {
-    document.getElementById('loading-state').classList.toggle('hidden', !v);
+    document.getElementById('mt-loading-state').classList.toggle('hidden', !v);
     if (v) {
-      document.getElementById('table-wrap').classList.add('hidden');
-      document.getElementById('empty-state').classList.add('hidden');
+      document.getElementById('mt-table-wrap').classList.add('hidden');
+      document.getElementById('mt-empty-state').classList.add('hidden');
     }
   }
 
@@ -763,11 +752,13 @@
         ? '<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>'
         : '<path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>') +
       '</svg><span>' + _mt_escHtml(msg) + '</span>';
-    document.getElementById('toast').appendChild(item);
+    document.getElementById('mt-toast').appendChild(item);
     setTimeout(function() { item.remove(); }, 3800);
   }
 
   document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') { closeModal(); closePwModal(); closeDeleteModal(); }
+    if (e.key === 'Escape') { mt_closeModal(); mt_closePwModal(); mt_closeDeleteModal(); }
   });
+  document.getElementById('mt-modal-backdrop').addEventListener('click', mt_closeModal);
+  document.getElementById('mt-del-modal').addEventListener('click', mt_closeDeleteModal);
 </script>
