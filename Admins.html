@@ -1,6 +1,4 @@
-</head>
-  <body>
-    <style>
+<style>
       * { font-family: 'DM Sans', sans-serif; }
       body { background: #f8fafc; color: #0f172a; height: 100vh; overflow: auto; }
       .card { background:#fff; border:1px solid #e2e8f0; border-radius:1rem; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
@@ -49,8 +47,6 @@
       .toast-warning { background:#f59e0b; }
       @keyframes toastSlideUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
     </style>
-  </body>
-  </html>
   <div class="p-6 max-w-7xl mx-auto">
 
     <!-- Header -->
@@ -59,7 +55,7 @@
         <h1 class="text-xl font-bold text-slate-800">Admins</h1>
         <p class="text-sm text-slate-400 mt-0.5">Manage super admins and branch administrators.</p>
       </div>
-      <button id="add-admin-btn" onclick="openModal(null)"
+      <button id="add-admin-btn" onclick="adm_openModal(null)"
         class="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-sm">
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
@@ -70,15 +66,15 @@
 
     <!-- Tabs -->
     <div class="flex gap-2 mb-5 fade-up">
-      <button id="tab-branch" class="tab-btn active" onclick="switchTab('branch')">Branch Admins</button>
-      <button id="tab-super"  class="tab-btn"        onclick="switchTab('super')">Super Admins</button>
+      <button id="adm-tab-branch" class="tab-btn active" onclick="adm_switchTab('branch')">Branch Admins</button>
+      <button id="adm-tab-super"  class="tab-btn"        onclick="adm_switchTab('super')">Super Admins</button>
     </div>
 
     <!-- Stats -->
     <div class="grid grid-cols-3 gap-4 mb-6 fade-up">
-      <div class="card p-4 text-center"><p class="text-2xl font-bold text-slate-800" id="stat-total">—</p><p class="text-xs text-slate-400 mt-0.5 font-medium">Total</p></div>
-      <div class="card p-4 text-center"><p class="text-2xl font-bold text-emerald-500" id="stat-active">—</p><p class="text-xs text-slate-400 mt-0.5 font-medium">Active</p></div>
-      <div class="card p-4 text-center"><p class="text-2xl font-bold text-red-400" id="stat-inactive">—</p><p class="text-xs text-slate-400 mt-0.5 font-medium">Inactive</p></div>
+      <div class="card p-4 text-center"><p class="text-2xl font-bold text-slate-800" id="adm-stat-total">—</p><p class="text-xs text-slate-400 mt-0.5 font-medium">Total</p></div>
+      <div class="card p-4 text-center"><p class="text-2xl font-bold text-emerald-500" id="adm-stat-active">—</p><p class="text-xs text-slate-400 mt-0.5 font-medium">Active</p></div>
+      <div class="card p-4 text-center"><p class="text-2xl font-bold text-red-400" id="adm-stat-inactive">—</p><p class="text-xs text-slate-400 mt-0.5 font-medium">Inactive</p></div>
     </div>
 
     <!-- Search + Filter -->
@@ -87,25 +83,25 @@
         <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
         </svg>
-        <input id="search-input" type="text" placeholder="Search admins…" oninput="filterTable()" class="search-input"/>
+        <input id="adm-search-input" type="text" placeholder="Search admins…" oninput="adm_filterTable()" class="search-input"/>
       </div>
-      <select id="status-filter" onchange="filterTable()" class="filter-select">
+      <select id="adm-status-filter" onchange="adm_filterTable()" class="filter-select">
         <option value="">All Status</option>
         <option value="Active">Active</option>
         <option value="Inactive">Inactive</option>
       </select>
-      <select id="branch-filter" onchange="filterTable()" class="filter-select">
+      <select id="adm-branch-filter" onchange="adm_filterTable()" class="filter-select">
         <option value="">All Branches</option>
       </select>
     </div>
 
     <!-- Table -->
     <div class="card fade-up">
-      <div id="loading-state" class="flex flex-col items-center justify-center py-16 gap-3">
+      <div id="adm-loading-state" class="flex flex-col items-center justify-center py-16 gap-3">
         <div class="w-10 h-10 rounded-full animate-spin" style="border:2px solid #bbd8ff;border-top-color:#2f76f5"></div>
         <p class="text-sm text-slate-400">Loading admins…</p>
       </div>
-      <div id="empty-state" class="hidden flex-col items-center justify-center py-16 gap-3 text-center">
+      <div id="adm-empty-state" class="hidden flex-col items-center justify-center py-16 gap-3 text-center">
         <div class="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center">
           <svg class="w-7 h-7 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
@@ -114,13 +110,13 @@
         <p class="text-slate-500 text-sm font-medium">No admins found</p>
         <p class="text-slate-400 text-xs">Click "Add Admin" to create one.</p>
       </div>
-      <div id="table-wrap" class="hidden overflow-x-auto">
+      <div id="adm-table-wrap" class="hidden overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
             <tr class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-100">
               <th class="text-left px-5 py-3">Admin</th>
               <th class="text-left px-3 py-3">Username</th>
-              <th id="branch-col-header" class="text-left px-3 py-3">Branch</th>
+              <th id="adm-branch-col-header" class="text-left px-3 py-3">Branch</th>
               <th class="text-left px-3 py-3">Role</th>
               <th class="text-left px-3 py-3">Status</th>
               <th class="text-right px-5 py-3">Actions</th>
@@ -133,52 +129,52 @@
   </div>
 
   <!-- MODAL -->
-  <div id="modal-backdrop" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+  <div id="adm-modal-backdrop" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md" onclick="event.stopPropagation()">
       <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
         <div>
-          <h2 id="modal-title" class="text-base font-bold text-slate-800">Add Admin</h2>
-          <p id="modal-subtitle" class="text-xs text-slate-400 mt-0.5">Fill in the details below.</p>
+          <h2 id="adm-modal-title" class="text-base font-bold text-slate-800">Add Admin</h2>
+          <p id="adm-modal-subtitle" class="text-xs text-slate-400 mt-0.5">Fill in the details below.</p>
         </div>
-        <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-1">
+        <button onclick="adm_closeModal()" class="text-slate-400 hover:text-slate-600 p-1">
           <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
           </svg>
         </button>
       </div>
-      <div class="px-6 pt-4 pb-2 flex gap-2" id="role-selector">
-        <button id="role-btn-branch" class="role-btn flex-1 py-2 rounded-xl border-2 border-blue-500 bg-blue-50 text-blue-700 text-xs font-bold" onclick="setRole('branch_admin')">Branch Admin</button>
-        <button id="role-btn-super"  class="role-btn flex-1 py-2 rounded-xl border-2 border-slate-200 text-slate-500 text-xs font-bold" onclick="setRole('super_admin')">Super Admin</button>
+      <div class="px-6 pt-4 pb-2 flex gap-2" id="adm-role-selector">
+        <button id="adm-role-btn-branch" class="role-btn flex-1 py-2 rounded-xl border-2 border-blue-500 bg-blue-50 text-blue-700 text-xs font-bold" onclick="adm_setRole('branch_admin')">Branch Admin</button>
+        <button id="adm-role-btn-super"  class="role-btn flex-1 py-2 rounded-xl border-2 border-slate-200 text-slate-500 text-xs font-bold" onclick="adm_setRole('super_admin')">Super Admin</button>
       </div>
       <div class="px-6 py-4 space-y-3">
         <input type="hidden" id="f-admin-id"/>
-        <div id="branch-field">
+        <div id="adm-branch-field">
           <label class="block text-xs font-semibold text-slate-600 mb-1.5">Branch <span class="text-red-500">*</span></label>
-          <select id="f-branch-id" class="form-field bg-white"><option value="">Select branch…</option></select>
+          <select id="adm-f-branch-id" class="form-field bg-white"><option value="">Select branch…</option></select>
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1.5">Full Name <span class="text-red-500">*</span></label>
-          <input id="f-full-name" type="text" placeholder="e.g. Juan Dela Cruz" class="form-field"/>
+          <input id="adm-f-full-name" type="text" placeholder="e.g. Juan Dela Cruz" class="form-field"/>
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1.5">Username <span class="text-red-500">*</span></label>
-          <input id="f-username" type="text" placeholder="e.g. juan.delacruz" class="form-field" style="font-family:'DM Mono',monospace"/>
+          <input id="adm-f-username" type="text" placeholder="e.g. juan.delacruz" class="form-field" style="font-family:'DM Mono',monospace"/>
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1.5">
-            Password <span id="pw-hint" class="text-red-500">*</span>
+            Password <span id="adm-pw-hint" class="text-red-500">*</span>
           </label>
-          <input id="f-password" type="password" placeholder="Enter password" class="form-field"/>
-          <p id="pw-note" class="hidden text-xs text-slate-400 mt-1">Leave blank to keep current password.</p>
+          <input id="adm-f-password" type="password" placeholder="Enter password" class="form-field"/>
+          <p id="adm-pw-note" class="hidden text-xs text-slate-400 mt-1">Leave blank to keep current password.</p>
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1.5">Status</label>
-          <select id="f-status" class="form-field bg-white"><option value="Active">Active</option><option value="Inactive">Inactive</option></select>
+          <select id="adm-f-status" class="form-field bg-white"><option value="Active">Active</option><option value="Inactive">Inactive</option></select>
         </div>
       </div>
       <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100">
-        <button onclick="closeModal()" class="px-4 py-2.5 text-sm font-semibold text-slate-600 hover:text-slate-800">Cancel</button>
-        <button id="save-btn" onclick="saveAdmin()"
+        <button onclick="adm_closeModal()" class="px-4 py-2.5 text-sm font-semibold text-slate-600 hover:text-slate-800">Cancel</button>
+        <button id="adm-save-btn" onclick="saveAdmin()"
           class="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-sm min-w-[110px] justify-center">
           <span id="save-label">Save Admin</span>
         </button>
@@ -187,7 +183,7 @@
   </div>
 
   <!-- DELETE CONFIRM -->
-  <div id="delete-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+  <div id="adm-delete-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center" onclick="event.stopPropagation()">
       <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
         <svg class="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -195,16 +191,16 @@
         </svg>
       </div>
       <h3 class="text-base font-bold text-slate-800 mb-1">Delete Admin?</h3>
-      <p class="text-sm text-slate-500 mb-6">This will remove <strong id="delete-name" class="text-slate-700"></strong> permanently.</p>
+      <p class="text-sm text-slate-500 mb-6">This will remove <strong id="adm-delete-name" class="text-slate-700"></strong> permanently.</p>
       <div class="flex gap-3">
-        <button onclick="closeDeleteModal()" class="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
-        <button id="confirm-delete-btn" onclick="confirmDelete()" class="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold">Delete</button>
+        <button onclick="adm_closeDeleteModal()" class="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
+        <button id="adm-confirm-delete-btn" onclick="adm_confirmDelete()" class="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold">Delete</button>
       </div>
     </div>
   </div>
 
   <!-- TOAST -->
-  <div id="toast"></div>
+  <div id="adm-toast"></div>
 
   <script>
     // ── State (all prefixed _adm_ to avoid global collisions) ────────
@@ -254,9 +250,9 @@
 
     function _adm_applyRoleUI() {
       if (_adm_isBranchAdmin) {
-        document.getElementById('tab-super').style.display        = 'none';
-        document.getElementById('branch-filter').style.display    = 'none';
-        document.getElementById('branch-col-header').style.display = 'none';
+        document.getElementById('adm-tab-super').style.display        = 'none';
+        document.getElementById('adm-branch-filter').style.display    = 'none';
+        document.getElementById('adm-branch-col-header').style.display = 'none';
       }
     }
 
@@ -327,8 +323,8 @@
     }
 
     function _adm_populateBranchDropdown() {
-      var sel       = document.getElementById('f-branch-id');
-      var filterSel = document.getElementById('branch-filter');
+      var sel       = document.getElementById('adm-f-branch-id');
+      var filterSel = document.getElementById('adm-branch-filter');
       sel.innerHTML       = '<option value="">Select branch…</option>';
       filterSel.innerHTML = '<option value="">All Branches</option>';
       _adm_allBranches.filter(function(b) { return b.status === 'Active'; }).forEach(function(b) {
@@ -337,12 +333,12 @@
       });
     }
 
-    function switchTab(tab) {
+    function adm_switchTab(tab) {
       _adm_currentTab = tab;
-      document.getElementById('tab-branch').classList.toggle('active', tab === 'branch');
-      document.getElementById('tab-super').classList.toggle('active', tab === 'super');
-      document.getElementById('branch-col-header').style.display = tab === 'branch' ? '' : 'none';
-      document.getElementById('branch-filter').style.display     = tab === 'branch' ? '' : 'none';
+      document.getElementById('adm-tab-branch').classList.toggle('active', tab === 'branch');
+      document.getElementById('adm-tab-super').classList.toggle('active', tab === 'super');
+      document.getElementById('adm-branch-col-header').style.display = tab === 'branch' ? '' : 'none';
+      document.getElementById('adm-branch-filter').style.display     = tab === 'branch' ? '' : 'none';
       _adm_renderStats();
       _adm_renderTable();
     }
@@ -350,16 +346,16 @@
     function _adm_renderStats() {
       var list   = _adm_currentTab === 'branch' ? _adm_allBranchAdmins : _adm_allSuperAdmins;
       var active = list.filter(function(a) { return a.status === 'Active'; }).length;
-      document.getElementById('stat-total').textContent    = list.length;
-      document.getElementById('stat-active').textContent   = active;
-      document.getElementById('stat-inactive').textContent = list.length - active;
+      document.getElementById('adm-stat-total').textContent    = list.length;
+      document.getElementById('adm-stat-active').textContent   = active;
+      document.getElementById('adm-stat-inactive').textContent = list.length - active;
     }
 
     function _adm_renderTable() {
       var list     = _adm_currentTab === 'branch' ? _adm_allBranchAdmins : _adm_allSuperAdmins;
-      var q        = document.getElementById('search-input').value.toLowerCase();
-      var status   = document.getElementById('status-filter').value;
-      var branch   = document.getElementById('branch-filter').value;
+      var q        = document.getElementById('adm-search-input').value.toLowerCase();
+      var status   = document.getElementById('adm-status-filter').value;
+      var branch   = document.getElementById('adm-branch-filter').value;
       var filtered = list.filter(function(a) {
         var matchQ = !q      || a.full_name.toLowerCase().includes(q) || a.username.toLowerCase().includes(q);
         var matchS = !status || a.status === status;
@@ -368,8 +364,8 @@
       });
 
       var tbody = document.getElementById('admin-tbody');
-      var wrap  = document.getElementById('table-wrap');
-      var empty = document.getElementById('empty-state');
+      var wrap  = document.getElementById('adm-table-wrap');
+      var empty = document.getElementById('adm-empty-state');
       tbody.innerHTML = '';
 
       if (!filtered.length) {
@@ -398,73 +394,73 @@
           '<td class="px-3 py-3">' + roleBadge + '</td>' +
           '<td class="px-3 py-3">' + statusBadge + '</td>' +
           '<td class="px-5 py-3 text-right"><div class="flex gap-1.5 justify-end">' +
-          '<button onclick=\'openModal(' + JSON.stringify(a).replace(/'/g,"&#39;") + ')\' class="text-xs font-semibold text-blue-600 hover:text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-50">Edit</button>' +
-          '<button onclick="openDeleteModal(\'' + _adm_escHtml(a.admin_id) + '\',\'' + _adm_escHtml(a.full_name) + '\',\'' + _adm_currentTab + '\')" class="text-xs font-semibold text-red-500 hover:text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-50">Delete</button>' +
+          '<button onclick=\'adm_openModal(' + JSON.stringify(a).replace(/'/g,"&#39;") + ')\' class="text-xs font-semibold text-blue-600 hover:text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-50">Edit</button>' +
+          '<button onclick="adm_openDeleteModal(\'' + _adm_escHtml(a.admin_id) + '\',\'' + _adm_escHtml(a.full_name) + '\',\'' + _adm_currentTab + '\')" class="text-xs font-semibold text-red-500 hover:text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-50">Delete</button>' +
           '</div></td>' +
           '</tr>'
         );
       });
     }
 
-    function filterTable() { _adm_renderStats(); _adm_renderTable(); }
+    function adm_filterTable() { _adm_renderStats(); _adm_renderTable(); }
 
-    function setRole(role) {
+    function adm_setRole(role) {
       _adm_selectedRole = role;
-      document.getElementById('role-btn-branch').className = 'role-btn flex-1 py-2 rounded-xl border-2 text-xs font-bold ' + (role === 'branch_admin' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500');
-      document.getElementById('role-btn-super').className  = 'role-btn flex-1 py-2 rounded-xl border-2 text-xs font-bold ' + (role === 'super_admin'  ? 'border-violet-500 bg-violet-50 text-violet-700' : 'border-slate-200 text-slate-500');
-      document.getElementById('branch-field').style.display = role === 'branch_admin' ? '' : 'none';
+      document.getElementById('adm-role-btn-branch').className = 'role-btn flex-1 py-2 rounded-xl border-2 text-xs font-bold ' + (role === 'branch_admin' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500');
+      document.getElementById('adm-role-btn-super').className  = 'role-btn flex-1 py-2 rounded-xl border-2 text-xs font-bold ' + (role === 'super_admin'  ? 'border-violet-500 bg-violet-50 text-violet-700' : 'border-slate-200 text-slate-500');
+      document.getElementById('adm-branch-field').style.display = role === 'branch_admin' ? '' : 'none';
     }
 
-    function openModal(admin) {
+    function adm_openModal(admin) {
       _adm_editingId   = admin ? admin.admin_id : null;
       _adm_editingRole = admin ? (admin.role || _adm_currentTab + '_admin') : null;
-      document.getElementById('modal-title').textContent    = admin ? 'Edit Admin' : 'Add Admin';
-      document.getElementById('modal-subtitle').textContent = admin ? 'Update admin details below.' : 'Fill in the details below.';
-      document.getElementById('f-admin-id').value  = (admin && admin.admin_id)  || '';
-      document.getElementById('f-full-name').value = (admin && admin.full_name) || '';
-      document.getElementById('f-username').value  = (admin && admin.username)  || '';
-      document.getElementById('f-password').value  = '';
-      document.getElementById('f-status').value    = (admin && admin.status)    || 'Active';
-      document.getElementById('pw-note').classList.toggle('hidden', !admin);
-      document.getElementById('pw-hint').classList.toggle('hidden', !!admin);
+      document.getElementById('adm-modal-title').textContent    = admin ? 'Edit Admin' : 'Add Admin';
+      document.getElementById('adm-modal-subtitle').textContent = admin ? 'Update admin details below.' : 'Fill in the details below.';
+      document.getElementById('f-admin-id').value       = (admin && admin.admin_id)  || '';
+      document.getElementById('adm-f-full-name').value  = (admin && admin.full_name) || '';
+      document.getElementById('adm-f-username').value   = (admin && admin.username)  || '';
+      document.getElementById('adm-f-password').value   = '';
+      document.getElementById('adm-f-status').value     = (admin && admin.status)    || 'Active';
+      document.getElementById('adm-pw-note').classList.toggle('hidden', !admin);
+      document.getElementById('adm-pw-hint').classList.toggle('hidden', !!admin);
 
       if (_adm_isBranchAdmin) {
-        document.getElementById('role-selector').style.display = 'none';
-        document.getElementById('branch-field').style.display  = 'none';
+        document.getElementById('adm-role-selector').style.display = 'none';
+        document.getElementById('adm-branch-field').style.display  = 'none';
         _adm_editingRole = 'branch_admin';
       } else {
-        document.getElementById('role-selector').style.display = admin ? 'none' : '';
-        if (admin && admin.branch_id) document.getElementById('f-branch-id').value = admin.branch_id;
-        if (!admin) setRole('branch_admin');
-        else document.getElementById('branch-field').style.display = (admin.role || '') === 'super_admin' ? 'none' : '';
+        document.getElementById('adm-role-selector').style.display = admin ? 'none' : '';
+        if (admin && admin.branch_id) document.getElementById('adm-f-branch-id').value = admin.branch_id;
+        if (!admin) adm_setRole('branch_admin');
+        else document.getElementById('adm-branch-field').style.display = (admin.role || '') === 'super_admin' ? 'none' : '';
       }
-      document.getElementById('modal-backdrop').classList.remove('hidden');
+      document.getElementById('adm-modal-backdrop').classList.remove('hidden');
     }
 
-    function closeModal() {
+    function adm_closeModal() {
       _adm_editingId = null;
       _adm_editingRole = null;
-      document.getElementById('modal-backdrop').classList.add('hidden');
+      document.getElementById('adm-modal-backdrop').classList.add('hidden');
     }
 
     function saveAdmin() {
-      var fullName = document.getElementById('f-full-name').value.trim();
-      var username = document.getElementById('f-username').value.trim();
-      var password = document.getElementById('f-password').value;
+      var fullName = document.getElementById('adm-f-full-name').value.trim();
+      var username = document.getElementById('adm-f-username').value.trim();
+      var password = document.getElementById('adm-f-password').value;
       var role     = _adm_editingId ? _adm_editingRole : _adm_selectedRole;
 
       if (!fullName) { _adm_showToast('Full name is required.', 'error'); return; }
       if (!username) { _adm_showToast('Username is required.', 'error'); return; }
       if (!_adm_editingId && !password) { _adm_showToast('Password is required.', 'error'); return; }
-      if (role === 'branch_admin' && !document.getElementById('f-branch-id').value) { _adm_showToast('Please select a branch.', 'error'); return; }
+      if (role === 'branch_admin' && !document.getElementById('adm-f-branch-id').value) { _adm_showToast('Please select a branch.', 'error'); return; }
 
       var payload = {
         admin_id:  document.getElementById('f-admin-id').value,
         full_name: fullName,
         username:  username,
         password:  password,
-        status:    document.getElementById('f-status').value,
-        branch_id: document.getElementById('f-branch-id').value,
+        status:    document.getElementById('adm-f-status').value,
+        branch_id: document.getElementById('adm-f-branch-id').value,
         role:      role
       };
 
@@ -477,7 +473,7 @@
         .withSuccessHandler(function(res) {
           _adm_setSaving(false);
           if (_adm_checkExpired(res)) return;
-          if (res.success) { closeModal(); _adm_showToast(_adm_editingId ? 'Admin updated!' : 'Admin created!', 'success'); _adm_loadData(); }
+          if (res.success) { adm_closeModal(); _adm_showToast(_adm_editingId ? 'Admin updated!' : 'Admin created!', 'success'); _adm_loadData(); }
           else _adm_showToast('Error: ' + res.error, 'error');
         })
         .withFailureHandler(function(err) { _adm_setSaving(false); _adm_showToast('Error: ' + err.message, 'error'); })
@@ -485,50 +481,50 @@
     }
 
     function _adm_setSaving(v) {
-      var btn = document.getElementById('save-btn');
+      var btn = document.getElementById('adm-save-btn');
       btn.disabled = v;
       btn.innerHTML = v
         ? '<span class="spinner"></span>'
-        : '<span id="save-label">' + (_adm_editingId ? 'Update Admin' : 'Save Admin') + '</span>';
+        : '<span>' + (_adm_editingId ? 'Update Admin' : 'Save Admin') + '</span>';
     }
 
-    function openDeleteModal(id, name, tab) {
+    function adm_openDeleteModal(id, name, tab) {
       _adm_deletingId   = id;
       _adm_deletingRole = tab + '_admin';
-      document.getElementById('delete-name').textContent = name;
-      document.getElementById('delete-modal').classList.remove('hidden');
+      document.getElementById('adm-delete-name').textContent = name;
+      document.getElementById('adm-delete-modal').classList.remove('hidden');
     }
 
-    function closeDeleteModal() {
+    function adm_closeDeleteModal() {
       _adm_deletingId   = null;
       _adm_deletingRole = null;
-      document.getElementById('delete-modal').classList.add('hidden');
+      document.getElementById('adm-delete-modal').classList.add('hidden');
     }
 
-    function confirmDelete() {
-      var btn    = document.getElementById('confirm-delete-btn');
+    function adm_confirmDelete() {
+      var btn    = document.getElementById('adm-confirm-delete-btn');
       btn.textContent = 'Deleting…'; btn.disabled = true;
       var action = _adm_deletingRole === 'super_admin' ? 'DELETE_SUPER_ADMIN' : 'DELETE_BRANCH_ADMIN';
       google.script.run
         .withSuccessHandler(function(res) {
-          closeDeleteModal(); btn.textContent = 'Delete'; btn.disabled = false;
+          adm_closeDeleteModal(); btn.textContent = 'Delete'; btn.disabled = false;
           if (_adm_checkExpired(res)) return;
           if (res.success) { _adm_showToast('Admin deleted.', 'success'); _adm_loadData(); }
           else _adm_showToast('Error: ' + res.error, 'error');
         })
         .withFailureHandler(function(err) {
-          closeDeleteModal(); btn.textContent = 'Delete'; btn.disabled = false;
+          adm_closeDeleteModal(); btn.textContent = 'Delete'; btn.disabled = false;
           _adm_showToast('Error: ' + err.message, 'error');
         })
         .handleAdminRequest(action, { admin_id: _adm_deletingId }, _adm_getToken());
     }
 
     function _adm_showLoading(v) {
-      document.getElementById('loading-state').classList.toggle('hidden', !v);
+      document.getElementById('adm-loading-state').classList.toggle('hidden', !v);
       if (v) {
-        document.getElementById('table-wrap').classList.add('hidden');
-        document.getElementById('empty-state').classList.add('hidden');
-        document.getElementById('empty-state').classList.remove('flex');
+        document.getElementById('adm-table-wrap').classList.add('hidden');
+        document.getElementById('adm-empty-state').classList.add('hidden');
+        document.getElementById('adm-empty-state').classList.remove('flex');
       }
     }
 
@@ -544,7 +540,7 @@
         '<svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">' +
         (icons[type] || icons.success) + '</svg>' +
         '<span>' + _adm_escHtml(String(msg)) + '</span>';
-      document.getElementById('toast').appendChild(item);
+      document.getElementById('adm-toast').appendChild(item);
       setTimeout(function() { item.remove(); }, 3800);
     }
 
@@ -552,11 +548,9 @@
       return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
-    document.getElementById('modal-backdrop').addEventListener('click', closeModal);
-    document.getElementById('delete-modal').addEventListener('click', closeDeleteModal);
+    document.getElementById('adm-modal-backdrop').addEventListener('click', adm_closeModal);
+    document.getElementById('adm-delete-modal').addEventListener('click', adm_closeDeleteModal);
     document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') { closeModal(); closeDeleteModal(); }
+      if (e.key === 'Escape') { adm_closeModal(); adm_closeDeleteModal(); }
     });
   </script>
-  </body>
-  </html>

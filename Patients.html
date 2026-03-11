@@ -29,7 +29,7 @@
     .disc-tag { font-size:11px; font-weight:600; background:#f0fdf4; color:#16a34a; padding:2px 8px; border-radius:6px; white-space:nowrap; }
     .spinner { width:18px;height:18px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;display:inline-block; }
     @keyframes spin { to{transform:rotate(360deg)} }
-    #toast { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
+    #pt-toast { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
     .toast-item { display:flex; align-items:center; gap:10px; padding:12px 18px; border-radius:12px; font-size:13px; font-weight:500; color:#fff; box-shadow:0 4px 20px rgba(0,0,0,0.15); pointer-events:auto; max-width:320px; animation:toastSlideUp .3s ease; }
     .toast-success { background:#0f9959; }
     .toast-error   { background:#ef4444; }
@@ -53,7 +53,7 @@
       <h1 class="text-xl font-bold text-slate-800">Patients</h1>
       <p class="text-sm text-slate-400 mt-0.5">Manage patient records and their discount assignments.</p>
     </div>
-    <div id="view-only-badge" class="hidden items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-200">
+    <div id="pt-view-only-badge" class="hidden items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-200">
       <svg class="w-3.5 h-3.5 text-amber-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
         <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
@@ -61,7 +61,7 @@
       <span class="text-xs font-semibold text-amber-600 uppercase tracking-wide">View Only</span>
     </div>
 
-    <button id="add-patient-btn" onclick="openModal()"
+    <button id="pt-add-patient-btn" onclick="pt_openModal()"
       class="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-sm">
       <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
@@ -72,9 +72,9 @@
 
   <!-- Stats -->
   <div class="grid grid-cols-3 gap-4 mb-6 fade-up">
-    <div class="card p-4 text-center"><p id="stat-total" class="text-2xl font-bold text-slate-800">—</p><p class="text-xs text-slate-400 mt-0.5 font-medium">Total Patients</p></div>
-    <div class="card p-4 text-center"><p id="stat-male" class="text-2xl font-bold text-blue-500">—</p><p class="text-xs text-slate-400 mt-0.5 font-medium">Male</p></div>
-    <div class="card p-4 text-center"><p id="stat-female" class="text-2xl font-bold text-pink-500">—</p><p class="text-xs text-slate-400 mt-0.5 font-medium">Female</p></div>
+    <div class="card p-4 text-center"><p id="pt-stat-total" class="text-2xl font-bold text-slate-800">—</p><p class="text-xs text-slate-400 mt-0.5 font-medium">Total Patients</p></div>
+    <div class="card p-4 text-center"><p id="pt-stat-male" class="text-2xl font-bold text-blue-500">—</p><p class="text-xs text-slate-400 mt-0.5 font-medium">Male</p></div>
+    <div class="card p-4 text-center"><p id="pt-stat-female" class="text-2xl font-bold text-pink-500">—</p><p class="text-xs text-slate-400 mt-0.5 font-medium">Female</p></div>
   </div>
 
   <!-- Search + Filter -->
@@ -83,12 +83,12 @@
       <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
       </svg>
-      <input id="search-input" type="text" placeholder="Search patients…" oninput="filterTable()" class="search-input"/>
+      <input id="pt-search-input" type="text" placeholder="Search patients…" oninput="pt_filterTable()" class="search-input"/>
     </div>
-    <select id="branch-filter" onchange="filterTable()" class="filter-select hidden">
+    <select id="pt-branch-filter" onchange="pt_filterTable()" class="filter-select hidden">
       <option value="">All Branches</option>
     </select>
-    <select id="sex-filter" onchange="filterTable()" class="filter-select">
+    <select id="pt-sex-filter" onchange="pt_filterTable()" class="filter-select">
       <option value="">All Sex</option>
       <option value="Male">Male</option>
       <option value="Female">Female</option>
@@ -97,11 +97,11 @@
 
   <!-- Table -->
   <div class="card fade-up">
-    <div id="loading" class="flex flex-col items-center justify-center py-16 gap-3">
+    <div id="pt-loading" class="flex flex-col items-center justify-center py-16 gap-3">
       <div class="w-10 h-10 rounded-full animate-spin" style="border:2px solid #bbd8ff;border-top-color:#2f76f5"></div>
       <p class="text-sm text-slate-400">Loading patients…</p>
     </div>
-    <div id="empty-state" class="hidden flex-col items-center justify-center py-16 gap-3 text-center">
+    <div id="pt-empty-state" class="hidden flex-col items-center justify-center py-16 gap-3 text-center">
       <div class="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center">
         <svg class="w-7 h-7 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-1a4 4 0 00-5.196-3.762M9 11a4 4 0 100-8 4 4 0 000 8zm-6 9v-1a4 4 0 014-4h4a4 4 0 014 4v1"/>
@@ -110,7 +110,7 @@
       <p class="text-slate-500 text-sm font-medium">No patients found</p>
       <p class="text-slate-400 text-xs">Click "Add Patient" to register one.</p>
     </div>
-    <div id="table-wrap" class="hidden overflow-x-auto">
+    <div id="pt-table-wrap" class="hidden overflow-x-auto">
       <table class="w-full text-sm">
         <thead>
           <tr class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-100">
@@ -119,8 +119,8 @@
             <th class="px-3 py-3 text-left hidden md:table-cell">Birth Date</th>
             <th class="px-3 py-3 text-left hidden md:table-cell">Contact</th>
             <th class="px-3 py-3 text-left">Discounts</th>
-            <th id="branch-col" class="px-3 py-3 text-left hidden">Branch</th>
-            <th id="th-actions" class="px-5 py-3 text-right">Actions</th>
+            <th id="pt-branch-col" class="px-3 py-3 text-left hidden">Branch</th>
+            <th id="pt-th-actions" class="px-5 py-3 text-right">Actions</th>
           </tr>
         </thead>
         <tbody id="patient-tbody"></tbody>
@@ -130,14 +130,14 @@
 </div>
 
 <!-- VIEW PATIENT MODAL (super admin only) -->
-<div id="view-modal-backdrop" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden" onclick="closeViewModal()">
+<div id="pt-view-modal-backdrop" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden" onclick="pt_closeViewModal()">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg" onclick="event.stopPropagation()">
     <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
       <div>
         <h2 class="text-base font-bold text-slate-800">Patient Info</h2>
         <p class="text-xs text-slate-400 mt-0.5">Viewing record — read only.</p>
       </div>
-      <button onclick="closeViewModal()" class="text-slate-400 hover:text-slate-600 p-1">
+      <button onclick="pt_closeViewModal()" class="text-slate-400 hover:text-slate-600 p-1">
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
         </svg>
@@ -194,22 +194,22 @@
       </div>
     </div>
     <div class="px-6 py-4 border-t border-slate-100">
-      <button onclick="closeViewModal()" class="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-sm font-semibold text-slate-600 transition-colors">Close</button>
+      <button onclick="pt_closeViewModal()" class="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-sm font-semibold text-slate-600 transition-colors">Close</button>
     </div>
   </div>
 </div>
 
 <!-- ADD/EDIT MODAL -->
-<div id="modal-backdrop" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+<div id="pt-modal-backdrop" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col" onclick="event.stopPropagation()">
 
     <!-- Header -->
     <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 shrink-0">
       <div>
-        <h2 id="modal-title" class="text-base font-bold text-slate-800">Add Patient</h2>
-        <p id="modal-subtitle" class="text-xs text-slate-400 mt-0.5">Register a new patient record.</p>
+        <h2 id="pt-modal-title" class="text-base font-bold text-slate-800">Add Patient</h2>
+        <p id="pt-modal-subtitle" class="text-xs text-slate-400 mt-0.5">Register a new patient record.</p>
       </div>
-      <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-1">
+      <button onclick="pt_closeModal()" class="text-slate-400 hover:text-slate-600 p-1">
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
         </svg>
@@ -218,32 +218,32 @@
 
     <!-- Body (scrollable) -->
     <div class="overflow-y-auto flex-1 px-6 py-5 space-y-4">
-      <input type="hidden" id="f-patient-id"/>
-      <input type="hidden" id="f-branch-id"/>
+      <input type="hidden" id="pt-f-patient-id"/>
+      <input type="hidden" id="pt-f-branch-id"/>
 
       <!-- Branch (super admin: select; branch admin: badge) -->
-      <div id="branch-select-wrap">
+      <div id="pt-branch-select-wrap">
         <label class="block text-xs font-semibold text-slate-600 mb-1.5">Branch <span class="text-red-400">*</span></label>
-        <select id="f-branch-select" class="form-select"><option value="">Select branch…</option></select>
+        <select id="pt-f-branch-select" class="form-select"><option value="">Select branch…</option></select>
       </div>
-      <div id="branch-badge-wrap" class="hidden">
+      <div id="pt-branch-badge-wrap" class="hidden">
         <label class="block text-xs font-semibold text-slate-600 mb-1.5">Branch</label>
-        <div class="px-3 py-2 bg-blue-50 rounded-xl text-xs font-semibold text-blue-700" id="branch-badge-label">—</div>
+        <div class="px-3 py-2 bg-blue-50 rounded-xl text-xs font-semibold text-blue-700" id="pt-branch-badge-label">—</div>
       </div>
 
       <!-- Name row -->
       <div class="grid grid-cols-3 gap-3">
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1.5">Last Name <span class="text-red-400">*</span></label>
-          <input id="f-last-name" type="text" placeholder="e.g. Dela Cruz" class="form-input"/>
+          <input id="pt-f-last-name" type="text" placeholder="e.g. Dela Cruz" class="form-input"/>
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1.5">First Name <span class="text-red-400">*</span></label>
-          <input id="f-first-name" type="text" placeholder="e.g. Juan" class="form-input"/>
+          <input id="pt-f-first-name" type="text" placeholder="e.g. Juan" class="form-input"/>
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1.5">Middle Name</label>
-          <input id="f-middle-name" type="text" placeholder="e.g. Santos" class="form-input"/>
+          <input id="pt-f-middle-name" type="text" placeholder="e.g. Santos" class="form-input"/>
         </div>
       </div>
 
@@ -251,7 +251,7 @@
       <div class="grid grid-cols-2 gap-3">
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1.5">Sex <span class="text-red-400">*</span></label>
-          <select id="f-sex" class="form-select">
+          <select id="pt-f-sex" class="form-select">
             <option value="">Select…</option>
             <option value="Male">Male</option>
             <option value="Female">Female</option>
@@ -259,7 +259,7 @@
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1.5">Birth Date <span class="text-red-400">*</span></label>
-          <input id="f-birth-date" type="date" class="form-input"/>
+          <input id="pt-f-birth-date" type="date" class="form-input"/>
         </div>
       </div>
 
@@ -267,18 +267,18 @@
       <div class="grid grid-cols-2 gap-3">
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1.5">Contact Number <span class="text-red-400">*</span></label>
-          <input id="f-contact" type="text" placeholder="e.g. 09171234567" class="form-input"/>
+          <input id="pt-f-contact" type="text" placeholder="e.g. 09171234567" class="form-input"/>
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1.5">Email Address <span class="text-slate-400 font-normal">(optional)</span></label>
-          <input id="f-email" type="email" placeholder="e.g. juan@email.com" class="form-input"/>
+          <input id="pt-f-email" type="email" placeholder="e.g. juan@email.com" class="form-input"/>
         </div>
       </div>
 
       <!-- Address -->
       <div>
         <label class="block text-xs font-semibold text-slate-600 mb-1.5">Address <span class="text-red-400">*</span></label>
-        <input id="f-address" type="text" placeholder="e.g. 123 Rizal St., Barangay Poblacion, Ormoc City" class="form-input"/>
+        <input id="pt-f-address" type="text" placeholder="e.g. 123 Rizal St., Barangay Poblacion, Ormoc City" class="form-input"/>
       </div>
 
       <!-- ── Discounts Checklist ── -->
@@ -287,7 +287,7 @@
           <label class="text-xs font-semibold text-slate-600">Discounts</label>
           <div class="flex items-center gap-2">
             <span id="disc-check-count" class="text-xs text-slate-400"></span>
-            <button type="button" onclick="clearAllDiscs()" class="text-xs text-slate-400 hover:text-slate-600 font-semibold">Clear</button>
+            <button type="button" onclick="pt_clearAllDiscs()" class="text-xs text-slate-400 hover:text-slate-600 font-semibold">Clear</button>
           </div>
         </div>
 
@@ -311,17 +311,17 @@
 
     <!-- Footer -->
     <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 shrink-0">
-      <button onclick="closeModal()" class="px-4 py-2.5 text-sm font-semibold text-slate-600 hover:text-slate-800">Cancel</button>
-      <button id="save-btn" onclick="savePatient()"
+      <button onclick="pt_closeModal()" class="px-4 py-2.5 text-sm font-semibold text-slate-600 hover:text-slate-800">Cancel</button>
+      <button id="pt-save-btn" onclick="savePatient()"
         class="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-sm min-w-[130px] justify-center">
-        <span id="save-label">Save Patient</span>
+        <span id="pt-save-label">Save Patient</span>
       </button>
     </div>
   </div>
 </div>
 
 <!-- DELETE MODAL -->
-<div id="delete-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+<div id="pt-delete-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center" onclick="event.stopPropagation()">
     <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
       <svg class="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -330,16 +330,16 @@
     </div>
     <h3 class="text-base font-bold text-slate-800 mb-1">Delete Patient?</h3>
     <p class="text-sm text-slate-500 mb-1">This will permanently delete</p>
-    <p class="text-sm font-semibold text-slate-700 mb-2" id="delete-name">—</p>
+    <p class="text-sm font-semibold text-slate-700 mb-2" id="pt-delete-name">—</p>
     <p class="text-xs text-slate-400 mb-5">All discount assignments will also be removed.</p>
     <div class="flex gap-3">
-      <button onclick="closeDeleteModal()" class="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
-      <button id="confirm-delete-btn" onclick="confirmDelete()" class="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold">Delete</button>
+      <button onclick="pt_closeDeleteModal()" class="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
+      <button id="pt-confirm-delete-btn" onclick="pt_confirmDelete()" class="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold">Delete</button>
     </div>
   </div>
 </div>
 
-<div id="toast"></div>
+<div id="pt-toast"></div>
 
 <script>
 function _pat_getToken() {
@@ -368,10 +368,10 @@ var _pat_deletingPayload = null;
 function init_Patients() {
   if (!_pat_listenersAttached) {
     _pat_listenersAttached = true;
-    document.getElementById('modal-backdrop').addEventListener('click', closeModal);
-    document.getElementById('delete-modal').addEventListener('click', closeDeleteModal);
+    document.getElementById('pt-modal-backdrop').addEventListener('click', pt_closeModal);
+    document.getElementById('pt-delete-modal').addEventListener('click', pt_closeDeleteModal);
     document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') { closeModal(); closeDeleteModal(); }
+      if (e.key === 'Escape') { pt_closeModal(); pt_closeDeleteModal(); }
     });
   }
   google.script.run
@@ -380,31 +380,31 @@ function init_Patients() {
       if (res.success) {
         _pat_currentSession = res.data;
         _pat_isSuperAdmin   = _pat_currentSession.role === 'super_admin';
-        applySessionUI();
+        pt_applySessionUI();
       }
-      loadData();
+      pt_loadData();
     })
-    .withFailureHandler(function() { loadData(); })
+    .withFailureHandler(function() { pt_loadData(); })
     .handleAdminRequest('GET_SESSION', {}, _pat_getToken());
 }
 
-  function applySessionUI() {
+  function pt_applySessionUI() {
     if (_pat_isSuperAdmin) {
-      document.getElementById('branch-filter').classList.remove('hidden');
-      document.getElementById('branch-col').classList.remove('hidden');
-      document.getElementById('add-patient-btn').classList.add('hidden');
-      document.getElementById('view-only-badge').classList.remove('hidden');
-      document.getElementById('view-only-badge').classList.add('flex');
-      document.getElementById('th-actions').classList.add('hidden');
+      document.getElementById('pt-branch-filter').classList.remove('hidden');
+      document.getElementById('pt-branch-col').classList.remove('hidden');
+      document.getElementById('pt-add-patient-btn').classList.add('hidden');
+      document.getElementById('pt-view-only-badge').classList.remove('hidden');
+      document.getElementById('pt-view-only-badge').classList.add('flex');
+      document.getElementById('pt-th-actions').classList.add('hidden');
     } else if (_pat_currentSession && _pat_currentSession.role === 'medtech') {
-      document.getElementById('add-patient-btn').classList.remove('hidden');
-      document.getElementById('add-patient-btn').classList.add('flex');
+      document.getElementById('pt-add-patient-btn').classList.remove('hidden');
+      document.getElementById('pt-add-patient-btn').classList.add('flex');
     }
   }
 
   // ── Load data ──────────────────────────────────────────────────
-  function loadData() {
-    showLoading(true);
+  function pt_loadData() {
+    pt_showLoading(true);
     var branchDone = false, discDone = false, patDone = false;
     var branchData = [], discData = [], patData = [];
 
@@ -414,9 +414,9 @@ function init_Patients() {
       _pat_allDiscounts = discData.filter(function(d) { return d.is_active; });
       _pat_allPatients  = patData;
       populateBranchFilter();
-      showLoading(false);
-      renderTable(_pat_allPatients);
-      updateStats(_pat_allPatients);
+      pt_showLoading(false);
+      pt_renderTable(_pat_allPatients);
+      pt_updateStats(_pat_allPatients);
     }
 
     // Load branches (for filter + super admin select)
@@ -447,13 +447,13 @@ function init_Patients() {
       })
       .withFailureHandler(function(err) {
         patDone = true; tryRender();
-        showToast('Error loading patients: ' + err.message, 'error');
+        pt_showToast('Error loading patients: ' + err.message, 'error');
       })
       .handlePatientRequest('GET_PATIENTS', {}, _pat_getToken());
   }
 
   function populateBranchFilter() {
-    var sel = document.getElementById('branch-filter');
+    var sel = document.getElementById('pt-branch-filter');
     sel.innerHTML = '<option value="">All Branches</option>';
     _pat_allBranches.forEach(function(b) {
       sel.innerHTML += '<option value="' + escHtml(b.branch_id) + '">' + escHtml(b.branch_name) + '</option>';
@@ -461,10 +461,10 @@ function init_Patients() {
   }
 
   // ── Render table ──────────────────────────────────────────────
-  function renderTable(data) {
+  function pt_renderTable(data) {
     var tbody = document.getElementById('patient-tbody');
-    var wrap  = document.getElementById('table-wrap');
-    var empty = document.getElementById('empty-state');
+    var wrap  = document.getElementById('pt-table-wrap');
+    var empty = document.getElementById('pt-empty-state');
 
     if (!data.length) {
       wrap.classList.add('hidden');
@@ -489,16 +489,16 @@ function init_Patients() {
 
       var actionsCell = _pat_isSuperAdmin
         ? '<td class="px-5 py-3.5 text-right">' +
-            '<button onclick="openViewModal(\'' + escHtml(p.patient_id) + '\')" class="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors" title="View">' +
+            '<button onclick="pt_openViewModal(\'' + escHtml(p.patient_id) + '\')" class="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors" title="View">' +
               '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>' +
             '</button>' +
           '</td>'
         : '<td class="px-5 py-3.5 text-right">' +
             '<div class="flex items-center justify-end gap-2">' +
-              '<button onclick="openModal(\'' + escHtml(p.patient_id) + '\',\'' + escHtml(p.branch_id) + '\')" class="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors" title="Edit">' +
+              '<button onclick="pt_openModal(\'' + escHtml(p.patient_id) + '\',\'' + escHtml(p.branch_id) + '\')" class="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors" title="Edit">' +
                 '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>' +
               '</button>' +
-              '<button onclick="openDeleteModal(\'' + escHtml(p.patient_id) + '\',\'' + escHtml(p.branch_id) + '\',\'' + escHtml(p.last_name + ', ' + p.first_name) + '\')" class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete">' +
+              '<button onclick="pt_openDeleteModal(\'' + escHtml(p.patient_id) + '\',\'' + escHtml(p.branch_id) + '\',\'' + escHtml(p.last_name + ', ' + p.first_name) + '\')" class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete">' +
                 '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>' +
               '</button>' +
             '</div>' +
@@ -520,7 +520,7 @@ function init_Patients() {
   }
 
   // ── View Patient Modal (super admin) ───────────────────────────
-  function openViewModal(patientId) {
+  function pt_openViewModal(patientId) {
     var p = _pat_allPatients.find(function(x) { return x.patient_id === patientId; });
     if (!p) return;
     document.getElementById('view-last-name').textContent  = p.last_name  || '—';
@@ -534,23 +534,23 @@ function init_Patients() {
     document.getElementById('view-branch').textContent     = p.branch_name     || '—';
     document.getElementById('view-discounts').textContent  = (p.discount_names && p.discount_names.length)
       ? p.discount_names.join(', ') : 'None';
-    document.getElementById('view-modal-backdrop').classList.remove('hidden');
+    document.getElementById('pt-view-modal-backdrop').classList.remove('hidden');
   }
 
-  function closeViewModal() {
-    document.getElementById('view-modal-backdrop').classList.add('hidden');
+  function pt_closeViewModal() {
+    document.getElementById('pt-view-modal-backdrop').classList.add('hidden');
   }
 
-  function updateStats(data) {
-    document.getElementById('stat-total').textContent  = data.length;
-    document.getElementById('stat-male').textContent   = data.filter(function(p) { return p.sex === 'Male'; }).length;
-    document.getElementById('stat-female').textContent = data.filter(function(p) { return p.sex === 'Female'; }).length;
+  function pt_updateStats(data) {
+    document.getElementById('pt-stat-total').textContent  = data.length;
+    document.getElementById('pt-stat-male').textContent   = data.filter(function(p) { return p.sex === 'Male'; }).length;
+    document.getElementById('pt-stat-female').textContent = data.filter(function(p) { return p.sex === 'Female'; }).length;
   }
 
-  function filterTable() {
-    var q   = document.getElementById('search-input').value.toLowerCase();
-    var sex = document.getElementById('sex-filter').value;
-    var br  = document.getElementById('branch-filter').value;
+  function pt_filterTable() {
+    var q   = document.getElementById('pt-search-input').value.toLowerCase();
+    var sex = document.getElementById('pt-sex-filter').value;
+    var br  = document.getElementById('pt-branch-filter').value;
     var filtered = _pat_allPatients.filter(function(p) {
       var fullName = (p.last_name + ' ' + p.first_name + ' ' + p.middle_name).toLowerCase();
       var mq = !q || fullName.includes(q) || (p.contact_number || '').includes(q) || (p.email_address || '').toLowerCase().includes(q);
@@ -558,38 +558,38 @@ function init_Patients() {
       var mb = !br  || p.branch_id === br;
       return mq && ms && mb;
     });
-    renderTable(filtered);
-    updateStats(filtered);
+    pt_renderTable(filtered);
+    pt_updateStats(filtered);
   }
 
   // ── Modal ──────────────────────────────────────────────────────
-  function openModal(patientId, branchId) {
+  function pt_openModal(patientId, branchId) {
     _pat_editingId       = patientId || null;
     _pat_editingBranchId = branchId  || null;
     clearForm();
 
     var isEdit = !!patientId;
-    document.getElementById('modal-title').textContent    = isEdit ? 'Edit Patient' : 'Add Patient';
-    document.getElementById('modal-subtitle').textContent = isEdit ? 'Update patient record.' : 'Register a new patient.';
-    document.getElementById('save-label').textContent     = isEdit ? 'Update Patient' : 'Save Patient';
+    document.getElementById('pt-modal-title').textContent    = isEdit ? 'Edit Patient' : 'Add Patient';
+    document.getElementById('pt-modal-subtitle').textContent = isEdit ? 'Update patient record.' : 'Register a new patient.';
+    document.getElementById('pt-save-label').textContent     = isEdit ? 'Update Patient' : 'Save Patient';
 
     // Branch field
     if (_pat_isSuperAdmin) {
-      document.getElementById('branch-select-wrap').classList.remove('hidden');
-      document.getElementById('branch-badge-wrap').classList.add('hidden');
+      document.getElementById('pt-branch-select-wrap').classList.remove('hidden');
+      document.getElementById('pt-branch-badge-wrap').classList.add('hidden');
       // Populate branch select
-      var sel = document.getElementById('f-branch-select');
+      var sel = document.getElementById('pt-f-branch-select');
       sel.innerHTML = '<option value="">Select branch…</option>';
       _pat_allBranches.filter(function(b) { return b.status === 'Active'; }).forEach(function(b) {
         sel.innerHTML += '<option value="' + escHtml(b.branch_id) + '">' + escHtml(b.branch_name) + '</option>';
       });
       if (isEdit) sel.value = branchId;
     } else {
-      document.getElementById('branch-select-wrap').classList.add('hidden');
-      document.getElementById('branch-badge-wrap').classList.remove('hidden');
+      document.getElementById('pt-branch-select-wrap').classList.add('hidden');
+      document.getElementById('pt-branch-badge-wrap').classList.remove('hidden');
       var myBranch = _pat_allBranches.find(function(b) { return b.branch_id === _pat_currentSession.branch_id; });
-      document.getElementById('branch-badge-label').textContent = myBranch ? myBranch.branch_name : (_pat_currentSession.branch_name || '—');
-      document.getElementById('f-branch-id').value = _pat_currentSession.branch_id;
+      document.getElementById('pt-branch-badge-label').textContent = myBranch ? myBranch.branch_name : (_pat_currentSession.branch_name || '—');
+      document.getElementById('pt-f-branch-id').value = _pat_currentSession.branch_id;
     }
 
     // Pre-fill if editing
@@ -597,37 +597,37 @@ function init_Patients() {
     if (isEdit) {
       var p = _pat_allPatients.find(function(x) { return x.patient_id === patientId && x.branch_id === branchId; });
       if (p) {
-        document.getElementById('f-patient-id').value  = p.patient_id;
-        document.getElementById('f-branch-id').value   = p.branch_id;
-        document.getElementById('f-last-name').value   = p.last_name;
-        document.getElementById('f-first-name').value  = p.first_name;
-        document.getElementById('f-middle-name').value = p.middle_name;
-        document.getElementById('f-sex').value         = p.sex;
-        document.getElementById('f-birth-date').value  = formatDateInput(p.birth_date);
-        document.getElementById('f-contact').value     = p.contact_number;
-        document.getElementById('f-email').value       = p.email_address;
-        document.getElementById('f-address').value     = p.address;
+        document.getElementById('pt-f-patient-id').value  = p.patient_id;
+        document.getElementById('pt-f-branch-id').value   = p.branch_id;
+        document.getElementById('pt-f-last-name').value   = p.last_name;
+        document.getElementById('pt-f-first-name').value  = p.first_name;
+        document.getElementById('pt-f-middle-name').value = p.middle_name;
+        document.getElementById('pt-f-sex').value         = p.sex;
+        document.getElementById('pt-f-birth-date').value  = formatDateInput(p.birth_date);
+        document.getElementById('pt-f-contact').value     = p.contact_number;
+        document.getElementById('pt-f-email').value       = p.email_address;
+        document.getElementById('pt-f-address').value     = p.address;
         assignedDiscIds = p.discount_ids || [];
       }
     }
 
-    document.getElementById('modal-backdrop').classList.remove('hidden');
+    document.getElementById('pt-modal-backdrop').classList.remove('hidden');
     renderDiscountChecklist(_pat_allDiscounts, assignedDiscIds);
   }
 
-  function closeModal() {
-    document.getElementById('modal-backdrop').classList.add('hidden');
+  function pt_closeModal() {
+    document.getElementById('pt-modal-backdrop').classList.add('hidden');
     clearForm();
     _pat_editingId = null; _pat_editingBranchId = null;
   }
 
   function clearForm() {
-    ['f-patient-id','f-branch-id','f-last-name','f-first-name','f-middle-name',
-     'f-contact','f-email','f-address'].forEach(function(id) {
+    ['pt-f-patient-id','pt-f-branch-id','pt-f-last-name','pt-f-first-name','pt-f-middle-name',
+     'pt-f-contact','pt-f-email','pt-f-address'].forEach(function(id) {
       document.getElementById(id).value = '';
     });
-    document.getElementById('f-sex').value        = '';
-    document.getElementById('f-birth-date').value = '';
+    document.getElementById('pt-f-sex').value        = '';
+    document.getElementById('pt-f-birth-date').value = '';
     document.getElementById('disc-checklist').innerHTML = '';
     document.getElementById('disc-check-count').textContent = '';
     document.getElementById('disc-list-wrap').classList.add('hidden');
@@ -679,7 +679,7 @@ function init_Patients() {
     if (total === 0) document.getElementById('disc-check-count').textContent = '';
   }
 
-  function clearAllDiscs() {
+  function pt_clearAllDiscs() {
     document.querySelectorAll('#disc-checklist input[type=checkbox]').forEach(function(chk) {
       chk.checked = false;
       chk.closest('.disc-check-item').classList.remove('checked');
@@ -690,23 +690,23 @@ function init_Patients() {
   // ── Save ───────────────────────────────────────────────────────
   function savePatient() {
     var branchId = _pat_isSuperAdmin
-      ? (_pat_editingId ? _pat_editingBranchId : document.getElementById('f-branch-select').value)
-      : document.getElementById('f-branch-id').value;
+      ? (_pat_editingId ? _pat_editingBranchId : document.getElementById('pt-f-branch-select').value)
+      : document.getElementById('pt-f-branch-id').value;
 
-    var lastName  = document.getElementById('f-last-name').value.trim();
-    var firstName = document.getElementById('f-first-name').value.trim();
-    var sex       = document.getElementById('f-sex').value;
-    var birthDate = document.getElementById('f-birth-date').value;
-    var contact   = document.getElementById('f-contact').value.trim();
-    var address   = document.getElementById('f-address').value.trim();
+    var lastName  = document.getElementById('pt-f-last-name').value.trim();
+    var firstName = document.getElementById('pt-f-first-name').value.trim();
+    var sex       = document.getElementById('pt-f-sex').value;
+    var birthDate = document.getElementById('pt-f-birth-date').value;
+    var contact   = document.getElementById('pt-f-contact').value.trim();
+    var address   = document.getElementById('pt-f-address').value.trim();
 
-    if (!branchId)  { showToast('Please select a branch.', 'error'); return; }
-    if (!lastName)  { showToast('Last name is required.', 'error'); return; }
-    if (!firstName) { showToast('First name is required.', 'error'); return; }
-    if (!sex)       { showToast('Sex is required.', 'error'); return; }
-    if (!birthDate) { showToast('Birth date is required.', 'error'); return; }
-    if (!contact)   { showToast('Contact number is required.', 'error'); return; }
-    if (!address)   { showToast('Address is required.', 'error'); return; }
+    if (!branchId)  { pt_showToast('Please select a branch.', 'error'); return; }
+    if (!lastName)  { pt_showToast('Last name is required.', 'error'); return; }
+    if (!firstName) { pt_showToast('First name is required.', 'error'); return; }
+    if (!sex)       { pt_showToast('Sex is required.', 'error'); return; }
+    if (!birthDate) { pt_showToast('Birth date is required.', 'error'); return; }
+    if (!contact)   { pt_showToast('Contact number is required.', 'error'); return; }
+    if (!address)   { pt_showToast('Address is required.', 'error'); return; }
 
     var discountIds = [];
     document.querySelectorAll('#disc-checklist input[type=checkbox]:checked').forEach(function(chk) {
@@ -714,77 +714,77 @@ function init_Patients() {
     });
 
     var payload = {
-      patient_id:     document.getElementById('f-patient-id').value,
+      patient_id:     document.getElementById('pt-f-patient-id').value,
       branch_id:      branchId,
       last_name:      lastName,
       first_name:     firstName,
-      middle_name:    document.getElementById('f-middle-name').value.trim(),
+      middle_name:    document.getElementById('pt-f-middle-name').value.trim(),
       sex:            sex,
       birth_date:     birthDate,
       contact_number: contact,
-      email_address:  document.getElementById('f-email').value.trim(),
+      email_address:  document.getElementById('pt-f-email').value.trim(),
       address:        address,
       discount_ids:   discountIds
     };
 
-    setSaving(true);
+    pt_setSaving(true);
     var action = _pat_editingId ? 'UPDATE_PATIENT' : 'CREATE_PATIENT';
     google.script.run
       .withSuccessHandler(function(res) {
-        setSaving(false);
+        pt_setSaving(false);
         if (_pat_checkExpired(res)) return;
         if (res.success) {
-          closeModal();
-          showToast(_pat_editingId ? 'Patient updated!' : 'Patient registered!', 'success');
-          loadData();
+          pt_closeModal();
+          pt_showToast(_pat_editingId ? 'Patient updated!' : 'Patient registered!', 'success');
+          pt_loadData();
         } else {
-          showToast(res.error || 'Failed to save.', 'error');
+          pt_showToast(res.error || 'Failed to save.', 'error');
         }
       })
-      .withFailureHandler(function(err) { setSaving(false); showToast('Error: ' + err.message, 'error'); })
+      .withFailureHandler(function(err) { pt_setSaving(false); pt_showToast('Error: ' + err.message, 'error'); })
       .handlePatientRequest(action, payload, _pat_getToken());
   }
 
-  function setSaving(v) {
-    var btn = document.getElementById('save-btn');
+  function pt_setSaving(v) {
+    var btn = document.getElementById('pt-save-btn');
     btn.disabled = v;
-    btn.innerHTML = v ? '<span class="spinner"></span>' : '<span id="save-label">' + (_pat_editingId ? 'Update Patient' : 'Save Patient') + '</span>';
+    btn.innerHTML = v ? '<span class="spinner"></span>' : '<span id="pt-save-label">' + (_pat_editingId ? 'Update Patient' : 'Save Patient') + '</span>';
   }
 
   // ── Delete ─────────────────────────────────────────────────────
-  function openDeleteModal(patientId, branchId, name) {
+  function pt_openDeleteModal(patientId, branchId, name) {
     _pat_deletingPayload = { patient_id: patientId, branch_id: branchId };
-    document.getElementById('delete-name').textContent = name;
-    document.getElementById('delete-modal').classList.remove('hidden');
+    document.getElementById('pt-delete-name').textContent = name;
+    document.getElementById('pt-delete-modal').classList.remove('hidden');
   }
 
-  function closeDeleteModal() {
+  function pt_closeDeleteModal() {
     _pat_deletingPayload = null;
-    document.getElementById('delete-modal').classList.add('hidden');
+    document.getElementById('pt-delete-modal').classList.add('hidden');
   }
 
-  function confirmDelete() {
+  function pt_confirmDelete() {
     if (!_pat_deletingPayload) return;
-    var btn = document.getElementById('confirm-delete-btn');
+    var btn = document.getElementById('pt-confirm-delete-btn');
     btn.textContent = 'Deleting…'; btn.disabled = true;
     google.script.run
       .withSuccessHandler(function(res) {
         btn.textContent = 'Delete'; btn.disabled = false;
-        closeDeleteModal();
+        pt_closeDeleteModal();
         if (_pat_checkExpired(res)) return;
-        if (res.success) { showToast('Patient deleted.', 'success'); loadData(); }
-        else showToast(res.error || 'Failed to delete.', 'error');
+        if (res.success) { pt_showToast('Patient deleted.', 'success'); pt_loadData(); }
+        else pt_showToast(res.error || 'Failed to delete.', 'error');
       })
-      .withFailureHandler(function(err) { btn.textContent = 'Delete'; btn.disabled = false; showToast('Error: ' + err.message, 'error'); })
+      .withFailureHandler(function(err) { btn.textContent = 'Delete'; btn.disabled = false; pt_showToast('Error: ' + err.message, 'error'); })
       .handlePatientRequest('DELETE_PATIENT', _pat_deletingPayload, _pat_getToken());
   }
 
-  function showLoading(v) {
-    document.getElementById('loading').classList.toggle('hidden', !v);
+  function pt_showLoading(v) {
+    document.getElementById('pt-loading').classList.toggle('hidden', !v);
     if (v) {
-      document.getElementById('table-wrap').classList.add('hidden');
-      document.getElementById('empty-state').classList.add('hidden');
-      document.getElementById('empty-state').classList.remove('flex');
+      document.getElementById('pt-table-wrap').classList.add('hidden');
+      document.getElementById('pt-empty-state').classList.add('hidden');
+      document.getElementById('pt-empty-state').classList.remove('flex');
     }
   }
 
@@ -809,7 +809,7 @@ function init_Patients() {
     } catch(_) { return ''; }
   }
 
-  function showToast(msg, type) {
+  function pt_showToast(msg, type) {
     type = type || 'success';
     var icons = {
       success: '<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>',
@@ -822,7 +822,7 @@ function init_Patients() {
       '<svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">' +
         (icons[type] || icons.success) +
       '</svg><span>' + escHtml(String(msg)) + '</span>';
-    document.getElementById('toast').appendChild(item);
+    document.getElementById('pt-toast').appendChild(item);
     setTimeout(function() { item.remove(); }, 3800);
   }
 

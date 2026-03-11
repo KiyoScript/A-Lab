@@ -46,7 +46,7 @@
     <h1 class="text-xl font-bold text-slate-800">Doctors</h1>
     <p class="text-xs text-slate-400 mt-0.5">Global doctor registry. Assign doctors to branches.</p>
   </div>
-  <button id="add-btn" onclick="openModal(null)"
+  <button id="dr-add-btn" onclick="dr_openModal(null)"
     class="hidden items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-sm">
     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
       <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
@@ -56,11 +56,11 @@
 </div>
 
 <!-- ── STATS ─────────────────────────────────────────────────── -->
-<div id="stats-section" class="hidden grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5 fade-up">
-  <div class="stat-card text-center"><p class="text-2xl font-bold text-slate-800" id="stat-total">—</p><p class="text-xs text-slate-400 mt-0.5 font-medium">Total</p></div>
-  <div class="stat-card text-center"><p class="text-2xl font-bold text-emerald-500" id="stat-active">—</p><p class="text-xs text-slate-400 mt-0.5 font-medium">Active</p></div>
-  <div class="stat-card text-center"><p class="text-2xl font-bold text-blue-500" id="stat-assigned">—</p><p class="text-xs text-slate-400 mt-0.5 font-medium">Assigned</p></div>
-  <div class="stat-card text-center"><p class="text-2xl font-bold text-slate-400" id="stat-unassigned">—</p><p class="text-xs text-slate-400 mt-0.5 font-medium">Unassigned</p></div>
+<div id="dr-stats-section" class="hidden grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5 fade-up">
+  <div class="stat-card text-center"><p class="text-2xl font-bold text-slate-800" id="dr-stat-total">—</p><p class="text-xs text-slate-400 mt-0.5 font-medium">Total</p></div>
+  <div class="stat-card text-center"><p class="text-2xl font-bold text-emerald-500" id="dr-stat-active">—</p><p class="text-xs text-slate-400 mt-0.5 font-medium">Active</p></div>
+  <div class="stat-card text-center"><p class="text-2xl font-bold text-blue-500" id="dr-stat-assigned">—</p><p class="text-xs text-slate-400 mt-0.5 font-medium">Assigned</p></div>
+  <div class="stat-card text-center"><p class="text-2xl font-bold text-slate-400" id="dr-stat-unassigned">—</p><p class="text-xs text-slate-400 mt-0.5 font-medium">Unassigned</p></div>
 </div>
 
 <!-- ── FILTERS ───────────────────────────────────────────────── -->
@@ -69,22 +69,22 @@
     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
       <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
     </svg>
-    <input id="search-input" type="text" placeholder="Search doctors…" oninput="filterTable()"
+    <input id="dr-search-input" type="text" placeholder="Search doctors…" oninput="dr_filterTable()"
       class="search-input"/>
   </div>
-  <select id="status-filter" onchange="filterTable()" class="border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition">
+  <select id="dr-status-filter" onchange="dr_filterTable()" class="border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition">
     <option value="">All Status</option>
     <option value="active">Active</option>
     <option value="inactive">Inactive</option>
   </select>
-  <select id="branch-filter" onchange="filterTable()" class="border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition">
+  <select id="dr-branch-filter" onchange="dr_filterTable()" class="border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition">
     <option value="">All Branches</option>
     <option value="__none__">Unassigned</option>
   </select>
 </div>
 
 <!-- ── TABLE ────────────────────────────────────────────────── -->
-<div id="table-wrap" class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hidden fade-up">
+<div id="dr-table-wrap" class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hidden fade-up">
   <div class="overflow-x-auto">
     <table>
       <thead>
@@ -94,7 +94,7 @@
           <th class="px-3 hidden md:table-cell">License No.</th>
           <th class="px-3">Branch</th>
           <th class="px-3">Status</th>
-          <th id="th-actions" class="px-5 text-right hidden">Actions</th>
+          <th id="dr-th-actions" class="px-5 text-right hidden">Actions</th>
         </tr>
       </thead>
       <tbody id="dr-tbody"></tbody>
@@ -102,15 +102,15 @@
   </div>
 </div>
 
-<div id="empty-state" class="hidden flex-col items-center justify-center py-20 text-center">
+<div id="dr-empty-state" class="hidden flex-col items-center justify-center py-20 text-center">
   <div class="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4">
     <svg class="w-8 h-8 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A9 9 0 1118.88 6.196M15 11a3 3 0 11-6 0 3 3 0 016 0zm3 7v1a2 2 0 01-2 2h-1"/></svg>
   </div>
   <p class="text-slate-600 font-semibold text-sm">No doctors found</p>
-  <p class="text-slate-400 text-xs mt-1" id="empty-sub">Add the first doctor to get started.</p>
+  <p class="text-slate-400 text-xs mt-1" id="dr-empty-sub">Add the first doctor to get started.</p>
 </div>
 
-<div id="loading-state" class="flex flex-col items-center justify-center py-20">
+<div id="dr-loading-state" class="flex flex-col items-center justify-center py-20">
   <div class="w-8 h-8 rounded-full animate-spin mb-3" style="border:2px solid #bbd8ff;border-top-color:#2f76f5"></div>
   <p class="text-xs text-slate-400">Loading Doctors…</p>
 </div>
@@ -118,43 +118,43 @@
 <!-- ══════════════════════════════════════════════════════════
      ADD / EDIT MODAL
 ══════════════════════════════════════════════════════════ -->
-<div id="modal-backdrop" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+<div id="dr-modal-backdrop" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
   <div class="modal-card w-full max-w-2xl" onclick="event.stopPropagation()">
     <div class="flex items-start justify-between p-6 pb-4 border-b border-slate-100">
       <div>
-        <h2 id="modal-title" class="text-base font-bold text-slate-800">Add Doctor</h2>
-        <p id="modal-sub" class="text-xs text-slate-400 mt-0.5">Fill in the doctor's information below</p>
+        <h2 id="dr-modal-title" class="text-base font-bold text-slate-800">Add Doctor</h2>
+        <p id="dr-modal-sub" class="text-xs text-slate-400 mt-0.5">Fill in the doctor's information below</p>
       </div>
-      <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 transition p-1 rounded-lg hover:bg-slate-100">
+      <button onclick="dr_closeModal()" class="text-slate-400 hover:text-slate-600 transition p-1 rounded-lg hover:bg-slate-100">
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
       </button>
     </div>
     <div class="p-6 space-y-5">
-      <input type="hidden" id="f-doctor-id"/>
+      <input type="hidden" id="dr-f-doctor-id"/>
 
       <p class="form-section">Personal Information</p>
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div>
           <label class="field-label">Last Name <span class="text-red-400">*</span></label>
-          <input id="f-last-name" class="field-input" type="text" placeholder="Dela Cruz"/>
+          <input id="dr-f-last-name" class="field-input" type="text" placeholder="Dela Cruz"/>
         </div>
         <div>
           <label class="field-label">First Name <span class="text-red-400">*</span></label>
-          <input id="f-first-name" class="field-input" type="text" placeholder="Juan"/>
+          <input id="dr-f-first-name" class="field-input" type="text" placeholder="Juan"/>
         </div>
         <div>
           <label class="field-label">Middle Name</label>
-          <input id="f-middle-name" class="field-input" type="text" placeholder="Santos"/>
+          <input id="dr-f-middle-name" class="field-input" type="text" placeholder="Santos"/>
         </div>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label class="field-label">Suffix</label>
-          <input id="f-suffix" class="field-input" type="text" placeholder="MD, Jr., III"/>
+          <input id="dr-f-suffix" class="field-input" type="text" placeholder="MD, Jr., III"/>
         </div>
         <div>
           <label class="field-label">Specialty</label>
-          <input id="f-specialty" class="field-input" type="text" placeholder="e.g. Internal Medicine"/>
+          <input id="dr-f-specialty" class="field-input" type="text" placeholder="e.g. Internal Medicine"/>
         </div>
       </div>
 
@@ -162,49 +162,49 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label class="field-label">License No.</label>
-          <input id="f-license-no" class="field-input" type="text" placeholder="PRC-XXXXXXXX"/>
+          <input id="dr-f-license-no" class="field-input" type="text" placeholder="PRC-XXXXXXXX"/>
         </div>
         <div>
           <label class="field-label">Contact</label>
-          <input id="f-contact" class="field-input" type="text" placeholder="+63 9XX XXX XXXX"/>
+          <input id="dr-f-contact" class="field-input" type="text" placeholder="+63 9XX XXX XXXX"/>
         </div>
       </div>
       <div>
         <label class="field-label">Email</label>
-        <input id="f-email" class="field-input" type="email" placeholder="doctor@example.com"/>
+        <input id="dr-f-email" class="field-input" type="email" placeholder="doctor@example.com"/>
       </div>
 
       <p class="form-section">Login Credentials</p>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label class="field-label">Username <span class="text-red-400">*</span></label>
-          <input id="f-username" class="field-input" type="text" placeholder="dr.delacruz" autocomplete="off"/>
+          <input id="dr-f-username" class="field-input" type="text" placeholder="dr.delacruz" autocomplete="off"/>
         </div>
         <div>
-          <label class="field-label" id="pw-label">Password <span class="text-red-400">*</span></label>
+          <label class="field-label" id="dr-pw-label">Password <span class="text-red-400">*</span></label>
           <div class="relative">
-            <input id="f-password" class="field-input pr-10" type="password" placeholder="Min. 6 characters" autocomplete="new-password"/>
-            <button type="button" onclick="togglePw('f-password')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
+            <input id="dr-f-password" class="field-input pr-10" type="password" placeholder="Min. 6 characters" autocomplete="new-password"/>
+            <button type="button" onclick="togglePw('dr-f-password')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
             </button>
           </div>
-          <p class="pw-req" id="pw-hint">Required for new doctors.</p>
+          <p class="pw-req" id="dr-pw-hint">Required for new doctors.</p>
         </div>
       </div>
 
       <p class="form-section">Status</p>
       <label class="flex items-center gap-2 cursor-pointer select-none w-fit">
         <div class="relative">
-          <input type="checkbox" id="f-is-active" class="sr-only peer" checked/>
+          <input type="checkbox" id="dr-f-is-active" class="sr-only peer" checked/>
           <div class="w-10 h-5 bg-slate-200 peer-checked:bg-blue-500 rounded-full transition-colors"></div>
           <div class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-5"></div>
         </div>
-        <span id="status-label" class="text-sm font-medium text-slate-600">Active</span>
+        <span id="dr-status-label" class="text-sm font-medium text-slate-600">Active</span>
       </label>
     </div>
     <div class="flex items-center justify-end gap-3 p-6 pt-0 border-t border-slate-100 mt-2">
-      <button onclick="closeModal()" class="px-4 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">Cancel</button>
-      <button id="save-btn" onclick="saveDoctor()" class="px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors shadow-sm flex items-center gap-2">Save Doctor</button>
+      <button onclick="dr_closeModal()" class="px-4 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">Cancel</button>
+      <button id="dr-save-btn" onclick="saveDoctor()" class="px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors shadow-sm flex items-center gap-2">Save Doctor</button>
     </div>
   </div>
 </div>
@@ -212,32 +212,32 @@
 <!-- ══════════════════════════════════════════════════════════
      ASSIGN BRANCH MODAL
 ══════════════════════════════════════════════════════════ -->
-<div id="assign-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+<div id="dr-assign-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm" onclick="event.stopPropagation()">
     <div class="p-6 pb-4 border-b border-slate-100">
-      <h2 id="assign-title" class="text-base font-bold text-slate-800">Assign to Branch</h2>
-      <p id="assign-sub" class="text-xs text-slate-400 mt-0.5">Select a branch for this doctor</p>
+      <h2 id="dr-assign-title" class="text-base font-bold text-slate-800">Assign to Branch</h2>
+      <p id="dr-assign-sub" class="text-xs text-slate-400 mt-0.5">Select a branch for this doctor</p>
     </div>
     <div class="p-6 space-y-4">
-      <input type="hidden" id="assign-doctor-id"/>
+      <input type="hidden" id="dr-assign-doctor-id"/>
       <div>
         <p class="text-xs text-slate-400 font-semibold uppercase tracking-wide mb-1">Doctor</p>
-        <p id="assign-doctor-name" class="text-sm font-semibold text-slate-700">—</p>
+        <p id="dr-assign-doctor-name" class="text-sm font-semibold text-slate-700">—</p>
       </div>
       <div>
         <p class="text-xs text-slate-400 font-semibold uppercase tracking-wide mb-1">Current Branch</p>
-        <p id="assign-current-branch" class="text-sm text-slate-600">—</p>
+        <p id="dr-assign-current-branch" class="text-sm text-slate-600">—</p>
       </div>
       <div>
         <label class="field-label">New Branch <span class="text-red-400">*</span></label>
-        <select id="assign-branch-select" class="field-input">
+        <select id="dr-assign-branch-select" class="field-input">
           <option value="">Select branch…</option>
         </select>
       </div>
     </div>
     <div class="flex gap-3 p-6 pt-0 border-t border-slate-100">
-      <button onclick="closeAssignModal()" class="flex-1 px-4 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">Cancel</button>
-      <button id="assign-btn" onclick="confirmAssign()" class="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors flex items-center justify-center gap-2">Assign</button>
+      <button onclick="dr_closeAssignModal()" class="flex-1 px-4 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">Cancel</button>
+      <button id="dr-assign-btn" onclick="dr_confirmAssign()" class="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors flex items-center justify-center gap-2">Assign</button>
     </div>
   </div>
 </div>
@@ -245,24 +245,24 @@
 <!-- ══════════════════════════════════════════════════════════
      CHANGE PASSWORD MODAL
 ══════════════════════════════════════════════════════════ -->
-<div id="pw-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+<div id="dr-pw-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm" onclick="event.stopPropagation()">
     <div class="flex items-start justify-between p-6 pb-4 border-b border-slate-100">
       <div>
         <h2 class="text-base font-bold text-slate-800">Change Password</h2>
-        <p id="pw-modal-name" class="text-xs text-slate-400 mt-0.5">—</p>
+        <p id="dr-pw-modal-name" class="text-xs text-slate-400 mt-0.5">—</p>
       </div>
-      <button onclick="closePwModal()" class="text-slate-400 hover:text-slate-600 transition p-1 rounded-lg hover:bg-slate-100">
+      <button onclick="dr_closePwModal()" class="text-slate-400 hover:text-slate-600 transition p-1 rounded-lg hover:bg-slate-100">
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
       </button>
     </div>
     <div class="p-6 space-y-4">
-      <input type="hidden" id="pw-doctor-id"/>
+      <input type="hidden" id="dr-pw-doctor-id"/>
       <div>
         <label class="field-label">New Password <span class="text-red-400">*</span></label>
         <div class="relative">
-          <input id="f-new-pw" type="password" placeholder="Min. 6 characters" class="field-input pr-10" autocomplete="new-password"/>
-          <button type="button" onclick="togglePw('f-new-pw')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
+          <input id="dr-f-new-pw" type="password" placeholder="Min. 6 characters" class="field-input pr-10" autocomplete="new-password"/>
+            <button type="button" onclick="togglePw('dr-f-new-pw')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
           </button>
         </div>
@@ -270,12 +270,12 @@
       </div>
       <div>
         <label class="field-label">Confirm Password <span class="text-red-400">*</span></label>
-        <input id="f-confirm-pw" type="password" placeholder="Re-enter password" class="field-input" autocomplete="new-password"/>
+        <input id="dr-f-confirm-pw" type="password" placeholder="Re-enter password" class="field-input" autocomplete="new-password"/>
       </div>
     </div>
     <div class="flex gap-3 p-6 pt-0 border-t border-slate-100">
-      <button onclick="closePwModal()" class="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors">Cancel</button>
-      <button id="pw-save-btn" onclick="submitPasswordChange()" class="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2">Update Password</button>
+      <button onclick="dr_closePwModal()" class="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors">Cancel</button>
+      <button id="dr-pw-save-btn" onclick="dr_submitPasswordChange()" class="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2">Update Password</button>
     </div>
   </div>
 </div>
@@ -283,16 +283,16 @@
 <!-- ══════════════════════════════════════════════════════════
      DELETE MODAL
 ══════════════════════════════════════════════════════════ -->
-<div id="delete-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+<div id="dr-delete-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center" onclick="event.stopPropagation()">
     <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
       <svg class="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
     </div>
     <h3 class="text-base font-bold text-slate-800 mb-1">Delete Doctor</h3>
-    <p class="text-sm text-slate-500 mb-6">Are you sure you want to delete <strong id="delete-name" class="text-slate-700"></strong>? This action cannot be undone.</p>
+    <p class="text-sm text-slate-500 mb-6">Are you sure you want to delete <strong id="dr-delete-name" class="text-slate-700"></strong>? This action cannot be undone.</p>
     <div class="flex gap-3">
-      <button onclick="closeDeleteModal()" class="flex-1 px-4 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">Cancel</button>
-      <button id="confirm-delete-btn" onclick="confirmDelete()" class="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 rounded-xl transition-colors flex items-center justify-center gap-2">Delete</button>
+      <button onclick="dr_closeDeleteModal()" class="flex-1 px-4 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">Cancel</button>
+      <button id="dr-confirm-delete-btn" onclick="dr_confirmDelete()" class="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 rounded-xl transition-colors flex items-center justify-center gap-2">Delete</button>
     </div>
   </div>
 </div>
@@ -325,13 +325,13 @@
   function init_Doctors() {
     if (!_dr_listenersAttached) {
       _dr_listenersAttached = true;
-      document.getElementById('f-is-active').addEventListener('change', updateStatusLabel);
-      document.getElementById('modal-backdrop').addEventListener('click', closeModal);
-      document.getElementById('assign-modal').addEventListener('click', closeAssignModal);
-      document.getElementById('pw-modal').addEventListener('click', closePwModal);
-      document.getElementById('delete-modal').addEventListener('click', closeDeleteModal);
+      document.getElementById('dr-f-is-active').addEventListener('change', dr_updateStatusLabel);
+      document.getElementById('dr-modal-backdrop').addEventListener('click', dr_closeModal);
+      document.getElementById('dr-assign-modal').addEventListener('click', dr_closeAssignModal);
+      document.getElementById('dr-pw-modal').addEventListener('click', dr_closePwModal);
+      document.getElementById('dr-delete-modal').addEventListener('click', dr_closeDeleteModal);
       document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') { closeModal(); closeAssignModal(); closePwModal(); closeDeleteModal(); }
+        if (e.key === 'Escape') { dr_closeModal(); dr_closeAssignModal(); dr_closePwModal(); dr_closeDeleteModal(); }
       });
     }
     google.script.run
@@ -351,16 +351,16 @@
 
   // ── Role UI ───────────────────────────────────────────────
   function _dr_applyRoleUI() {
-    document.getElementById('stats-section').classList.remove('hidden');
+    document.getElementById('dr-stats-section').classList.remove('hidden');
     if (_dr_isSuperAdmin) {
-      document.getElementById('add-btn').classList.remove('hidden');
-      document.getElementById('add-btn').classList.add('flex');
-      document.getElementById('th-actions').classList.remove('hidden');
+      document.getElementById('dr-add-btn').classList.remove('hidden');
+      document.getElementById('dr-add-btn').classList.add('flex');
+      document.getElementById('dr-th-actions').classList.remove('hidden');
     } else if (_dr_isBranchAdmin) {
-      document.getElementById('add-btn').classList.remove('hidden');
-      document.getElementById('add-btn').classList.add('flex');
-      document.getElementById('th-actions').classList.remove('hidden');
-      document.getElementById('branch-filter').classList.add('hidden');
+      document.getElementById('dr-add-btn').classList.remove('hidden');
+      document.getElementById('dr-add-btn').classList.add('flex');
+      document.getElementById('dr-th-actions').classList.remove('hidden');
+      document.getElementById('dr-branch-filter').classList.add('hidden');
     }
   }
 
@@ -380,7 +380,7 @@
   }
 
   function _dr_populateBranchFilter() {
-    var sel = document.getElementById('branch-filter');
+    var sel = document.getElementById('dr-branch-filter');
     sel.innerHTML = '<option value="">All Branches</option><option value="__none__">Unassigned</option>';
     _dr_allBranches.forEach(function(b) {
       sel.insertAdjacentHTML('beforeend', '<option value="' + _dr_escHtml(b.branch_id) + '">' + _dr_escHtml(b.branch_name) + '</option>');
@@ -388,7 +388,7 @@
   }
 
   function _dr_populateAssignBranchSelect() {
-    var sel = document.getElementById('assign-branch-select');
+    var sel = document.getElementById('dr-assign-branch-select');
     sel.innerHTML = '<option value="">Select branch…</option>';
     _dr_allBranches.forEach(function(b) {
       sel.insertAdjacentHTML('beforeend', '<option value="' + _dr_escHtml(b.branch_id) + '">' + _dr_escHtml(b.branch_name) + '</option>');
@@ -405,7 +405,7 @@
         if (res && res.success) {
           _dr_allDoctors = res.data || [];
           _dr_updateStats(_dr_allDoctors);
-          filterTable();
+          dr_filterTable();
         } else {
           _dr_showToast(res ? (res.error || 'Failed to load doctors.') : 'Failed to load doctors.', 'error');
           _dr_renderTable([]);
@@ -424,17 +424,17 @@
     var active     = data.filter(function(d) { return d.is_active; }).length;
     var assigned   = data.filter(function(d) { return d.branch_id; }).length;
     var unassigned = data.length - assigned;
-    document.getElementById('stat-total').textContent      = data.length;
-    document.getElementById('stat-active').textContent     = active;
-    document.getElementById('stat-assigned').textContent   = assigned;
-    document.getElementById('stat-unassigned').textContent = unassigned;
+    document.getElementById('dr-stat-total').textContent      = data.length;
+    document.getElementById('dr-stat-active').textContent     = active;
+    document.getElementById('dr-stat-assigned').textContent   = assigned;
+    document.getElementById('dr-stat-unassigned').textContent = unassigned;
   }
 
   // ── Filter (public — called from oninput/onchange in HTML) ─
-  function filterTable() {
-    var q      = document.getElementById('search-input').value.trim().toLowerCase();
-    var status = document.getElementById('status-filter').value;
-    var branch = document.getElementById('branch-filter').value;
+  function dr_filterTable() {
+    var q      = document.getElementById('dr-search-input').value.trim().toLowerCase();
+    var status = document.getElementById('dr-status-filter').value;
+    var branch = document.getElementById('dr-branch-filter').value;
 
     var filtered = _dr_allDoctors.filter(function(d) {
       var name = ((d.last_name || '') + ' ' + (d.first_name || '') + ' ' + (d.middle_name || '')).toLowerCase();
@@ -451,7 +451,7 @@
 
     _dr_updateStats(filtered);
     _dr_renderTable(filtered);
-    document.getElementById('empty-sub').textContent =
+    document.getElementById('dr-empty-sub').textContent =
       (q || status || branch) ? 'No doctors match your filters.' :
       (_dr_isSuperAdmin ? 'Add the first doctor to get started.' : 'No doctors registered yet.');
   }
@@ -459,8 +459,8 @@
   // ── Render table ───────────────────────────────────────────
   function _dr_renderTable(data) {
     var tbody = document.getElementById('dr-tbody');
-    var wrap  = document.getElementById('table-wrap');
-    var empty = document.getElementById('empty-state');
+    var wrap  = document.getElementById('dr-table-wrap');
+    var empty = document.getElementById('dr-empty-state');
 
     if (!data.length) {
       wrap.classList.add('hidden');
@@ -499,7 +499,7 @@
         '</button>';
 
       var assignButton = _dr_isSuperAdmin
-        ? '<button onclick=\'openAssignModal(' + JSON.stringify({id:d.doctor_id, name:'Dr. '+d.last_name+', '+d.first_name, branch_id:d.branch_id, branch_name:d.branch_name}) + ')\' title="' + (d.branch_id ? 'Reassign Branch' : 'Assign Branch') + '" class="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition">' +
+        ? '<button onclick=\'dr_openAssignModal(' + JSON.stringify({id:d.doctor_id, name:'Dr. '+d.last_name+', '+d.first_name, branch_id:d.branch_id, branch_name:d.branch_name}) + ')\' title="' + (d.branch_id ? 'Reassign Branch' : 'Assign Branch') + '" class="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition">' +
             '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>' +
           '</button>'
         : '';
@@ -525,46 +525,46 @@
   }
 
   // ── Add / Edit Modal ───────────────────────────────────────
-  function openModal(doc) {
+  function dr_openModal(doc) {
     var isEdit = !!doc;
-    document.getElementById('f-doctor-id').value   = doc ? doc.doctor_id   : '';
-    document.getElementById('f-last-name').value   = doc ? doc.last_name   : '';
-    document.getElementById('f-first-name').value  = doc ? doc.first_name  : '';
-    document.getElementById('f-middle-name').value = doc ? (doc.middle_name || '') : '';
-    document.getElementById('f-suffix').value      = doc ? (doc.suffix || '')      : '';
-    document.getElementById('f-specialty').value   = doc ? (doc.specialty || '')   : '';
-    document.getElementById('f-license-no').value  = doc ? (doc.license_no || '')  : '';
-    document.getElementById('f-contact').value     = doc ? (doc.contact || '')     : '';
-    document.getElementById('f-email').value       = doc ? (doc.email || '')       : '';
-    document.getElementById('f-username').value    = doc ? (doc.username || '')    : '';
-    document.getElementById('f-password').value    = '';
-    document.getElementById('f-is-active').checked = doc ? doc.is_active : true;
-    updateStatusLabel();
+    document.getElementById('dr-f-doctor-id').value   = doc ? doc.doctor_id   : '';
+    document.getElementById('dr-f-last-name').value   = doc ? doc.last_name   : '';
+    document.getElementById('dr-f-first-name').value  = doc ? doc.first_name  : '';
+    document.getElementById('dr-f-middle-name').value = doc ? (doc.middle_name || '') : '';
+    document.getElementById('dr-f-suffix').value      = doc ? (doc.suffix || '')      : '';
+    document.getElementById('dr-f-specialty').value   = doc ? (doc.specialty || '')   : '';
+    document.getElementById('dr-f-license-no').value  = doc ? (doc.license_no || '')  : '';
+    document.getElementById('dr-f-contact').value     = doc ? (doc.contact || '')     : '';
+    document.getElementById('dr-f-email').value       = doc ? (doc.email || '')       : '';
+    document.getElementById('dr-f-username').value    = doc ? (doc.username || '')    : '';
+    document.getElementById('dr-f-password').value    = '';
+    document.getElementById('dr-f-is-active').checked = doc ? doc.is_active : true;
+    dr_updateStatusLabel();
 
-    document.getElementById('modal-title').textContent = isEdit ? 'Edit Doctor' : 'Add Doctor';
-    document.getElementById('modal-sub').textContent   = isEdit ? 'Update doctor details below' : 'Fill in the doctor\'s information below';
-    document.getElementById('pw-label').innerHTML      = isEdit ? 'New Password <span class="text-slate-400 font-normal">(leave blank to keep)</span>' : 'Password <span class="text-red-400">*</span>';
-    document.getElementById('pw-hint').textContent     = isEdit ? 'Leave blank to keep current password.' : 'Required for new doctors.';
-    document.getElementById('save-btn').textContent    = isEdit ? 'Save Changes' : 'Save Doctor';
+    document.getElementById('dr-modal-title').textContent = isEdit ? 'Edit Doctor' : 'Add Doctor';
+    document.getElementById('dr-modal-sub').textContent   = isEdit ? 'Update doctor details below' : 'Fill in the doctor\'s information below';
+    document.getElementById('dr-pw-label').innerHTML      = isEdit ? 'New Password <span class="text-slate-400 font-normal">(leave blank to keep)</span>' : 'Password <span class="text-red-400">*</span>';
+    document.getElementById('dr-pw-hint').textContent     = isEdit ? 'Leave blank to keep current password.' : 'Required for new doctors.';
+    document.getElementById('dr-save-btn').textContent    = isEdit ? 'Save Changes' : 'Save Doctor';
 
-    document.getElementById('modal-backdrop').classList.remove('hidden');
-    setTimeout(function() { document.getElementById('f-last-name').focus(); }, 100);
+    document.getElementById('dr-modal-backdrop').classList.remove('hidden');
+    setTimeout(function() { document.getElementById('dr-f-last-name').focus(); }, 100);
   }
 
-  function closeModal() { document.getElementById('modal-backdrop').classList.add('hidden'); }
+  function dr_closeModal() { document.getElementById('dr-modal-backdrop').classList.add('hidden'); }
 
-  function updateStatusLabel() {
-    document.getElementById('status-label').textContent = document.getElementById('f-is-active').checked ? 'Active' : 'Inactive';
+  function dr_updateStatusLabel() {
+    document.getElementById('dr-status-label').textContent = document.getElementById('dr-f-is-active').checked ? 'Active' : 'Inactive';
   }
 
   // ── Save Doctor ────────────────────────────────────────────
   function saveDoctor() {
-    var id        = document.getElementById('f-doctor-id').value.trim();
-    var lastName  = document.getElementById('f-last-name').value.trim();
-    var firstName = document.getElementById('f-first-name').value.trim();
-    var username  = document.getElementById('f-username').value.trim();
-    var password  = document.getElementById('f-password').value.trim();
-    var isActive  = document.getElementById('f-is-active').checked;
+    var id        = document.getElementById('dr-f-doctor-id').value.trim();
+    var lastName  = document.getElementById('dr-f-last-name').value.trim();
+    var firstName = document.getElementById('dr-f-first-name').value.trim();
+    var username  = document.getElementById('dr-f-username').value.trim();
+    var password  = document.getElementById('dr-f-password').value.trim();
+    var isActive  = document.getElementById('dr-f-is-active').checked;
 
     if (!lastName)  { _dr_showToast('Last name is required.',  'warning'); return; }
     if (!firstName) { _dr_showToast('First name is required.', 'warning'); return; }
@@ -572,7 +572,7 @@
     if (!id && !password) { _dr_showToast('Password is required for new doctors.', 'warning'); return; }
     if (password && password.length < 6) { _dr_showToast('Password must be at least 6 characters.', 'warning'); return; }
 
-    var btn = document.getElementById('save-btn');
+    var btn = document.getElementById('dr-save-btn');
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span> Saving…';
 
@@ -580,12 +580,12 @@
       doctor_id:   id,
       last_name:   lastName,
       first_name:  firstName,
-      middle_name: document.getElementById('f-middle-name').value.trim(),
-      suffix:      document.getElementById('f-suffix').value.trim(),
-      specialty:   document.getElementById('f-specialty').value.trim(),
-      license_no:  document.getElementById('f-license-no').value.trim(),
-      contact:     document.getElementById('f-contact').value.trim(),
-      email:       document.getElementById('f-email').value.trim(),
+      middle_name: document.getElementById('dr-f-middle-name').value.trim(),
+      suffix:      document.getElementById('dr-f-suffix').value.trim(),
+      specialty:   document.getElementById('dr-f-specialty').value.trim(),
+      license_no:  document.getElementById('dr-f-license-no').value.trim(),
+      contact:     document.getElementById('dr-f-contact').value.trim(),
+      email:       document.getElementById('dr-f-email').value.trim(),
       username:    username,
       is_active:   isActive
     };
@@ -596,7 +596,7 @@
       .withSuccessHandler(function(res) {
         btn.disabled = false; btn.textContent = id ? 'Save Changes' : 'Save Doctor';
         if (_dr_checkExpired(res)) return;
-        if (res && res.success) { _dr_showToast(id ? 'Doctor updated.' : 'Doctor added.', 'success'); closeModal(); _dr_loadData(); }
+        if (res && res.success) { _dr_showToast(id ? 'Doctor updated.' : 'Doctor added.', 'success'); dr_closeModal(); _dr_loadData(); }
         else _dr_showToast(res ? (res.error || 'Failed to save.') : 'Failed to save.', 'error');
       })
       .withFailureHandler(function(err) {
@@ -607,33 +607,33 @@
   }
 
   // ── Assign / Reassign Modal ────────────────────────────────
-  function openAssignModal(info) {
-    document.getElementById('assign-doctor-id').value            = info.id;
-    document.getElementById('assign-doctor-name').textContent    = info.name;
-    document.getElementById('assign-current-branch').textContent = info.branch_name || 'None';
-    document.getElementById('assign-title').textContent          = info.branch_id ? 'Reassign Branch' : 'Assign to Branch';
-    document.getElementById('assign-sub').textContent            = info.branch_id
+  function dr_openAssignModal(info) {
+    document.getElementById('dr-assign-doctor-id').value            = info.id;
+    document.getElementById('dr-assign-doctor-name').textContent    = info.name;
+    document.getElementById('dr-assign-current-branch').textContent = info.branch_name || 'None';
+    document.getElementById('dr-assign-title').textContent          = info.branch_id ? 'Reassign Branch' : 'Assign to Branch';
+    document.getElementById('dr-assign-sub').textContent            = info.branch_id
       ? 'Change this doctor\'s current branch assignment'
       : 'Select a branch for this doctor';
-    document.getElementById('assign-branch-select').value = '';
-    document.getElementById('assign-modal').classList.remove('hidden');
+    document.getElementById('dr-assign-branch-select').value = '';
+    document.getElementById('dr-assign-modal').classList.remove('hidden');
   }
 
-  function closeAssignModal() { document.getElementById('assign-modal').classList.add('hidden'); }
+  function dr_closeAssignModal() { document.getElementById('dr-assign-modal').classList.add('hidden'); }
 
-  function confirmAssign() {
-    var doctorId = document.getElementById('assign-doctor-id').value;
-    var branchId = document.getElementById('assign-branch-select').value;
+  function dr_confirmAssign() {
+    var doctorId = document.getElementById('dr-assign-doctor-id').value;
+    var branchId = document.getElementById('dr-assign-branch-select').value;
     if (!branchId) { _dr_showToast('Please select a branch.', 'warning'); return; }
 
-    var btn = document.getElementById('assign-btn');
+    var btn = document.getElementById('dr-assign-btn');
     btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Assigning…';
 
     google.script.run
       .withSuccessHandler(function(res) {
         btn.disabled = false; btn.textContent = 'Assign';
         if (_dr_checkExpired(res)) return;
-        if (res && res.success) { _dr_showToast('Doctor assigned successfully.', 'success'); closeAssignModal(); _dr_loadData(); }
+        if (res && res.success) { _dr_showToast('Doctor assigned successfully.', 'success'); dr_closeAssignModal(); _dr_loadData(); }
         else _dr_showToast(res ? (res.error || 'Failed to assign.') : 'Failed to assign.', 'error');
       })
       .withFailureHandler(function(err) {
@@ -644,32 +644,32 @@
   }
 
   // ── Change Password Modal ──────────────────────────────────
-  function openPwModal(info) {
-    document.getElementById('pw-doctor-id').value        = info.id;
-    document.getElementById('pw-modal-name').textContent = info.name;
-    document.getElementById('f-new-pw').value            = '';
-    document.getElementById('f-confirm-pw').value        = '';
-    document.getElementById('pw-modal').classList.remove('hidden');
+  function dr_openPwModal(info) {
+    document.getElementById('dr-pw-doctor-id').value        = info.id;
+    document.getElementById('dr-pw-modal-name').textContent = info.name;
+    document.getElementById('dr-f-new-pw').value            = '';
+    document.getElementById('dr-f-confirm-pw').value        = '';
+    document.getElementById('dr-pw-modal').classList.remove('hidden');
   }
 
-  function closePwModal() { document.getElementById('pw-modal').classList.add('hidden'); }
+  function dr_closePwModal() { document.getElementById('dr-pw-modal').classList.add('hidden'); }
 
-  function submitPasswordChange() {
-    var doctorId  = document.getElementById('pw-doctor-id').value;
-    var newPw     = document.getElementById('f-new-pw').value.trim();
-    var confirmPw = document.getElementById('f-confirm-pw').value.trim();
+  function dr_submitPasswordChange() {
+    var doctorId  = document.getElementById('dr-pw-doctor-id').value;
+    var newPw     = document.getElementById('dr-f-new-pw').value.trim();
+    var confirmPw = document.getElementById('dr-f-confirm-pw').value.trim();
 
     if (!newPw || newPw.length < 6) { _dr_showToast('Password must be at least 6 characters.', 'warning'); return; }
     if (newPw !== confirmPw)         { _dr_showToast('Passwords do not match.', 'warning'); return; }
 
-    var btn = document.getElementById('pw-save-btn');
+    var btn = document.getElementById('dr-pw-save-btn');
     btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
 
     google.script.run
       .withSuccessHandler(function(res) {
         btn.disabled = false; btn.textContent = 'Update Password';
         if (_dr_checkExpired(res)) return;
-        if (res && res.success) { closePwModal(); _dr_showToast('Password updated successfully.', 'success'); }
+        if (res && res.success) { dr_closePwModal(); _dr_showToast('Password updated successfully.', 'success'); }
         else _dr_showToast(res ? (res.error || 'Failed to update password.') : 'Failed to update password.', 'error');
       })
       .withFailureHandler(function(err) {
@@ -680,32 +680,32 @@
   }
 
   // ── Delete Modal ───────────────────────────────────────────
-  function openDeleteModal(info) {
+  function dr_openDeleteModal(info) {
     _dr_deletingId = info.id;
-    document.getElementById('delete-name').textContent = info.name;
-    document.getElementById('delete-modal').classList.remove('hidden');
+    document.getElementById('dr-delete-name').textContent = info.name;
+    document.getElementById('dr-delete-modal').classList.remove('hidden');
   }
 
-  function closeDeleteModal() {
+  function dr_closeDeleteModal() {
     _dr_deletingId = null;
-    document.getElementById('delete-modal').classList.add('hidden');
+    document.getElementById('dr-delete-modal').classList.add('hidden');
   }
 
-  function confirmDelete() {
+  function dr_confirmDelete() {
     if (!_dr_deletingId) return;
-    var btn = document.getElementById('confirm-delete-btn');
+    var btn = document.getElementById('dr-confirm-delete-btn');
     btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Deleting…';
 
     google.script.run
       .withSuccessHandler(function(res) {
         btn.disabled = false; btn.textContent = 'Delete';
         if (_dr_checkExpired(res)) return;
-        if (res && res.success) { _dr_showToast('Doctor deleted.', 'success'); closeDeleteModal(); _dr_loadData(); }
-        else { _dr_showToast(res ? (res.error || 'Failed to delete.') : 'Failed to delete.', 'error'); closeDeleteModal(); }
+        if (res && res.success) { _dr_showToast('Doctor deleted.', 'success'); dr_closeDeleteModal(); _dr_loadData(); }
+        else { _dr_showToast(res ? (res.error || 'Failed to delete.') : 'Failed to delete.', 'error'); dr_closeDeleteModal(); }
       })
       .withFailureHandler(function(err) {
         btn.disabled = false; btn.textContent = 'Delete';
-        closeDeleteModal();
+        dr_closeDeleteModal();
         _dr_showToast('Error: ' + err.message, 'error');
       })
       .handleDoctorRequest('DELETE_DOCTOR', { doctor_id: _dr_deletingId }, _dr_getToken());
@@ -718,11 +718,11 @@
   }
 
   function _dr_showLoading(v) {
-    document.getElementById('loading-state').classList.toggle('hidden', !v);
+    document.getElementById('dr-loading-state').classList.toggle('hidden', !v);
     if (v) {
-      document.getElementById('table-wrap').classList.add('hidden');
-      document.getElementById('empty-state').classList.add('hidden');
-      document.getElementById('empty-state').classList.remove('flex');
+      document.getElementById('dr-table-wrap').classList.add('hidden');
+      document.getElementById('dr-empty-state').classList.add('hidden');
+      document.getElementById('dr-empty-state').classList.remove('flex');
     }
   }
 
