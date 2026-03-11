@@ -1,4 +1,4 @@
-  <style>
+<style>
     * { font-family: 'DM Sans', sans-serif; }
     body { background: #f8fafc; color: #0f172a; }
     .card { background:#fff; border:1px solid #e2e8f0; border-radius:1rem; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
@@ -52,8 +52,7 @@
     .spinner { display:inline-block; width:14px; height:14px; border:2px solid rgba(255,255,255,0.4); border-top-color:#fff; border-radius:50%; animation:spin 0.7s linear infinite; vertical-align:middle; }
     ::-webkit-scrollbar { width:5px; }
     ::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:99px; }
-    /* ── Toast ── */
-    #toast { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
+    #disc-toast { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
     .toast-item {
       display:flex; align-items:center; gap:10px; padding:12px 18px;
       border-radius:12px; font-size:13px; font-weight:500; color:#fff;
@@ -65,6 +64,7 @@
     .toast-warning { background:#f59e0b; }
     @keyframes toastSlideUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
   </style>
+
 <div class="p-6">
 
   <!-- Header -->
@@ -73,15 +73,14 @@
       <h1 class="text-xl font-bold text-slate-800">Discounts</h1>
       <p class="text-sm text-slate-400 mt-0.5">Manage global discount types applied to patient billing.</p>
     </div>
-    <div id="view-only-badge" class="hidden items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-200">
+    <div id="disc-view-only-badge" class="hidden items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-200">
       <svg class="w-3.5 h-3.5 text-amber-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
         <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
       </svg>
       <span class="text-xs font-semibold text-amber-600 uppercase tracking-wide">View Only</span>
     </div>
-
-    <button id="add-btn" onclick="openModal()"
+    <button id="disc-add-btn" onclick="disc_openModal()"
       class="hidden items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-sm">
       <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
@@ -91,10 +90,10 @@
   </div>
 
   <!-- Stats -->
-  <div id="stats-section" class="grid grid-cols-3 gap-4 mb-6 fade-up hidden">
-    <div class="card p-4 text-center"><p class="text-2xl font-bold text-slate-800" id="stat-total">—</p><p class="text-xs text-slate-400 mt-0.5 font-medium">Total</p></div>
-    <div class="card p-4 text-center"><p class="text-2xl font-bold text-emerald-500" id="stat-active">—</p><p class="text-xs text-slate-400 mt-0.5 font-medium">Active</p></div>
-    <div class="card p-4 text-center"><p class="text-2xl font-bold text-slate-400" id="stat-inactive">—</p><p class="text-xs text-slate-400 mt-0.5 font-medium">Inactive</p></div>
+  <div id="disc-stats-section" class="grid grid-cols-3 gap-4 mb-6 fade-up hidden">
+    <div class="card p-4 text-center"><p class="text-2xl font-bold text-slate-800" id="disc-stat-total">—</p><p class="text-xs text-slate-400 mt-0.5 font-medium">Total</p></div>
+    <div class="card p-4 text-center"><p class="text-2xl font-bold text-emerald-500" id="disc-stat-active">—</p><p class="text-xs text-slate-400 mt-0.5 font-medium">Active</p></div>
+    <div class="card p-4 text-center"><p class="text-2xl font-bold text-slate-400" id="disc-stat-inactive">—</p><p class="text-xs text-slate-400 mt-0.5 font-medium">Inactive</p></div>
   </div>
 
   <!-- Search + Filter -->
@@ -103,14 +102,14 @@
       <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
       </svg>
-      <input id="search-input" type="text" placeholder="Search discounts…" oninput="filterTable()" class="search-input"/>
+      <input id="disc-search-input" type="text" placeholder="Search discounts…" oninput="disc_filterTable()" class="search-input"/>
     </div>
-    <select id="type-filter" onchange="filterTable()" class="filter-select">
+    <select id="disc-type-filter" onchange="disc_filterTable()" class="filter-select">
       <option value="">All Types</option>
       <option value="percentage">Percentage</option>
       <option value="fixed">Fixed Amount</option>
     </select>
-    <select id="status-filter" onchange="filterTable()" class="filter-select">
+    <select id="disc-status-filter" onchange="disc_filterTable()" class="filter-select">
       <option value="">All Status</option>
       <option value="active">Active</option>
       <option value="inactive">Inactive</option>
@@ -119,11 +118,11 @@
 
   <!-- Table -->
   <div class="card fade-up">
-    <div id="loading-state" class="flex flex-col items-center justify-center py-16 gap-3">
+    <div id="disc-loading-state" class="flex flex-col items-center justify-center py-16 gap-3">
       <div class="w-10 h-10 rounded-full animate-spin" style="border:2px solid #bbd8ff;border-top-color:#2f76f5"></div>
       <p class="text-sm text-slate-400">Loading discounts…</p>
     </div>
-    <div id="empty-state" class="hidden flex-col items-center justify-center py-16 gap-3 text-center">
+    <div id="disc-empty-state" class="hidden flex-col items-center justify-center py-16 gap-3 text-center">
       <div class="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center">
         <svg class="w-7 h-7 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M17 17h.01M7.05 7.05l9.9 9.9M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -132,7 +131,7 @@
       <p class="text-slate-500 text-sm font-medium">No discounts yet</p>
       <p class="text-slate-400 text-xs">Click "Add Discount" to create the first one.</p>
     </div>
-    <div id="table-wrap" class="hidden overflow-x-auto">
+    <div id="disc-table-wrap" class="hidden overflow-x-auto">
       <table class="w-full text-sm">
         <thead>
           <tr class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-100">
@@ -141,74 +140,75 @@
             <th class="text-left px-3 py-3">Value</th>
             <th class="text-left px-3 py-3">Description</th>
             <th class="text-left px-3 py-3">Status</th>
-            <th id="th-actions" class="text-right px-5 py-3">Actions</th>
+            <th id="disc-th-actions" class="text-right px-5 py-3 hidden">Actions</th>
           </tr>
         </thead>
-        <tbody id="discount-tbody"></tbody>
+        <tbody id="disc-discount-tbody"></tbody>
       </table>
     </div>
   </div>
+</div>
 
 <!-- CREATE / EDIT MODAL -->
-<div id="modal-backdrop" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+<div id="disc-modal-backdrop" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md" onclick="event.stopPropagation()">
     <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
       <div>
-        <h2 id="modal-title" class="text-base font-bold text-slate-800">Add Discount</h2>
-        <p id="modal-subtitle" class="text-xs text-slate-400 mt-0.5">Create a new discount type for patient billing.</p>
+        <h2 id="disc-modal-title" class="text-base font-bold text-slate-800">Add Discount</h2>
+        <p id="disc-modal-subtitle" class="text-xs text-slate-400 mt-0.5">Create a new discount type for patient billing.</p>
       </div>
-      <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-1">
+      <button onclick="disc_closeModal()" class="text-slate-400 hover:text-slate-600 p-1">
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
         </svg>
       </button>
     </div>
     <div class="px-6 py-5 space-y-4">
-      <input type="hidden" id="f-discount-id"/>
+      <input type="hidden" id="disc-f-discount-id"/>
       <div>
         <label class="block text-xs font-semibold text-slate-600 mb-1.5">Discount Name <span class="text-red-500">*</span></label>
-        <input id="f-discount-name" type="text" placeholder="e.g. Senior Citizen, PWD" class="form-input"/>
+        <input id="disc-f-discount-name" type="text" placeholder="e.g. Senior Citizen, PWD" class="form-input"/>
       </div>
       <div class="grid grid-cols-2 gap-4">
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1.5">Type <span class="text-red-500">*</span></label>
-          <select id="f-discount-type" class="form-select" onchange="updateValueLabel()">
+          <select id="disc-f-discount-type" class="form-select" onchange="disc_updateValueLabel()">
             <option value="percentage">Percentage (%)</option>
             <option value="fixed">Fixed Amount (₱)</option>
           </select>
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1.5" id="value-label">Value (%) <span class="text-red-500">*</span></label>
-          <input id="f-value" type="number" min="0" step="0.01" placeholder="0.00" class="form-input" style="font-family:'DM Mono',monospace"/>
+          <label class="block text-xs font-semibold text-slate-600 mb-1.5" id="disc-value-label">Value (%) <span class="text-red-500">*</span></label>
+          <input id="disc-f-value" type="number" min="0" step="0.01" placeholder="0.00" class="form-input" style="font-family:'DM Mono',monospace"/>
         </div>
       </div>
       <div>
         <label class="block text-xs font-semibold text-slate-600 mb-1.5">Description</label>
-        <input id="f-description" type="text" placeholder="Optional notes about this discount" class="form-input"/>
+        <input id="disc-f-description" type="text" placeholder="Optional notes about this discount" class="form-input"/>
       </div>
       <div>
         <label class="block text-xs font-semibold text-slate-600 mb-2">Status</label>
         <div class="toggle-wrap">
           <label class="toggle">
-            <input type="checkbox" id="f-is-active" checked onchange="updateToggleLabel()"/>
+            <input type="checkbox" id="disc-f-is-active" checked onchange="disc_updateToggleLabel()"/>
             <span class="toggle-slider"></span>
           </label>
-          <span id="toggle-label" class="text-sm font-semibold text-emerald-600">Active</span>
+          <span id="disc-toggle-label" class="text-sm font-semibold text-emerald-600">Active</span>
         </div>
       </div>
     </div>
     <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100">
-      <button onclick="closeModal()" class="px-4 py-2.5 text-sm font-semibold text-slate-600 hover:text-slate-800">Cancel</button>
-      <button id="save-btn" onclick="saveDiscount()"
+      <button onclick="disc_closeModal()" class="px-4 py-2.5 text-sm font-semibold text-slate-600 hover:text-slate-800">Cancel</button>
+      <button id="disc-save-btn" onclick="disc_saveDiscount()"
         class="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-sm min-w-[130px] justify-center">
-        <span id="save-label">Save Discount</span>
+        <span id="disc-save-label">Save Discount</span>
       </button>
     </div>
   </div>
 </div>
 
 <!-- DELETE CONFIRM -->
-<div id="delete-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+<div id="disc-delete-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center" onclick="event.stopPropagation()">
     <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
       <svg class="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -216,23 +216,25 @@
       </svg>
     </div>
     <h3 class="text-base font-bold text-slate-800 mb-1">Delete Discount?</h3>
-    <p class="text-sm text-slate-500 mb-6">This will permanently remove <strong id="delete-name" class="text-slate-700"></strong>. This action cannot be undone.</p>
+    <p class="text-sm text-slate-500 mb-6">This will permanently remove <strong id="disc-delete-name" class="text-slate-700"></strong>. This action cannot be undone.</p>
     <div class="flex gap-3">
-      <button onclick="closeDeleteModal()" class="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
-      <button id="confirm-delete-btn" onclick="confirmDelete()" class="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold">Delete</button>
+      <button onclick="disc_closeDeleteModal()" class="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
+      <button id="disc-confirm-delete-btn" onclick="disc_confirmDelete()" class="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold">Delete</button>
     </div>
   </div>
 </div>
 
-<!-- TOAST -->
-<div id="toast"></div>
+<div id="disc-toast"></div>
 
 <script>
+  // ── Token helper ────────────────────────────────────────────────
   function _disc_getToken() {
     return (typeof alab_token !== 'undefined' ? alab_token : null)
       || localStorage.getItem('alab_token') || '';
   }
-  function _checkExpired_disc(res) {
+
+  // ── Expired session handler ─────────────────────────────────────
+  function _disc_checkExpired(res) {
     if (res && res.expired) {
       localStorage.removeItem('alab_token');
       window.top.location.href = (typeof baseUrl !== 'undefined' ? baseUrl : '') + '?page=Login';
@@ -240,233 +242,319 @@
     }
     return false;
   }
-  function _checkExpired(res) { return _checkExpired_disc(res); }
 
-  var allDiscounts = [];
-  var editingId    = null;
-  var deletingId   = null;
-  var currentSession = null;
-  var isSuperAdmin   = false;
-  var isBranchAdmin  = false;
+  // ── Module state — ALL prefixed _disc_ to avoid global collisions ─
+  var _disc_allDiscounts  = [];
+  var _disc_editingId     = null;
+  var _disc_deletingId    = null;
+  var _disc_currentSession = null;
+  var _disc_isSuperAdmin   = false;
+  var _disc_isBranchAdmin  = false;
 
+  // ── Entry point called by Index.html switchTab() ────────────────
   function init_Discounts() {
     google.script.run
       .withSuccessHandler(function(res) {
-        if (_checkExpired(res)) return;
+        if (_disc_checkExpired(res)) return;
         if (res.success) {
-          currentSession = res.data;
-          isSuperAdmin   = currentSession.role === 'super_admin';
-          isBranchAdmin  = currentSession.role === 'branch_admin';
+          _disc_currentSession = res.data;
+          _disc_isSuperAdmin   = _disc_currentSession.role === 'super_admin';
+          _disc_isBranchAdmin  = _disc_currentSession.role === 'branch_admin';
         }
-        applyRoleUI();
-        loadData();
+        _disc_applyRoleUI();
+        _disc_loadData();
       })
-      .withFailureHandler(function() { loadData(); })
+      .withFailureHandler(function() { _disc_loadData(); })
       .handleAdminRequest('GET_SESSION', {}, _disc_getToken());
   }
 
-  function applyRoleUI() {
-    if (isSuperAdmin) {
-      document.getElementById('add-btn').classList.remove('hidden');
-      document.getElementById('add-btn').classList.add('flex');
-      document.getElementById('stats-section').classList.remove('hidden');
-      document.getElementById('th-actions').classList.remove('hidden');
-    } else if (isBranchAdmin) {
-      document.getElementById('stats-section').classList.remove('hidden');
-      document.getElementById('view-only-badge').classList.remove('hidden');
-      document.getElementById('view-only-badge').classList.add('flex');
+  function _disc_applyRoleUI() {
+    if (_disc_isSuperAdmin) {
+      document.getElementById('disc-add-btn').classList.remove('hidden');
+      document.getElementById('disc-add-btn').classList.add('flex');
+      document.getElementById('disc-stats-section').classList.remove('hidden');
+      document.getElementById('disc-th-actions').classList.remove('hidden');
+    } else if (_disc_isBranchAdmin) {
+      document.getElementById('disc-stats-section').classList.remove('hidden');
+      document.getElementById('disc-view-only-badge').classList.remove('hidden');
+      document.getElementById('disc-view-only-badge').classList.add('flex');
     }
   }
 
-  function loadData() {
-    showLoading(true);
+  // ── Data loading ────────────────────────────────────────────────
+  function _disc_loadData() {
+    _disc_showLoading(true);
+    var action = (_disc_isSuperAdmin || _disc_isBranchAdmin) ? 'GET_DISCOUNTS' : 'GET_DISCOUNTS_ALL';
     google.script.run
-      .withSuccessHandler(res => {
-        showLoading(false);
-        if (_checkExpired(res)) return;
-        if (res.success) { allDiscounts = res.data || []; renderStats(); renderTable(allDiscounts); }
-        else { renderTable([]); }
+      .withSuccessHandler(function(res) {
+        _disc_showLoading(false);
+        if (_disc_checkExpired(res)) return;
+        if (res.success) {
+          _disc_allDiscounts = res.data || [];
+          _disc_renderStats();
+          _disc_renderTable(_disc_allDiscounts);
+        } else {
+          _disc_renderTable([]);
+        }
       })
-      .withFailureHandler(err => { showLoading(false); showToast('Error: ' + err.message, 'error'); renderTable([]); })
-      .handleDiscountRequest((isSuperAdmin || isBranchAdmin) ? 'GET_DISCOUNTS' : 'GET_DISCOUNTS_ALL', {}, alab_token);
+      .withFailureHandler(function(err) {
+        _disc_showLoading(false);
+        _disc_showToast('Error: ' + err.message, 'error');
+        _disc_renderTable([]);
+      })
+      .handleDiscountRequest(action, {}, _disc_getToken());
   }
 
-  function renderStats() {
-    const active = allDiscounts.filter(d => d.is_active).length;
-    document.getElementById('stat-total').textContent    = allDiscounts.length;
-    document.getElementById('stat-active').textContent   = active;
-    document.getElementById('stat-inactive').textContent = allDiscounts.length - active;
-  }
-
-  function renderTable(data) {
-    const tbody = document.getElementById('discount-tbody');
-    const wrap  = document.getElementById('table-wrap');
-    const empty = document.getElementById('empty-state');
-    tbody.innerHTML = '';
-    if (!data.length) {
-      wrap.classList.add('hidden'); empty.classList.remove('hidden'); empty.classList.add('flex'); return;
+  function _disc_showLoading(v) {
+    document.getElementById('disc-loading-state').classList.toggle('hidden', !v);
+    if (v) {
+      document.getElementById('disc-table-wrap').classList.add('hidden');
+      var es = document.getElementById('disc-empty-state');
+      es.classList.add('hidden');
+      es.classList.remove('flex');
     }
-    empty.classList.add('hidden'); empty.classList.remove('flex'); wrap.classList.remove('hidden');
-    data.forEach(d => {
-      const typeLabel   = d.discount_type === 'percentage' ? 'Percentage' : 'Fixed Amount';
-      const typeBadge   = d.discount_type === 'percentage' ? '<span class="badge badge-pct">%</span>' : '<span class="badge badge-fixed">₱</span>';
-      const valueStr    = d.discount_type === 'percentage' ? d.value + '%' : '₱' + Number(d.value).toFixed(2);
-      const statusBadge = d.is_active ? '<span class="badge badge-active">Active</span>' : '<span class="badge badge-inactive">Inactive</span>';
-      const desc        = d.description ? `<span class="text-slate-500">${escHtml(d.description)}</span>` : '<span class="text-slate-300 text-xs italic">—</span>';
-      tbody.insertAdjacentHTML('beforeend', `
-        <tr class="data-row">
-          <td class="px-5 py-3 font-semibold text-slate-800">${escHtml(d.discount_name)}</td>
-          <td class="px-3 py-3">${typeBadge} <span class="text-xs text-slate-500">${typeLabel}</span></td>
-          <td class="px-3 py-3 font-mono font-semibold text-slate-700 text-sm">${valueStr}</td>
-          <td class="px-3 py-3 text-sm max-w-[200px] truncate">${desc}</td>
-          <td class="px-3 py-3">${statusBadge}</td>
-          ${isSuperAdmin ? `
-          <td class="px-5 py-3 text-right">
-            <div class="flex gap-1.5 justify-end">
-              <button class="action-btn btn-edit" onclick="openEditModal(${JSON.stringify(d).replace(/"/g,'&quot;')})">Edit</button>
-              <button class="action-btn btn-delete" onclick="openDeleteModal('${d.discount_id}','${escHtml(d.discount_name)}')">Delete</button>
-            </div>
-          </td>` : ''}
-        </tr>`);
+  }
+
+  // ── Render ──────────────────────────────────────────────────────
+  function _disc_renderStats() {
+    var active = _disc_allDiscounts.filter(function(d) { return d.is_active; }).length;
+    document.getElementById('disc-stat-total').textContent    = _disc_allDiscounts.length;
+    document.getElementById('disc-stat-active').textContent   = active;
+    document.getElementById('disc-stat-inactive').textContent = _disc_allDiscounts.length - active;
+  }
+
+  function _disc_renderTable(data) {
+    var tbody = document.getElementById('disc-discount-tbody');
+    var wrap  = document.getElementById('disc-table-wrap');
+    var empty = document.getElementById('disc-empty-state');
+    tbody.innerHTML = '';
+
+    if (!data.length) {
+      wrap.classList.add('hidden');
+      empty.classList.remove('hidden');
+      empty.classList.add('flex');
+      return;
+    }
+    empty.classList.add('hidden');
+    empty.classList.remove('flex');
+    wrap.classList.remove('hidden');
+
+    data.forEach(function(d) {
+      var typeLabel   = d.discount_type === 'percentage' ? 'Percentage' : 'Fixed Amount';
+      var typeBadge   = d.discount_type === 'percentage'
+        ? '<span class="badge badge-pct">%</span>'
+        : '<span class="badge badge-fixed">₱</span>';
+      var valueStr    = d.discount_type === 'percentage'
+        ? d.value + '%'
+        : '₱' + Number(d.value).toFixed(2);
+      var statusBadge = d.is_active
+        ? '<span class="badge badge-active">Active</span>'
+        : '<span class="badge badge-inactive">Inactive</span>';
+      var desc = d.description
+        ? '<span class="text-slate-500">' + _disc_escHtml(d.description) + '</span>'
+        : '<span class="text-slate-300 text-xs italic">—</span>';
+      var actionsCell = _disc_isSuperAdmin
+        ? '<td class="px-5 py-3 text-right">' +
+            '<div class="flex gap-1.5 justify-end">' +
+              '<button class="action-btn btn-edit" onclick="disc_openEditModal(' + JSON.stringify(d).replace(/"/g, '&quot;') + ')">Edit</button>' +
+              '<button class="action-btn btn-delete" onclick="disc_openDeleteModal(\'' + _disc_escHtml(d.discount_id) + '\',\'' + _disc_escHtml(d.discount_name) + '\')">Delete</button>' +
+            '</div>' +
+          '</td>'
+        : '';
+
+      tbody.insertAdjacentHTML('beforeend',
+        '<tr class="data-row">' +
+          '<td class="px-5 py-3 font-semibold text-slate-800">' + _disc_escHtml(d.discount_name) + '</td>' +
+          '<td class="px-3 py-3">' + typeBadge + ' <span class="text-xs text-slate-500">' + typeLabel + '</span></td>' +
+          '<td class="px-3 py-3 font-mono font-semibold text-slate-700 text-sm">' + valueStr + '</td>' +
+          '<td class="px-3 py-3 text-sm max-w-[200px] truncate">' + desc + '</td>' +
+          '<td class="px-3 py-3">' + statusBadge + '</td>' +
+          actionsCell +
+        '</tr>'
+      );
     });
   }
 
-  function filterTable() {
-    const q      = document.getElementById('search-input').value.toLowerCase().trim();
-    const type   = document.getElementById('type-filter').value;
-    const status = document.getElementById('status-filter').value;
-    renderTable(allDiscounts.filter(d => {
-      const mq = !q || d.discount_name.toLowerCase().includes(q) || (d.description||'').toLowerCase().includes(q);
-      const mt = !type   || d.discount_type === type;
-      const ms = !status || (status === 'active' && d.is_active) || (status === 'inactive' && !d.is_active);
+  // ── Filter (called from oninput/onchange) ───────────────────────
+  function disc_filterTable() {
+    var q      = document.getElementById('disc-search-input').value.toLowerCase().trim();
+    var type   = document.getElementById('disc-type-filter').value;
+    var status = document.getElementById('disc-status-filter').value;
+    _disc_renderTable(_disc_allDiscounts.filter(function(d) {
+      var mq = !q || d.discount_name.toLowerCase().includes(q) || (d.description || '').toLowerCase().includes(q);
+      var mt = !type   || d.discount_type === type;
+      var ms = !status || (status === 'active' ? d.is_active : !d.is_active);
       return mq && mt && ms;
     }));
   }
 
-  function updateValueLabel() {
-    const type = document.getElementById('f-discount-type').value;
-    document.getElementById('value-label').innerHTML = type === 'percentage'
+  // ── Modal helpers ───────────────────────────────────────────────
+  function disc_updateValueLabel() {
+    var type = document.getElementById('disc-f-discount-type').value;
+    document.getElementById('disc-value-label').innerHTML = type === 'percentage'
       ? 'Value (%) <span class="text-red-500">*</span>'
       : 'Value (₱) <span class="text-red-500">*</span>';
   }
 
-  function updateToggleLabel() {
-    const active = document.getElementById('f-is-active').checked;
-    const lbl    = document.getElementById('toggle-label');
+  function disc_updateToggleLabel() {
+    var active = document.getElementById('disc-f-is-active').checked;
+    var lbl    = document.getElementById('disc-toggle-label');
     lbl.textContent = active ? 'Active' : 'Inactive';
     lbl.className   = 'text-sm font-semibold ' + (active ? 'text-emerald-600' : 'text-slate-400');
   }
 
-  function openModal() {
-    editingId = null;
-    document.getElementById('f-discount-id').value     = '';
-    document.getElementById('f-discount-name').value   = '';
-    document.getElementById('f-discount-type').value   = 'percentage';
-    document.getElementById('f-value').value           = '';
-    document.getElementById('f-description').value     = '';
-    document.getElementById('f-is-active').checked     = true;
-    document.getElementById('modal-title').textContent    = 'Add Discount';
-    document.getElementById('modal-subtitle').textContent = 'Create a new discount type for patient billing.';
-    document.getElementById('save-label').textContent     = 'Save Discount';
-    updateValueLabel(); updateToggleLabel();
-    document.getElementById('modal-backdrop').classList.remove('hidden');
-    setTimeout(() => document.getElementById('f-discount-name').focus(), 100);
+  // ── Add modal ───────────────────────────────────────────────────
+  function disc_openModal() {
+    _disc_editingId = null;
+    document.getElementById('disc-f-discount-id').value    = '';
+    document.getElementById('disc-f-discount-name').value  = '';
+    document.getElementById('disc-f-discount-type').value  = 'percentage';
+    document.getElementById('disc-f-value').value          = '';
+    document.getElementById('disc-f-description').value    = '';
+    document.getElementById('disc-f-is-active').checked    = true;
+    document.getElementById('disc-modal-title').textContent    = 'Add Discount';
+    document.getElementById('disc-modal-subtitle').textContent = 'Create a new discount type for patient billing.';
+    document.getElementById('disc-save-label').textContent     = 'Save Discount';
+    disc_updateValueLabel();
+    disc_updateToggleLabel();
+    document.getElementById('disc-modal-backdrop').classList.remove('hidden');
+    setTimeout(function() { document.getElementById('disc-f-discount-name').focus(); }, 100);
   }
 
-  function openEditModal(d) {
-    editingId = d.discount_id;
-    document.getElementById('f-discount-id').value     = d.discount_id;
-    document.getElementById('f-discount-name').value   = d.discount_name;
-    document.getElementById('f-discount-type').value   = d.discount_type;
-    document.getElementById('f-value').value           = d.value;
-    document.getElementById('f-description').value     = d.description || '';
-    document.getElementById('f-is-active').checked     = d.is_active;
-    document.getElementById('modal-title').textContent    = 'Edit Discount';
-    document.getElementById('modal-subtitle').textContent = 'Update discount information.';
-    document.getElementById('save-label').textContent     = 'Update Discount';
-    updateValueLabel(); updateToggleLabel();
-    document.getElementById('modal-backdrop').classList.remove('hidden');
-    setTimeout(() => document.getElementById('f-discount-name').focus(), 100);
+  // ── Edit modal ──────────────────────────────────────────────────
+  function disc_openEditModal(d) {
+    _disc_editingId = d.discount_id;
+    document.getElementById('disc-f-discount-id').value    = d.discount_id;
+    document.getElementById('disc-f-discount-name').value  = d.discount_name;
+    document.getElementById('disc-f-discount-type').value  = d.discount_type;
+    document.getElementById('disc-f-value').value          = d.value;
+    document.getElementById('disc-f-description').value    = d.description || '';
+    document.getElementById('disc-f-is-active').checked    = d.is_active;
+    document.getElementById('disc-modal-title').textContent    = 'Edit Discount';
+    document.getElementById('disc-modal-subtitle').textContent = 'Update discount information.';
+    document.getElementById('disc-save-label').textContent     = 'Update Discount';
+    disc_updateValueLabel();
+    disc_updateToggleLabel();
+    document.getElementById('disc-modal-backdrop').classList.remove('hidden');
+    setTimeout(function() { document.getElementById('disc-f-discount-name').focus(); }, 100);
   }
 
-  function closeModal() { document.getElementById('modal-backdrop').classList.add('hidden'); editingId = null; }
+  function disc_closeModal() {
+    document.getElementById('disc-modal-backdrop').classList.add('hidden');
+    _disc_editingId = null;
+  }
 
-  function saveDiscount() {
-    const name  = document.getElementById('f-discount-name').value.trim();
-    const type  = document.getElementById('f-discount-type').value;
-    const value = document.getElementById('f-value').value.trim();
-    const desc  = document.getElementById('f-description').value.trim();
-    const active = document.getElementById('f-is-active').checked;
-    if (!name)  { showToast('Discount name is required.', 'error'); return; }
-    if (!value || isNaN(value) || Number(value) < 0) { showToast('Please enter a valid value.', 'error'); return; }
-    if (type === 'percentage' && Number(value) > 100) { showToast('Percentage cannot exceed 100%.', 'error'); return; }
-    const payload = { discount_id: document.getElementById('f-discount-id').value, discount_name: name, discount_type: type, value: Number(value), description: desc, is_active: active };
-    const action  = editingId ? 'UPDATE_DISCOUNT' : 'CREATE_DISCOUNT';
-    setSaving(true);
+  // ── Save ────────────────────────────────────────────────────────
+  function disc_saveDiscount() {
+    var name  = document.getElementById('disc-f-discount-name').value.trim();
+    var type  = document.getElementById('disc-f-discount-type').value;
+    var value = document.getElementById('disc-f-value').value.trim();
+    var desc  = document.getElementById('disc-f-description').value.trim();
+    var active = document.getElementById('disc-f-is-active').checked;
+
+    if (!name)  { _disc_showToast('Discount name is required.', 'error'); return; }
+    if (!value || isNaN(value) || Number(value) < 0) { _disc_showToast('Please enter a valid value.', 'error'); return; }
+    if (type === 'percentage' && Number(value) > 100) { _disc_showToast('Percentage cannot exceed 100%.', 'error'); return; }
+
+    var payload = {
+      discount_id:   document.getElementById('disc-f-discount-id').value,
+      discount_name: name,
+      discount_type: type,
+      value:         Number(value),
+      description:   desc,
+      is_active:     active
+    };
+    var action = _disc_editingId ? 'UPDATE_DISCOUNT' : 'CREATE_DISCOUNT';
+
+    _disc_setSaving(true);
     google.script.run
-      .withSuccessHandler(res => {
-        setSaving(false);
-        if (_checkExpired(res)) return;
-        if (res.success) { closeModal(); showToast(editingId ? 'Discount updated!' : 'Discount created!', 'success'); loadData(); }
-        else showToast('Error: ' + res.error, 'error');
+      .withSuccessHandler(function(res) {
+        _disc_setSaving(false);
+        if (_disc_checkExpired(res)) return;
+        if (res.success) {
+          disc_closeModal();
+          _disc_showToast(_disc_editingId ? 'Discount updated!' : 'Discount created!', 'success');
+          _disc_loadData();
+        } else {
+          _disc_showToast('Error: ' + res.error, 'error');
+        }
       })
-      .withFailureHandler(err => { setSaving(false); showToast('Error: ' + err.message, 'error'); })
-      .handleDiscountRequest(action, payload, alab_token);
+      .withFailureHandler(function(err) {
+        _disc_setSaving(false);
+        _disc_showToast('Error: ' + err.message, 'error');
+      })
+      .handleDiscountRequest(action, payload, _disc_getToken());
   }
 
-  function setSaving(v) {
-    const btn = document.getElementById('save-btn');
+  function _disc_setSaving(v) {
+    var btn = document.getElementById('disc-save-btn');
     btn.disabled = v;
-    btn.innerHTML = v ? '<span class="spinner"></span>' : `<span id="save-label">${editingId ? 'Update Discount' : 'Save Discount'}</span>`;
+    btn.innerHTML = v
+      ? '<span class="spinner"></span>'
+      : '<span id="disc-save-label">' + (_disc_editingId ? 'Update Discount' : 'Save Discount') + '</span>';
   }
 
-  function openDeleteModal(id, name) { deletingId = id; document.getElementById('delete-name').textContent = name; document.getElementById('delete-modal').classList.remove('hidden'); }
-  function closeDeleteModal() { deletingId = null; document.getElementById('delete-modal').classList.add('hidden'); }
+  // ── Delete modal ────────────────────────────────────────────────
+  function disc_openDeleteModal(id, name) {
+    _disc_deletingId = id;
+    document.getElementById('disc-delete-name').textContent = name;
+    document.getElementById('disc-delete-modal').classList.remove('hidden');
+  }
 
-  function confirmDelete() {
-    const btn = document.getElementById('confirm-delete-btn');
-    btn.textContent = 'Deleting…'; btn.disabled = true;
+  function disc_closeDeleteModal() {
+    _disc_deletingId = null;
+    document.getElementById('disc-delete-modal').classList.add('hidden');
+  }
+
+  function disc_confirmDelete() {
+    var btn = document.getElementById('disc-confirm-delete-btn');
+    btn.textContent = 'Deleting…';
+    btn.disabled    = true;
     google.script.run
-      .withSuccessHandler(res => {
-        closeDeleteModal(); btn.textContent = 'Delete'; btn.disabled = false;
-        if (_checkExpired(res)) return;
-        if (res.success) { showToast('Discount deleted.', 'success'); loadData(); }
-        else showToast('Error: ' + res.error, 'error');
+      .withSuccessHandler(function(res) {
+        disc_closeDeleteModal();
+        btn.textContent = 'Delete';
+        btn.disabled    = false;
+        if (_disc_checkExpired(res)) return;
+        if (res.success) { _disc_showToast('Discount deleted.', 'success'); _disc_loadData(); }
+        else _disc_showToast('Error: ' + res.error, 'error');
       })
-      .withFailureHandler(err => { closeDeleteModal(); btn.textContent = 'Delete'; btn.disabled = false; showToast('Error: ' + err.message, 'error'); })
-      .handleDiscountRequest('DELETE_DISCOUNT', { discount_id: deletingId }, alab_token);
+      .withFailureHandler(function(err) {
+        disc_closeDeleteModal();
+        btn.textContent = 'Delete';
+        btn.disabled    = false;
+        _disc_showToast('Error: ' + err.message, 'error');
+      })
+      .handleDiscountRequest('DELETE_DISCOUNT', { discount_id: _disc_deletingId }, _disc_getToken());
   }
 
-  function showLoading(v) {
-    document.getElementById('loading-state').classList.toggle('hidden', !v);
-    if (v) {
-      document.getElementById('table-wrap').classList.add('hidden');
-      const es = document.getElementById('empty-state');
-      es.classList.add('hidden'); es.classList.remove('flex');
-    }
-  }
-
-  // ── Toast ─────────────────────────────────────────────────────────
-  function showToast(msg, type = 'success') {
-    const icons = {
+  // ── Toast ───────────────────────────────────────────────────────
+  function _disc_showToast(msg, type) {
+    var icons = {
       success: '<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>',
       error:   '<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>',
       warning: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>'
     };
-    const item = document.createElement('div');
-    item.className = `toast-item toast-${type}`;
-    item.innerHTML = `
-      <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-        ${icons[type] || icons.success}
-      </svg>
-      <span>${escHtml(String(msg))}</span>`;
-    document.getElementById('toast').appendChild(item);
-    setTimeout(() => item.remove(), 3800);
+    var item = document.createElement('div');
+    item.className = 'toast-item toast-' + (type || 'success');
+    item.innerHTML =
+      '<svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">' +
+        (icons[type] || icons.success) +
+      '</svg>' +
+      '<span>' + _disc_escHtml(String(msg)) + '</span>';
+    document.getElementById('disc-toast').appendChild(item);
+    setTimeout(function() { item.remove(); }, 3800);
   }
 
-  function escHtml(str) { return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  // ── Escape helper ────────────────────────────────────────────────
+  function _disc_escHtml(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
 
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeDeleteModal(); } });
-  document.getElementById('modal-backdrop').addEventListener('click', closeModal);
-  document.getElementById('delete-modal').addEventListener('click', closeDeleteModal);
+  // ── Keyboard + backdrop listeners ───────────────────────────────
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') { disc_closeModal(); disc_closeDeleteModal(); }
+  });
+  document.getElementById('disc-modal-backdrop').addEventListener('click', disc_closeModal);
+  document.getElementById('disc-delete-modal').addEventListener('click', disc_closeDeleteModal);
 </script>
