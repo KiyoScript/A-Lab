@@ -9,7 +9,6 @@
     .data-row:hover { background:#f8faff; }
     .data-row:last-child { border-bottom:none; }
 
-    /* ── Order status badges ── */
     .badge { font-size:11px; font-weight:600; padding:3px 10px; border-radius:99px; white-space:nowrap; display:inline-block; }
     .badge-DRAFT       { background:#f1f5f9; color:#64748b; }
     .badge-OPEN        { background:#dbeafe; color:#1d4ed8; }
@@ -18,7 +17,6 @@
     .badge-FOR_RELEASE { background:#ede9fe; color:#6d28d9; }
     .badge-RELEASED    { background:#dcfce7; color:#15803d; }
 
-    /* ── Item / Result badges ── */
     .item-badge { font-size:10px; font-weight:700; padding:2px 8px; border-radius:99px; }
     .item-PENDING   { background:#f1f5f9; color:#64748b; }
     .item-RUNNING   { background:#fef3c7; color:#92400e; }
@@ -30,7 +28,6 @@
     .result-VERIFIED         { background:#d1fae5; color:#065f46; }
     .result-RELEASED         { background:#dcfce7; color:#15803d; }
 
-    /* ── Form fields ── */
     .field-label { font-size:11px; font-weight:600; color:#475569; text-transform:uppercase;
                    letter-spacing:.04em; margin-bottom:5px; display:block; }
     .field-input { width:100%; border:1.5px solid #e2e8f0; border-radius:10px; padding:9px 13px;
@@ -40,7 +37,6 @@
     select.field-input { cursor:pointer; }
     textarea.field-input { resize:vertical; min-height:68px; }
 
-    /* ── Item picker ── */
     .item-row { display:flex; align-items:center; gap:8px; padding:8px 10px;
                 border:1.5px solid #e2e8f0; border-radius:10px; margin-bottom:5px; background:#fff; cursor:pointer; }
     .item-row:hover { border-color:#cbd5e1; background:#f8fafc; }
@@ -53,19 +49,16 @@
     .section-divider { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.08em;
                        color:#94a3b8; border-bottom:1px solid #f1f5f9; padding-bottom:5px; margin:14px 0 10px; }
 
-    /* ── Modals (view/pay/upload) ── */
     .modal-card { background:#fff; border-radius:20px; box-shadow:0 20px 60px rgba(0,0,0,.18);
                   max-height:92vh; overflow-y:auto; }
     .modal-card::-webkit-scrollbar { width:4px; }
     .modal-card::-webkit-scrollbar-thumb { background:#e2e8f0; border-radius:9px; }
 
-    /* ── Search box ── */
     .search-box { width:100%; border:1.5px solid #e2e8f0; border-radius:10px;
                   padding:7px 12px 7px 32px; font-size:13px; outline:none;
                   background:#f8fafc; transition:border .15s; font-family:'DM Sans',sans-serif; }
     .search-box:focus { border-color:#3b82f6; background:#fff; }
 
-    /* ── Buttons ── */
     .btn-primary   { background:#3b82f6; color:#fff; border:none; border-radius:10px; padding:10px 20px;
                      font-size:13px; font-weight:600; cursor:pointer; transition:background .15s; font-family:'DM Sans',sans-serif; }
     .btn-primary:hover    { background:#2563eb; }
@@ -91,13 +84,11 @@
     .act-purple { background:#ede9fe; color:#6d28d9; }
     .act-purple:hover { background:#ddd6fe; }
 
-    /* ── Upload ── */
     .upload-zone { border:2px dashed #cbd5e1; border-radius:12px; padding:24px; text-align:center;
                    cursor:pointer; transition:all .2s; background:#f8fafc; }
     .upload-zone:hover { border-color:#3b82f6; background:#eff6ff; }
     .upload-zone.dragover { border-color:#3b82f6; background:#eff6ff; }
 
-    /* ── Step indicator (order view) ── */
     .step-flow { display:flex; align-items:center; gap:0; overflow-x:auto; padding:2px 0; }
     .step { font-size:11px; font-weight:600; padding:4px 12px; background:#f1f5f9; color:#64748b;
             border-radius:0; white-space:nowrap; }
@@ -107,9 +98,6 @@
     .step.done   { background:#dcfce7; color:#15803d; }
     .step-arrow  { font-size:10px; color:#cbd5e1; flex-shrink:0; }
 
-    /* ══════════════════════════════════════════
-       NEW ORDER WIZARD OVERLAY
-    ══════════════════════════════════════════ */
     #wizard-overlay {
       position: fixed;
       inset: 0;
@@ -121,11 +109,8 @@
       display: flex;
       flex-direction: column;
     }
-    #wizard-overlay.open {
-      transform: translateX(0);
-    }
+    #wizard-overlay.open { transform: translateX(0); }
 
-    /* Wizard step indicator */
     .wizard-step { display:flex; flex-direction:column; align-items:center; gap:6px; }
     .wstep-circle { width:36px; height:36px; border-radius:50%; display:flex; align-items:center;
                     justify-content:center; font-size:13px; font-weight:700; transition:all .25s;
@@ -138,44 +123,39 @@
     .wstep-line { flex:1; height:2px; background:#e2e8f0; margin-top:-20px; transition:background .25s; }
     .wstep-line.done { background:#16a34a; }
 
-    /* Patient result cards */
     .patient-result { display:flex; align-items:center; justify-content:space-between; gap:10px;
                       padding:10px 14px; border:1.5px solid #e2e8f0; border-radius:10px;
                       cursor:pointer; transition:all .15s; background:#fff; }
     .patient-result:hover { border-color:#bfdbfe; background:#f0f7ff; }
     .patient-result.selected-patient { border-color:#3b82f6; background:#eff6ff; }
 
-    /* Discount badge */
     .disc-badge { display:inline-flex; align-items:center; gap:5px; background:#fef3c7; color:#92400e;
                   border:1px solid #fde68a; border-radius:99px; padding:3px 10px; font-size:11px; font-weight:600; }
 
-    /* Spinner */
     .spinner { display:inline-block; width:14px; height:14px; border:2px solid rgba(255,255,255,.35);
-               border-top-color:#fff; border-radius:50%; animation:spin .6s linear infinite; }
+               border-top-color:#fff; border-radius:50%; animation:ord-spin .6s linear infinite; }
     .spinner-blue { border-color:rgba(59,130,246,.2); border-top-color:#3b82f6; }
 
-    @keyframes spin    { to { transform:rotate(360deg); } }
-    @keyframes fadeUp  { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-    @keyframes fadeIn  { from{opacity:0} to{opacity:1} }
-    .fade-up  { animation:fadeUp .3s ease both; }
-    .fade-in  { animation:fadeIn .25s ease; }
+    @keyframes ord-spin   { to { transform:rotate(360deg); } }
+    @keyframes ord-fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes ord-fadeIn { from{opacity:0} to{opacity:1} }
+    .fade-up  { animation:ord-fadeUp .3s ease both; }
+    .fade-in  { animation:ord-fadeIn .25s ease; }
     .d1{animation-delay:.05s}.d2{animation-delay:.1s}.d3{animation-delay:.15s}
 
-    #toast { position:fixed; bottom:24px; right:24px; z-index:9999;
+    #ord-toast { position:fixed; bottom:24px; right:24px; z-index:9999;
              display:flex; flex-direction:column; gap:8px; pointer-events:none; }
     .toast-item { display:flex; align-items:center; gap:10px; padding:10px 16px; border-radius:12px;
-                  font-size:13px; font-weight:500; max-width:320px; box-shadow:0 4px 20px rgba(0,0,0,.12); animation:fadeUp .3s ease; }
+                  font-size:13px; font-weight:500; max-width:320px; box-shadow:0 4px 20px rgba(0,0,0,.12); animation:ord-fadeUp .3s ease; }
     .toast-success { background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; }
     .toast-error   { background:#fef2f2; color:#dc2626; border:1px solid #fecaca; }
 
     ::-webkit-scrollbar { width:5px; }
     ::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:99px; }
   </style>
+
 <div id="ord-toast"></div>
 
-<!-- ══════════════════════════════════════════════════════════════
-     ORDERS PAGE
-══════════════════════════════════════════════════════════════ -->
 <div id="orders-page" class="p-5">
 
   <!-- HEADER -->
@@ -198,22 +178,21 @@
     <div class="ord-stat-card"><p id="ord-s-total"      class="text-2xl font-bold text-slate-800">—</p><p class="text-xs text-slate-400 mt-0.5">Total</p></div>
     <div class="ord-stat-card"><p id="ord-s-draft"      class="text-2xl font-bold text-slate-400">—</p><p class="text-xs text-slate-400 mt-0.5">Draft</p></div>
     <div class="ord-stat-card"><p id="ord-s-open"       class="text-2xl font-bold text-blue-500">—</p><p class="text-xs text-slate-400 mt-0.5">Open</p></div>
-    <div class="ord-stat-card"><p id="ord-s-paid"       class="text-2xl font-bold text-emerald-600">—</p><p class="text-xs text-slate-400 mt-0.5">Paid</p></div>
+    <div class="ord-stat-card"><p id="ord-s-paid"       class="text-2xl font-bold text-emerald-500">—</p><p class="text-xs text-slate-400 mt-0.5">Paid</p></div>
     <div class="ord-stat-card"><p id="ord-s-inprogress" class="text-2xl font-bold text-amber-500">—</p><p class="text-xs text-slate-400 mt-0.5">In Progress</p></div>
-    <div class="ord-stat-card"><p id="ord-s-released"   class="text-2xl font-bold text-purple-500">—</p><p class="text-xs text-slate-400 mt-0.5">Released</p></div>
+    <div class="ord-stat-card"><p id="ord-s-released"   class="text-2xl font-bold text-violet-500">—</p><p class="text-xs text-slate-400 mt-0.5">Released</p></div>
   </div>
 
-  <!-- FILTERS -->
+  <!-- SEARCH + FILTER -->
   <div class="flex items-center gap-3 mb-4 flex-wrap fade-up d2">
-    <div class="relative flex-1 min-w-[200px]">
-      <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+    <div class="relative flex-1 min-w-[180px] max-w-sm">
+      <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
       </svg>
-      <input id="ord-search-input" type="text" placeholder="Search order no., patient, doctor…" oninput="filterTable()" class="search-box"/>
+      <input id="ord-search-input" type="text" placeholder="Search orders…" oninput="filterTable()" class="search-box"/>
     </div>
-    <select id="ord-status-filter" onchange="filterTable()"
-      class="border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-600 bg-white outline-none focus:border-blue-400 cursor-pointer">
-      <option value="">All Status</option>
+    <select id="ord-status-filter" onchange="filterTable()" class="field-input" style="width:auto;min-width:130px">
+      <option value="">All Statuses</option>
       <option value="DRAFT">Draft</option>
       <option value="OPEN">Open</option>
       <option value="PAID">Paid</option>
@@ -223,15 +202,15 @@
     </select>
   </div>
 
-  <!-- TABLE -->
+  <!-- TABLE CARD -->
   <div class="ord-card fade-up d3">
-    <div id="ord-loading-state" class="flex flex-col items-center justify-center py-20 gap-3">
-      <div class="w-8 h-8 rounded-full animate-spin" style="border:2px solid #bbd8ff;border-top-color:#2f76f5"></div>
-      <p class="text-xs text-slate-400">Loading orders…</p>
+    <div id="ord-loading-state" class="flex flex-col items-center justify-center py-16 gap-3">
+      <div class="w-10 h-10 rounded-full animate-spin" style="border:2px solid #bbd8ff;border-top-color:#2f76f5"></div>
+      <p class="text-sm text-slate-400">Loading orders…</p>
     </div>
-    <div id="ord-empty-state" class="hidden flex-col items-center justify-center py-20 text-center gap-3">
-      <div class="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center">
-        <svg class="w-8 h-8 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+    <div id="ord-empty-state" class="hidden flex-col items-center justify-center py-16 gap-3 text-center">
+      <div class="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center">
+        <svg class="w-7 h-7 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v8.5L4.5 18A2 2 0 006.4 21h11.2a2 2 0 001.9-2.5L15 11.5V3M9 3h6M8 15h8"/>
         </svg>
       </div>
@@ -260,12 +239,11 @@
 
 
 <!-- ══════════════════════════════════════════════════════════════
-     NEW ORDER WIZARD OVERLAY (slides in from right)
+     NEW ORDER WIZARD OVERLAY
 ══════════════════════════════════════════════════════════════ -->
 <div id="wizard-overlay">
   <div class="flex-1 p-5 pb-10 max-w-2xl w-full mx-auto">
 
-    <!-- Wizard Header -->
     <div class="flex items-center gap-3 mb-6">
       <button onclick="closeWizard()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors">
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -296,177 +274,131 @@
       </div>
     </div>
 
-    <!-- ── STEP 1 — PATIENT ── -->
+    <!-- STEP 1 — PATIENT -->
     <div id="wstep-1" class="fade-in">
-      <div class="card p-6">
-        <h2 class="text-sm font-bold text-slate-700 mb-1">Find or Enroll Patient</h2>
-        <p class="text-xs text-slate-400 mb-4">Search by name or contact number.</p>
-
+      <div class="ord-card p-5 mb-4">
+        <h2 class="text-sm font-bold text-slate-700 mb-3">Select Patient</h2>
         <div class="relative mb-3">
-          <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
           </svg>
-          <input id="w-patient-search" type="text" placeholder="Type name or contact number…"
-            oninput="wFilterPatients()" class="search-box"/>
-        </div>
-
-        <div id="w-patient-results" class="space-y-2 max-h-64 overflow-y-auto mb-3">
-          <div class="flex items-center justify-center py-8 gap-2 text-slate-400">
-            <div class="spinner spinner-blue w-4 h-4"></div>
-            <span class="text-xs">Loading patients…</span>
-          </div>
+          <input id="w-patient-search" type="text" placeholder="Search by name or contact…" oninput="wFilterPatients()" class="search-box"/>
         </div>
 
         <!-- Selected patient chip -->
-        <div id="w-patient-chip" class="hidden items-center gap-3 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 mb-4">
-          <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold shrink-0" id="w-chip-avatar">—</div>
+        <div id="w-patient-chip" class="hidden items-center gap-3 bg-blue-50 border border-blue-200 rounded-xl px-4 py-2.5 mb-3">
+          <div class="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-white text-[11px] font-bold shrink-0" id="w-chip-avatar">—</div>
           <div class="flex-1 min-w-0">
-            <p id="w-chip-name" class="text-sm font-semibold text-slate-800 truncate">—</p>
-            <p id="w-chip-meta" class="text-xs text-slate-400 truncate">—</p>
+            <p id="w-chip-name" class="text-xs font-semibold text-slate-700 truncate">—</p>
+            <p id="w-chip-meta" class="text-[10px] text-slate-400 truncate">—</p>
           </div>
-          <button onclick="wClearPatient()" class="text-slate-400 hover:text-red-500 p-1 transition-colors">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <button onclick="wClearPatient()" class="text-slate-400 hover:text-red-500 p-1">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
             </svg>
           </button>
         </div>
 
-        <!-- Enroll toggle -->
-        <div class="flex items-center gap-2 mb-3">
-          <div class="flex-1 h-px bg-slate-100"></div>
-          <span class="text-xs text-slate-400 font-medium">or</span>
-          <div class="flex-1 h-px bg-slate-100"></div>
+        <div id="w-patient-results" class="space-y-2 max-h-56 overflow-y-auto pr-1">
+          <p class="text-xs text-slate-400 text-center py-6">Loading patients…</p>
         </div>
+      </div>
+
+      <!-- Enroll new patient -->
+      <div class="ord-card p-5">
         <button id="w-enroll-toggle-btn" onclick="wToggleEnroll()"
-          class="w-full py-2.5 rounded-xl border-2 border-dashed border-slate-200 text-sm font-semibold text-slate-500
-                 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50 transition-all flex items-center justify-center gap-2">
+          class="flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700 w-full">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
           </svg>
           Enroll New Patient
         </button>
-
-        <!-- Inline enroll form -->
-        <div id="w-enroll-form" class="hidden mt-4 space-y-3 fade-in" style="border:1.5px dashed #bfdbfe;border-radius:12px;background:#f0f7ff;padding:16px;">
-          <p class="text-xs font-bold text-blue-700 uppercase tracking-wider mb-1">New Patient Details</p>
+        <div id="w-enroll-form" class="hidden mt-4 space-y-3">
           <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="field-label">Last Name <span class="text-red-400">*</span></label>
-              <input id="we-last" type="text" class="field-input" placeholder="Dela Cruz"/>
-            </div>
-            <div>
-              <label class="field-label">First Name <span class="text-red-400">*</span></label>
-              <input id="we-first" type="text" class="field-input" placeholder="Juan"/>
-            </div>
+            <div><label class="field-label">Last Name *</label><input id="we-last" type="text" class="field-input" placeholder="Dela Cruz"/></div>
+            <div><label class="field-label">First Name *</label><input id="we-first" type="text" class="field-input" placeholder="Juan"/></div>
           </div>
+          <div><label class="field-label">Middle Name</label><input id="we-middle" type="text" class="field-input" placeholder="Optional"/></div>
           <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="field-label">Middle Name</label>
-              <input id="we-middle" type="text" class="field-input" placeholder="Optional"/>
+            <div><label class="field-label">Sex *</label>
+              <select id="we-sex" class="field-input"><option value="">Select</option><option value="Male">Male</option><option value="Female">Female</option></select>
             </div>
-            <div>
-              <label class="field-label">Sex <span class="text-red-400">*</span></label>
-              <select id="we-sex" class="field-input">
-                <option value="">Select…</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-              </select>
-            </div>
+            <div><label class="field-label">Birth Date *</label><input id="we-bdate" type="date" class="field-input"/></div>
           </div>
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="field-label">Birth Date <span class="text-red-400">*</span></label>
-              <input id="we-bdate" type="date" class="field-input"/>
-            </div>
-            <div>
-              <label class="field-label">Contact No. <span class="text-red-400">*</span></label>
-              <input id="we-contact" type="text" class="field-input" placeholder="09xx-xxx-xxxx"/>
-            </div>
-          </div>
-          <div>
-            <label class="field-label">Address <span class="text-red-400">*</span></label>
-            <input id="we-address" type="text" class="field-input" placeholder="Street, Barangay, City"/>
-          </div>
-          <button id="w-enroll-btn" onclick="wEnrollAndSelect()"
-            class="w-full btn-primary flex items-center justify-center gap-2 mt-1">
+          <div><label class="field-label">Contact Number *</label><input id="we-contact" type="text" class="field-input" placeholder="09XX XXX XXXX"/></div>
+          <div><label class="field-label">Address *</label><input id="we-address" type="text" class="field-input" placeholder="Street, City"/></div>
+          <button id="w-enroll-btn" onclick="wEnrollAndSelect()" class="btn-green w-full flex items-center justify-center gap-2 mt-2">
             <span id="w-enroll-label">Enroll &amp; Select Patient</span>
           </button>
         </div>
+      </div>
 
-        <div class="flex justify-end mt-6 pt-4 border-t border-slate-100">
-          <button id="wstep1-next" onclick="wGoToStep2()" disabled
-            class="btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
-            Continue to Services
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-            </svg>
-          </button>
-        </div>
+      <div class="flex justify-end mt-5">
+        <button id="wstep1-next" onclick="wGoToStep2()" disabled
+          class="btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+          Continue to Services
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+          </svg>
+        </button>
       </div>
     </div>
 
-    <!-- ── STEP 2 — SERVICES ── -->
+    <!-- STEP 2 — SERVICES -->
     <div id="wstep-2" class="hidden fade-in">
-      <div class="card p-6">
-        <!-- Patient bar -->
-        <div class="flex items-center gap-3 bg-slate-50 rounded-xl px-4 py-2.5 mb-5 border border-slate-100">
-          <div class="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-white text-[11px] font-bold shrink-0" id="ws2-avatar">—</div>
+      <div class="ord-card p-5">
+        <h2 class="text-sm font-bold text-slate-700 mb-3">Select Lab Services &amp; Packages</h2>
+        <div class="relative mb-3">
+          <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
+          </svg>
+          <input id="w-item-search" type="text" placeholder="Filter services…" oninput="wFilterItems()" class="search-box"/>
+        </div>
+
+        <!-- Patient recap -->
+        <div class="flex items-center gap-3 bg-slate-50 rounded-xl px-4 py-2 mb-3 border border-slate-100">
+          <div class="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-white text-[10px] font-bold shrink-0" id="ws2-avatar">—</div>
           <div class="flex-1 min-w-0">
             <p id="ws2-patient-name" class="text-xs font-semibold text-slate-700 truncate">—</p>
             <p id="ws2-patient-meta" class="text-[10px] text-slate-400 truncate">—</p>
           </div>
-          <button onclick="wBackToStep1()" class="text-xs text-blue-500 font-semibold hover:underline">Change</button>
         </div>
 
-        <h2 class="text-sm font-bold text-slate-700 mb-1">Referring Doctor <span class="text-slate-300 font-normal">(optional)</span></h2>
-        <select id="w-doctor" class="field-input mb-5">
-          <option value="">None / Walk-in</option>
-        </select>
-
-        <h2 class="text-sm font-bold text-slate-700 mb-3">Lab Services &amp; Packages <span class="text-red-400">*</span></h2>
-        <div class="relative mb-3">
-          <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
-          </svg>
-          <input id="w-item-search" type="text" placeholder="Search services or packages…"
-            oninput="wFilterItems()" class="search-box"/>
-        </div>
-        <div id="w-item-list" class="max-h-72 overflow-y-auto pr-1 mb-4">
-          <div class="flex items-center justify-center py-8 gap-2 text-slate-400">
+        <div id="w-item-list" class="max-h-64 overflow-y-auto pr-1">
+          <div class="flex items-center justify-center gap-2 text-slate-400 py-8">
             <div class="spinner spinner-blue w-4 h-4"></div>
             <span class="text-xs">Loading services…</span>
           </div>
         </div>
 
-        <div class="bg-slate-50 rounded-xl px-4 py-3 flex items-center justify-between border border-slate-100">
+        <div class="bg-slate-50 rounded-xl px-4 py-3 flex items-center justify-between border border-slate-100 mt-3">
           <span class="text-xs text-slate-500 font-semibold">Selected: <span id="ws2-count" class="text-slate-700">0 items</span></span>
           <span class="text-sm font-bold text-slate-800" style="font-family:'DM Mono',monospace">
             Subtotal: <span id="ws2-subtotal" class="text-blue-600">₱0.00</span>
           </span>
         </div>
+      </div>
 
-        <div class="flex justify-between mt-6 pt-4 border-t border-slate-100">
-          <button onclick="wBackToStep1()" class="btn-secondary flex items-center gap-2">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
-            </svg>
-            Back
-          </button>
-          <button id="wstep2-next" onclick="wGoToStep3()" disabled
-            class="btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
-            Continue to Billing
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-            </svg>
-          </button>
-        </div>
+      <div class="flex justify-between mt-5">
+        <button onclick="wBackToStep1()" class="btn-secondary flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+          </svg>
+          Back
+        </button>
+        <button id="wstep2-next" onclick="wGoToStep3()" disabled
+          class="btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+          Continue to Billing
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+          </svg>
+        </button>
       </div>
     </div>
 
-    <!-- ── STEP 3 — BILLING ── -->
+    <!-- STEP 3 — BILLING -->
     <div id="wstep-3" class="hidden fade-in">
-      <div class="card p-6">
-        <!-- Summary bar -->
+      <div class="ord-card p-6">
         <div class="flex items-center gap-3 bg-slate-50 rounded-xl px-4 py-2.5 mb-5 border border-slate-100">
           <div class="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-white text-[11px] font-bold shrink-0" id="ws3-avatar">—</div>
           <div class="flex-1 min-w-0">
@@ -476,27 +408,29 @@
           <button onclick="wGoToStep2()" class="text-xs text-blue-500 font-semibold hover:underline">Edit</button>
         </div>
 
-        <!-- Items recap -->
         <div class="mb-5">
           <p class="section-divider">Order Items</p>
           <div id="ws3-items-list" class="space-y-1.5 max-h-40 overflow-y-auto"></div>
         </div>
 
-        <!-- Auto-applied discounts -->
         <div id="w-auto-disc-wrap" class="mb-4 hidden">
           <p class="section-divider">Patient Discounts</p>
           <div id="w-auto-disc-list" class="flex flex-wrap gap-2"></div>
         </div>
 
-        <!-- Discount -->
+        <div class="mb-4">
+          <label class="field-label">Referring Doctor</label>
+          <select id="w-doctor" class="field-input">
+            <option value="">None / Walk-in</option>
+          </select>
+        </div>
+
         <div class="mb-4">
           <label class="field-label">Discount Amount (₱)</label>
-          <input id="w-discount" type="number" min="0" step="0.01" placeholder="0.00"
-            oninput="wRecalc()" class="field-input"/>
+          <input id="w-discount" type="number" min="0" step="0.01" placeholder="0.00" oninput="wRecalc()" class="field-input"/>
           <p class="text-[11px] text-slate-400 mt-1">Auto-applied from patient's assigned discounts. You can override.</p>
         </div>
 
-        <!-- Summary -->
         <div class="bg-slate-50 rounded-xl p-4 border border-slate-100 mb-4">
           <div class="flex justify-between text-xs text-slate-500 mb-1.5">
             <span>Subtotal</span><span id="wb-subtotal" style="font-family:'DM Mono',monospace">₱0.00</span>
@@ -509,11 +443,9 @@
           </div>
         </div>
 
-        <!-- Notes -->
         <div class="mb-5">
           <label class="field-label">Notes <span class="text-slate-300 font-normal normal-case">(optional)</span></label>
-          <textarea id="w-notes" placeholder="Any special instructions or notes…"
-            class="field-input" style="resize:none;min-height:60px;" rows="2"></textarea>
+          <textarea id="w-notes" placeholder="Any special instructions or notes…" class="field-input" style="resize:none;min-height:60px;" rows="2"></textarea>
         </div>
 
         <div class="flex justify-between pt-4 border-t border-slate-100">
@@ -595,43 +527,33 @@
      PAYMENT MODAL
 ══════════════════════════════════════════════════════════════ -->
 <div id="pay-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[110] flex items-center justify-center p-4 hidden" onclick="closePayModal()">
-  <div class="modal-card w-full max-w-sm" onclick="event.stopPropagation()">
-    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-      <div><h2 class="text-base font-bold text-slate-800">Record Payment</h2><p id="pay-order-num" class="text-xs text-slate-400 mt-0.5">—</p></div>
-      <button onclick="closePayModal()" class="text-slate-400 hover:text-slate-600 p-1">
-        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-      </button>
-    </div>
-    <div class="px-6 py-5 space-y-4">
-      <div class="bg-blue-50 rounded-xl p-3 text-center">
-        <p class="text-xs text-blue-500 font-semibold uppercase tracking-wider">Amount Due</p>
-        <p id="pay-total" class="text-2xl font-bold text-blue-700 mt-1">₱0.00</p>
-      </div>
+  <div class="modal-card w-full max-w-sm p-6" onclick="event.stopPropagation()">
+    <h3 class="text-base font-bold text-slate-800 mb-1">Record Payment</h3>
+    <p class="text-xs text-slate-400 mb-4">Order: <span id="pay-order-num" class="font-semibold text-slate-600">—</span> · Total: <span id="pay-total" class="font-semibold text-blue-600">—</span></p>
+    <div class="space-y-3">
       <div>
-        <label class="field-label">Payment Method <span class="text-red-400">*</span></label>
+        <label class="field-label">Payment Method *</label>
         <select id="pay-method" class="field-input">
           <option value="">Select method…</option>
           <option value="Cash">Cash</option>
           <option value="GCash">GCash</option>
-          <option value="Maya">Maya</option>
           <option value="Card">Card</option>
           <option value="Bank Transfer">Bank Transfer</option>
-          <option value="PhilHealth">PhilHealth</option>
-          <option value="HMO">HMO</option>
+          <option value="Other">Other</option>
         </select>
       </div>
       <div>
-        <label class="field-label">Amount Received <span class="text-red-400">*</span></label>
+        <label class="field-label">Amount Received (₱) *</label>
         <input id="pay-amount" type="number" min="0" step="0.01" placeholder="0.00" oninput="recalcChange()" class="field-input"/>
       </div>
-      <div class="bg-slate-50 rounded-xl p-3 flex justify-between items-center">
-        <span class="text-sm text-slate-500 font-semibold">Change</span>
-        <span id="pay-change" class="text-lg font-bold text-emerald-600">₱0.00</span>
+      <div class="flex justify-between text-sm font-semibold pt-1">
+        <span class="text-slate-500">Change</span>
+        <span id="pay-change" class="text-emerald-600" style="font-family:'DM Mono',monospace">₱0.00</span>
       </div>
     </div>
-    <div class="flex gap-3 px-6 pb-6">
-      <button onclick="closePayModal()" class="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
-      <button id="pay-btn" onclick="submitPayment()" class="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold flex items-center justify-center">
+    <div class="flex gap-3 mt-5">
+      <button onclick="closePayModal()" class="btn-secondary flex-1">Cancel</button>
+      <button id="pay-btn" onclick="submitPayment()" class="btn-green flex-1 flex items-center justify-center gap-2">
         <span id="pay-label">Confirm Payment</span>
       </button>
     </div>
@@ -642,62 +564,81 @@
      UPLOAD RESULT MODAL
 ══════════════════════════════════════════════════════════════ -->
 <div id="upload-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[110] flex items-center justify-center p-4 hidden" onclick="closeUploadModal()">
-  <div class="modal-card w-full max-w-sm" onclick="event.stopPropagation()">
-    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-      <div><h2 class="text-base font-bold text-slate-800">Upload Result</h2><p id="upload-item-name" class="text-xs text-slate-400 mt-0.5">—</p></div>
-      <button onclick="closeUploadModal()" class="text-slate-400 hover:text-slate-600 p-1">
-        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+  <div class="modal-card w-full max-w-sm p-6" onclick="event.stopPropagation()">
+    <h3 class="text-base font-bold text-slate-800 mb-1">Upload Result</h3>
+    <p class="text-xs text-slate-400 mb-4">For: <span id="upload-item-name" class="font-semibold text-slate-600">—</span></p>
+    <div id="upload-zone" class="upload-zone"
+      onclick="document.getElementById('file-input').click()"
+      ondragover="event.preventDefault();this.classList.add('dragover')"
+      ondragleave="this.classList.remove('dragover')"
+      ondrop="handleDrop(event)">
+      <svg class="w-8 h-8 text-slate-300 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+      </svg>
+      <p class="text-sm font-semibold text-slate-500">Click or drag to upload</p>
+      <p class="text-xs text-slate-400 mt-1">PDF or DOC/DOCX only</p>
+      <input id="file-input" type="file" accept=".pdf,.doc,.docx" class="hidden" onchange="handleFileSelect(event)"/>
+    </div>
+    <div id="file-preview" class="hidden items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 mt-3">
+      <svg class="w-8 h-8 text-blue-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+      </svg>
+      <div class="flex-1 min-w-0">
+        <p id="file-name" class="text-xs font-semibold text-slate-700 truncate">—</p>
+        <p id="file-size" class="text-[11px] text-slate-400">—</p>
+      </div>
+      <button onclick="clearFile()" class="text-slate-400 hover:text-red-500 p-1">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
       </button>
     </div>
-    <div class="px-6 py-5 space-y-4">
-      <div id="upload-zone" class="upload-zone"
-        ondragover="event.preventDefault(); this.classList.add('dragover')"
-        ondragleave="this.classList.remove('dragover')"
-        ondrop="handleDrop(event)"
-        onclick="document.getElementById('file-input').click()">
-        <svg class="w-10 h-10 text-slate-300 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-        </svg>
-        <p class="text-sm font-semibold text-slate-500">Click or drag file here</p>
-        <p class="text-xs text-slate-400 mt-1">PDF or DOC/DOCX only</p>
-        <input id="file-input" type="file" accept=".pdf,.doc,.docx" class="hidden" onchange="handleFileSelect(event)"/>
-      </div>
-      <div id="file-preview" class="hidden items-center gap-3 p-3 bg-blue-50 rounded-xl border border-blue-100">
-        <svg class="w-8 h-8 text-blue-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-        </svg>
-        <div class="flex-1 min-w-0">
-          <p id="file-name" class="text-sm font-semibold text-slate-700 truncate">—</p>
-          <p id="file-size" class="text-xs text-slate-400">—</p>
-        </div>
-        <button onclick="clearFile()" class="text-slate-400 hover:text-red-500 p-1">
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-      </div>
-      <div id="upload-progress" class="hidden">
-        <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-          <div id="upload-bar" class="h-full bg-blue-500 rounded-full transition-all duration-300" style="width:0%"></div>
-        </div>
-        <p class="text-xs text-slate-400 mt-1.5 text-center">Uploading to Google Drive…</p>
-      </div>
+    <div id="upload-progress" class="hidden items-center gap-2 mt-3 text-xs text-blue-500 font-semibold">
+      <div class="spinner spinner-blue w-4 h-4"></div>
+      <span>Uploading…</span>
     </div>
-    <div class="flex gap-3 px-6 pb-6">
-      <button onclick="closeUploadModal()" class="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
-      <button id="upload-btn" onclick="submitUpload()" class="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold flex items-center justify-center">
+    <div class="flex gap-3 mt-4">
+      <button onclick="closeUploadModal()" class="btn-secondary flex-1">Cancel</button>
+      <button id="upload-btn" onclick="submitUpload()" class="btn-primary flex-1 flex items-center justify-center gap-2">
         <span id="upload-label">Upload Result</span>
       </button>
     </div>
   </div>
 </div>
 
-
 <script>
+  // ── Module state — ALL prefixed _ord_ ───────────────────────────
+  var _ord_currentSession   = null;
+  var _ord_allOrders        = [];
+  var _ord_viewingOrder     = null;
+  var _ord_viewingItems     = [];
+  var _ord_uploadingItem    = null;
+  var _ord_selectedFile     = null;
+  var _ord_payingOrder      = null;
+  var _ord_isTech           = false;
+  var _ord_isBranchAdmin    = false;
+  var _ord_isSuperAdmin     = false;
+  var _ord_isDoctor         = false;
+
+  // ── Wizard state ─────────────────────────────────────────────────
+  var _ord_wCurrentStep     = 1;
+  var _ord_wSelectedPatient = null;
+  var _ord_wAllPatients     = [];
+  var _ord_wAllServices     = [];
+  var _ord_wAllPackages     = [];
+  var _ord_wAllDiscounts    = [];
+  var _ord_wSelectedItems   = {};
+  var _ord_wEnrollOpen      = false;
+  var _ord_wDataLoaded      = false;
+
+  // ── Token helper ─────────────────────────────────────────────────
   function _ord_getToken() {
     return (typeof alab_token !== 'undefined' ? alab_token : null)
       || localStorage.getItem('alab_token') || '';
   }
 
-  function _checkExpired_ord(res) {
+  // ── Expired session handler ──────────────────────────────────────
+  function _ord_checkExpired(res) {
     if (res && res.expired) {
       localStorage.removeItem('alab_token');
       window.top.location.href = (typeof baseUrl !== 'undefined' ? baseUrl : '') + '?page=Login';
@@ -706,88 +647,61 @@
     return false;
   }
 
-  // alias so all existing callOrder/reloadView/wLoad* etc. keep working
-  function _checkExpired(res) { return _checkExpired_ord(res); }
-
-  var currentSession   = null;
-  var allOrders        = [];
-  var viewingOrder     = null;
-  var viewingItems     = [];
-  var uploadingItem    = null;
-  var selectedFile     = null;
-  var payingOrder      = null;
-  var isTech           = false;
-  var isBranchAdmin    = false;
-  var isSuperAdmin     = false;
-  var isDoctor         = false;
-
-  // ── Wizard state ──────────────────────────────────────────────
-  var wCurrentStep     = 1;
-  var wSelectedPatient = null;
-  var wAllPatients     = [];
-  var wAllServices     = [];
-  var wAllPackages     = [];
-  var wAllDiscounts    = [];
-  var wSelectedItems   = {};
-  var wEnrollOpen      = false;
-  var wDataLoaded      = false;
-
-  // ── Init — called once by switchTab() ─────────────────────────
+  // ── Entry point called by Index.html switchTab() ─────────────────
   function init_Orders() {
-    var token = _ord_getToken();
     google.script.run
       .withSuccessHandler(function(res) {
-        if (_checkExpired_ord(res)) return;
+        if (_ord_checkExpired(res)) return;
         if (!res.success) return;
-        currentSession = res.data;
-        isTech        = currentSession.role === 'medtech';
-        isBranchAdmin = currentSession.role === 'branch_admin';
-        isSuperAdmin  = currentSession.role === 'super_admin';
-        isDoctor      = currentSession.role === 'doctor';
+        _ord_currentSession = res.data;
+        _ord_isTech        = _ord_currentSession.role === 'medtech';
+        _ord_isBranchAdmin = _ord_currentSession.role === 'branch_admin';
+        _ord_isSuperAdmin  = _ord_currentSession.role === 'super_admin';
+        _ord_isDoctor      = _ord_currentSession.role === 'doctor';
 
         var btn = document.getElementById('create-btn');
-        if (isTech && btn) { btn.classList.remove('hidden'); btn.classList.add('flex'); }
+        if (_ord_isTech && btn) { btn.classList.remove('hidden'); btn.classList.add('flex'); }
 
         var sub = document.getElementById('header-sub');
         if (sub) sub.textContent =
-          isSuperAdmin ? 'All branches — read only.' :
-          isDoctor     ? 'Your referrals — read only.' :
+          _ord_isSuperAdmin ? 'All branches — read only.' :
+          _ord_isDoctor     ? 'Your referrals — read only.' :
           'Manage lab orders for your branch.';
 
-        loadOrders();
+        _ord_loadOrders();
       })
       .withFailureHandler(function(){})
-      .handleAdminRequest('GET_SESSION', {}, token);
+      .handleAdminRequest('GET_SESSION', {}, _ord_getToken());
   }
 
   // ══════════════════════════════════════════════════════════════
   // ORDERS LIST
   // ══════════════════════════════════════════════════════════════
 
-  function loadOrders() {
-    showLoading(true);
+  function _ord_loadOrders() {
+    _ord_showLoading(true);
     google.script.run
       .withSuccessHandler(function(res) {
-        showLoading(false);
-        if (_checkExpired(res)) return;
+        _ord_showLoading(false);
+        if (_ord_checkExpired(res)) return;
         if (res.success) {
-          allOrders = res.data || [];
-          renderTable(allOrders);
-          updateStats(allOrders);
+          _ord_allOrders = res.data || [];
+          _ord_renderTable(_ord_allOrders);
+          _ord_updateStats(_ord_allOrders);
         } else {
-          showToast('Failed to load: ' + res.error, 'error');
-          showEmpty('Failed to load orders.');
+          _ord_showToast('Failed to load: ' + res.error, 'error');
+          _ord_showEmpty('Failed to load orders.');
         }
       })
       .withFailureHandler(function(err) {
-        showLoading(false);
-        showEmpty('Error loading orders.');
-        showToast(err.message, 'error');
+        _ord_showLoading(false);
+        _ord_showEmpty('Error loading orders.');
+        _ord_showToast(err.message, 'error');
       })
       .handleOrderRequest('GET_ORDERS', {}, _ord_getToken());
   }
 
-  function updateStats(data) {
+  function _ord_updateStats(data) {
     document.getElementById('ord-s-total').textContent      = data.length;
     document.getElementById('ord-s-draft').textContent      = data.filter(function(o){return o.status==='DRAFT';}).length;
     document.getElementById('ord-s-open').textContent       = data.filter(function(o){return o.status==='OPEN';}).length;
@@ -796,21 +710,22 @@
     document.getElementById('ord-s-released').textContent   = data.filter(function(o){return o.status==='RELEASED';}).length;
   }
 
+  // Public — called from oninput/onchange in HTML
   function filterTable() {
     var q  = document.getElementById('ord-search-input').value.toLowerCase();
     var st = document.getElementById('ord-status-filter').value;
-    var f  = allOrders.filter(function(o) {
+    var f  = _ord_allOrders.filter(function(o) {
       var mq = !q || o.order_number.toLowerCase().includes(q) ||
                o.patient_snapshot.toLowerCase().includes(q) ||
                (o.doctor_snapshot||'').toLowerCase().includes(q) ||
                (o.created_by||'').toLowerCase().includes(q);
       return mq && (!st || o.status === st);
     });
-    renderTable(f);
-    updateStats(f);
+    _ord_renderTable(f);
+    _ord_updateStats(f);
   }
 
-  function renderTable(data) {
+  function _ord_renderTable(data) {
     var tbody = document.getElementById('ord-order-tbody');
     var wrap  = document.getElementById('ord-table-wrap');
     var empty = document.getElementById('ord-empty-state');
@@ -818,8 +733,8 @@
       wrap.classList.add('hidden');
       empty.classList.remove('hidden'); empty.classList.add('flex');
       document.getElementById('ord-empty-sub').textContent =
-        allOrders.length ? 'No orders match your filters.' :
-        isTech ? 'Create the first order to get started.' : 'No orders yet.';
+        _ord_allOrders.length ? 'No orders match your filters.' :
+        _ord_isTech ? 'Create the first order to get started.' : 'No orders yet.';
       return;
     }
     empty.classList.add('hidden'); empty.classList.remove('flex');
@@ -827,16 +742,16 @@
     tbody.innerHTML = data.map(function(o) {
       var total = o.payment_amount - o.payment_discount;
       var doctorCell = o.doctor_snapshot
-        ? escHtml(o.doctor_snapshot)
+        ? _ord_escHtml(o.doctor_snapshot)
         : '<span class="text-slate-300 text-xs italic">Walk-in</span>';
       return '<tr class="data-row">' +
-        '<td class="px-4 py-3.5"><p class="font-semibold text-slate-800 text-xs" style="font-family:\'DM Mono\',monospace">' + escHtml(o.order_number) + '</p></td>' +
-        '<td class="px-3 py-3.5 text-sm font-medium text-slate-700">' + escHtml(o.patient_snapshot||'—') + '</td>' +
+        '<td class="px-4 py-3.5"><p class="font-semibold text-slate-800 text-xs" style="font-family:\'DM Mono\',monospace">' + _ord_escHtml(o.order_number) + '</p></td>' +
+        '<td class="px-3 py-3.5 text-sm font-medium text-slate-700">' + _ord_escHtml(o.patient_snapshot||'—') + '</td>' +
         '<td class="px-3 py-3.5 text-sm text-slate-500 hidden md:table-cell">' + doctorCell + '</td>' +
-        '<td class="px-3 py-3.5 text-sm font-semibold text-slate-800" style="font-family:\'DM Mono\',monospace">₱' + fmt(total) + '</td>' +
-        '<td class="px-3 py-3.5"><span class="badge badge-' + o.status + '">' + statusLabel(o.status) + '</span></td>' +
-        '<td class="px-3 py-3.5 text-xs text-slate-400 hidden lg:table-cell">' + escHtml(o.created_by||'—') + '</td>' +
-        '<td class="px-3 py-3.5 text-xs text-slate-400 hidden md:table-cell">' + fmtDate(o.order_date) + '</td>' +
+        '<td class="px-3 py-3.5 text-sm font-semibold text-slate-800" style="font-family:\'DM Mono\',monospace">₱' + _ord_fmt(total) + '</td>' +
+        '<td class="px-3 py-3.5"><span class="badge badge-' + o.status + '">' + _ord_statusLabel(o.status) + '</span></td>' +
+        '<td class="px-3 py-3.5 text-xs text-slate-400 hidden lg:table-cell">' + _ord_escHtml(o.created_by||'—') + '</td>' +
+        '<td class="px-3 py-3.5 text-xs text-slate-400 hidden md:table-cell">' + _ord_fmtDate(o.order_date) + '</td>' +
         '<td class="px-4 py-3.5 text-right">' +
           '<button onclick="openViewModal(\'' + o.order_id + '\',\'' + o.branch_id + '\')" ' +
             'class="text-xs font-semibold text-blue-500 hover:text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-50">View</button>' +
@@ -849,14 +764,12 @@
   // ══════════════════════════════════════════════════════════════
 
   function openWizard() {
-    // Reset state
-    wCurrentStep     = 1;
-    wSelectedPatient = null;
-    wSelectedItems   = {};
-    wEnrollOpen      = false;
+    _ord_wCurrentStep     = 1;
+    _ord_wSelectedPatient = null;
+    _ord_wSelectedItems   = {};
+    _ord_wEnrollOpen      = false;
 
-    // Reset UI
-    wSetStep(1);
+    _ord_wSetStep(1);
     document.getElementById('w-patient-search').value = '';
     document.getElementById('w-item-search').value    = '';
     document.getElementById('w-discount').value       = '';
@@ -864,22 +777,20 @@
     document.getElementById('wstep1-next').disabled   = true;
     document.getElementById('w-patient-chip').classList.add('hidden');
     document.getElementById('w-patient-chip').classList.remove('flex');
-    wCollapseEnroll();
+    _ord_wCollapseEnroll();
 
-    // Open overlay
     document.getElementById('wizard-overlay').classList.add('open');
     document.body.style.overflow = 'hidden';
 
-    // Load data only once
-    if (!wDataLoaded) {
-      wLoadPatients();
-      wLoadServices();
-      wLoadDoctors();
-      wLoadDiscounts();
-      wDataLoaded = true;
+    if (!_ord_wDataLoaded) {
+      _ord_wLoadPatients();
+      _ord_wLoadServices();
+      _ord_wLoadDoctors();
+      _ord_wLoadDiscounts();
+      _ord_wDataLoaded = true;
     } else {
-      wRenderPatientResults('');
-      wRenderItemList('');
+      _ord_wRenderPatientResults('');
+      _ord_wRenderItemList('');
     }
   }
 
@@ -888,43 +799,43 @@
     document.body.style.overflow = '';
   }
 
-  // ── Wizard data loading ───────────────────────────────────────
-  function wLoadPatients() {
+  // ── Wizard data loading ──────────────────────────────────────
+  function _ord_wLoadPatients() {
     google.script.run
       .withSuccessHandler(function(res) {
-        if (_checkExpired(res)) return;
-        if (res.success) { wAllPatients = res.data || []; wRenderPatientResults(''); }
+        if (_ord_checkExpired(res)) return;
+        if (res.success) { _ord_wAllPatients = res.data || []; _ord_wRenderPatientResults(''); }
         else {
           document.getElementById('w-patient-results').innerHTML =
             '<p class="text-xs text-red-400 text-center py-4">Failed to load patients.</p>';
         }
       })
-      .withFailureHandler(function(err) { showToast(err.message, 'error'); })
+      .withFailureHandler(function(err) { _ord_showToast(err.message, 'error'); })
       .handlePatientRequest('GET_PATIENTS', {}, _ord_getToken());
   }
 
-  function wLoadServices() {
+  function _ord_wLoadServices() {
     google.script.run
       .withSuccessHandler(function(svcRes) {
-        if (_checkExpired(svcRes)) return;
-        wAllServices = (svcRes.success ? svcRes.data||[] : []).filter(function(s){ return s.is_active; });
+        if (_ord_checkExpired(svcRes)) return;
+        _ord_wAllServices = (svcRes.success ? svcRes.data||[] : []).filter(function(s){ return s.is_active; });
         google.script.run
           .withSuccessHandler(function(pkgRes) {
-            if (_checkExpired(pkgRes)) return;
-            wAllPackages = (pkgRes.success ? pkgRes.data||[] : []).filter(function(p){ return p.is_active; });
-            wRenderItemList('');
+            if (_ord_checkExpired(pkgRes)) return;
+            _ord_wAllPackages = (pkgRes.success ? pkgRes.data||[] : []).filter(function(p){ return p.is_active; });
+            _ord_wRenderItemList('');
           })
-          .withFailureHandler(function(){ wRenderItemList(''); })
+          .withFailureHandler(function(){ _ord_wRenderItemList(''); })
           .handlePackageRequest('GET_PACKAGES', {}, _ord_getToken());
       })
-      .withFailureHandler(function(){ wRenderItemList(''); })
+      .withFailureHandler(function(){ _ord_wRenderItemList(''); })
       .handleLabServiceRequest('GET_LAB_SERVICES', {}, _ord_getToken());
   }
 
-  function wLoadDoctors() {
+  function _ord_wLoadDoctors() {
     google.script.run
       .withSuccessHandler(function(res) {
-        if (_checkExpired(res)) return;
+        if (_ord_checkExpired(res)) return;
         var sel = document.getElementById('w-doctor');
         sel.innerHTML = '<option value="">None / Walk-in</option>';
         if (res.success && res.data) {
@@ -941,86 +852,87 @@
       .handleDoctorRequest('GET_DOCTORS', {}, _ord_getToken());
   }
 
-  function wLoadDiscounts() {
+  function _ord_wLoadDiscounts() {
     google.script.run
-      .withSuccessHandler(function(res) { if (res && res.success) wAllDiscounts = res.data || []; })
+      .withSuccessHandler(function(res) { if (res && res.success) _ord_wAllDiscounts = res.data || []; })
       .withFailureHandler(function(){})
       .handleDiscountRequest('GET_DISCOUNTS_ALL', {}, _ord_getToken());
   }
 
-  // ── Step 1 — Patient ──────────────────────────────────────────
-  function wFilterPatients() { wRenderPatientResults(document.getElementById('w-patient-search').value); }
+  // ── Step 1 — Patient ─────────────────────────────────────────
+  function wFilterPatients() { _ord_wRenderPatientResults(document.getElementById('w-patient-search').value); }
 
-  function wRenderPatientResults(q) {
+  function _ord_wRenderPatientResults(q) {
     q = (q||'').toLowerCase().trim();
     var list = document.getElementById('w-patient-results');
-    if (!wAllPatients.length) {
+    if (!_ord_wAllPatients.length) {
       list.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">No patients enrolled yet.</p>';
       return;
     }
     var filtered = q
-      ? wAllPatients.filter(function(p) {
+      ? _ord_wAllPatients.filter(function(p) {
           var name = (p.last_name+' '+p.first_name+' '+(p.middle_name||'')).toLowerCase();
           return name.includes(q) || (p.contact_number||'').includes(q);
         })
-      : wAllPatients;
+      : _ord_wAllPatients;
     if (!filtered.length) {
       list.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">No match found. Enroll a new patient below.</p>';
       return;
     }
     list.innerHTML = filtered.slice(0,30).map(function(p) {
       var name     = p.last_name + ', ' + p.first_name + (p.middle_name ? ' ' + p.middle_name.charAt(0) + '.' : '');
-      var meta     = [p.sex, p.birth_date ? fmtDate(p.birth_date) : '', p.contact_number].filter(Boolean).join(' · ');
+      var meta     = [p.sex, p.birth_date ? _ord_fmtDate(p.birth_date) : '', p.contact_number].filter(Boolean).join(' · ');
       var initials = (p.first_name.charAt(0) + p.last_name.charAt(0)).toUpperCase();
-      var sel      = (wSelectedPatient && wSelectedPatient.patient_id === p.patient_id) ? ' selected-patient' : '';
+      var sel      = (_ord_wSelectedPatient && _ord_wSelectedPatient.patient_id === p.patient_id) ? ' selected-patient' : '';
       return '<div class="patient-result' + sel + '" onclick="wSelectPatient(\'' + p.patient_id + '\')">' +
-        '<div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold shrink-0">' + escHtml(initials) + '</div>' +
-        '<div class="flex-1 min-w-0"><p class="text-sm font-semibold text-slate-800 truncate">' + escHtml(name) + '</p>' +
-          '<p class="text-xs text-slate-400 truncate">' + escHtml(meta) + '</p></div>' +
+        '<div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold shrink-0">' + _ord_escHtml(initials) + '</div>' +
+        '<div class="flex-1 min-w-0"><p class="text-sm font-semibold text-slate-800 truncate">' + _ord_escHtml(name) + '</p>' +
+          '<p class="text-xs text-slate-400 truncate">' + _ord_escHtml(meta) + '</p></div>' +
         '<svg class="w-4 h-4 text-slate-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>' +
       '</div>';
     }).join('');
   }
 
   function wSelectPatient(patientId) {
-    wSelectedPatient = wAllPatients.find(function(p){ return p.patient_id === patientId; });
-    if (!wSelectedPatient) return;
-    var name     = wSelectedPatient.last_name + ', ' + wSelectedPatient.first_name +
-                   (wSelectedPatient.middle_name ? ' ' + wSelectedPatient.middle_name.charAt(0) + '.' : '');
-    var meta     = [wSelectedPatient.sex, wSelectedPatient.birth_date ? fmtDate(wSelectedPatient.birth_date) : '',
-                    wSelectedPatient.contact_number].filter(Boolean).join(' · ');
-    var initials = (wSelectedPatient.first_name.charAt(0) + wSelectedPatient.last_name.charAt(0)).toUpperCase();
+    _ord_wSelectedPatient = _ord_wAllPatients.find(function(p){ return p.patient_id === patientId; });
+    if (!_ord_wSelectedPatient) return;
+    var name     = _ord_wSelectedPatient.last_name + ', ' + _ord_wSelectedPatient.first_name +
+                   (_ord_wSelectedPatient.middle_name ? ' ' + _ord_wSelectedPatient.middle_name.charAt(0) + '.' : '');
+    var meta     = [_ord_wSelectedPatient.sex,
+                    _ord_wSelectedPatient.birth_date ? _ord_fmtDate(_ord_wSelectedPatient.birth_date) : '',
+                    _ord_wSelectedPatient.contact_number].filter(Boolean).join(' · ');
+    var initials = (_ord_wSelectedPatient.first_name.charAt(0) + _ord_wSelectedPatient.last_name.charAt(0)).toUpperCase();
     document.getElementById('w-chip-avatar').textContent = initials;
     document.getElementById('w-chip-name').textContent   = name;
     document.getElementById('w-chip-meta').textContent   = meta;
     document.getElementById('w-patient-chip').classList.remove('hidden');
     document.getElementById('w-patient-chip').classList.add('flex');
-    wRenderPatientResults(document.getElementById('w-patient-search').value);
+    _ord_wRenderPatientResults(document.getElementById('w-patient-search').value);
     document.getElementById('wstep1-next').disabled = false;
-    wCollapseEnroll();
+    _ord_wCollapseEnroll();
   }
 
   function wClearPatient() {
-    wSelectedPatient = null;
+    _ord_wSelectedPatient = null;
     document.getElementById('w-patient-chip').classList.add('hidden');
     document.getElementById('w-patient-chip').classList.remove('flex');
     document.getElementById('wstep1-next').disabled = true;
-    wRenderPatientResults(document.getElementById('w-patient-search').value);
+    _ord_wRenderPatientResults(document.getElementById('w-patient-search').value);
   }
 
-  // ── Enroll form ───────────────────────────────────────────────
+  // ── Enroll form ──────────────────────────────────────────────
   function wToggleEnroll() {
-    wEnrollOpen = !wEnrollOpen;
+    _ord_wEnrollOpen = !_ord_wEnrollOpen;
     var form = document.getElementById('w-enroll-form');
     var btn  = document.getElementById('w-enroll-toggle-btn');
-    if (wEnrollOpen) {
+    if (_ord_wEnrollOpen) {
       form.classList.remove('hidden');
       btn.innerHTML = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg> Cancel';
-    } else { wCollapseEnroll(); }
+    } else { _ord_wCollapseEnroll(); }
   }
 
-  function wCollapseEnroll() {
-    wEnrollOpen = false;
+  function _ord_wCollapseEnroll() {
+    _ord_wEnrollOpen = false;
     document.getElementById('w-enroll-form').classList.add('hidden');
     document.getElementById('w-enroll-toggle-btn').innerHTML =
       '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Enroll New Patient';
@@ -1033,12 +945,12 @@
     var bdate   = document.getElementById('we-bdate').value;
     var contact = document.getElementById('we-contact').value.trim();
     var address = document.getElementById('we-address').value.trim();
-    if (!last)    { showToast('Last name is required.', 'error'); return; }
-    if (!first)   { showToast('First name is required.', 'error'); return; }
-    if (!sex)     { showToast('Sex is required.', 'error'); return; }
-    if (!bdate)   { showToast('Birth date is required.', 'error'); return; }
-    if (!contact) { showToast('Contact number is required.', 'error'); return; }
-    if (!address) { showToast('Address is required.', 'error'); return; }
+    if (!last)    { _ord_showToast('Last name is required.', 'error'); return; }
+    if (!first)   { _ord_showToast('First name is required.', 'error'); return; }
+    if (!sex)     { _ord_showToast('Sex is required.', 'error'); return; }
+    if (!bdate)   { _ord_showToast('Birth date is required.', 'error'); return; }
+    if (!contact) { _ord_showToast('Contact number is required.', 'error'); return; }
+    if (!address) { _ord_showToast('Address is required.', 'error'); return; }
 
     var btn = document.getElementById('w-enroll-btn');
     btn.disabled = true;
@@ -1048,21 +960,21 @@
       .withSuccessHandler(function(res) {
         btn.disabled = false;
         btn.innerHTML = '<span id="w-enroll-label">Enroll &amp; Select Patient</span>';
-        if (_checkExpired(res)) return;
+        if (_ord_checkExpired(res)) return;
         if (res.success) {
-          showToast('Patient enrolled!', 'success');
-          wAllPatients.unshift(res.data);
+          _ord_showToast('Patient enrolled!', 'success');
+          _ord_wAllPatients.unshift(res.data);
           wSelectPatient(res.data.patient_id);
-          wCollapseEnroll();
+          _ord_wCollapseEnroll();
           ['we-last','we-first','we-middle','we-contact','we-address'].forEach(function(id){ document.getElementById(id).value=''; });
           document.getElementById('we-sex').value = '';
           document.getElementById('we-bdate').value = '';
-        } else { showToast(res.error || 'Enrollment failed.', 'error'); }
+        } else { _ord_showToast(res.error || 'Enrollment failed.', 'error'); }
       })
       .withFailureHandler(function(err) {
         btn.disabled = false;
         btn.innerHTML = '<span id="w-enroll-label">Enroll &amp; Select Patient</span>';
-        showToast(err.message, 'error');
+        _ord_showToast(err.message, 'error');
       })
       .handlePatientRequest('CREATE_PATIENT', {
         last_name: last, first_name: first,
@@ -1071,55 +983,54 @@
       }, _ord_getToken());
   }
 
-  // ── Step navigation ───────────────────────────────────────────
+  // ── Step navigation ──────────────────────────────────────────
   function wGoToStep2() {
-    if (!wSelectedPatient) { showToast('Please select a patient.', 'error'); return; }
-    wSetStep(2);
-    var name     = wSelectedPatient.last_name + ', ' + wSelectedPatient.first_name;
-    var meta     = [wSelectedPatient.sex, wSelectedPatient.contact_number].filter(Boolean).join(' · ');
-    var initials = (wSelectedPatient.first_name.charAt(0) + wSelectedPatient.last_name.charAt(0)).toUpperCase();
+    if (!_ord_wSelectedPatient) { _ord_showToast('Please select a patient.', 'error'); return; }
+    _ord_wSetStep(2);
+    var name     = _ord_wSelectedPatient.last_name + ', ' + _ord_wSelectedPatient.first_name;
+    var meta     = [_ord_wSelectedPatient.sex, _ord_wSelectedPatient.contact_number].filter(Boolean).join(' · ');
+    var initials = (_ord_wSelectedPatient.first_name.charAt(0) + _ord_wSelectedPatient.last_name.charAt(0)).toUpperCase();
     document.getElementById('ws2-avatar').textContent       = initials;
     document.getElementById('ws2-patient-name').textContent = name;
     document.getElementById('ws2-patient-meta').textContent = meta;
-    wUpdateStep2Counter();
+    _ord_wUpdateStep2Counter();
   }
 
   function wGoToStep3() {
-    if (!Object.keys(wSelectedItems).length) { showToast('Please select at least one service or package.', 'error'); return; }
-    wSetStep(3);
-    wBuildStep3();
+    if (!Object.keys(_ord_wSelectedItems).length) { _ord_showToast('Please select at least one service or package.', 'error'); return; }
+    _ord_wSetStep(3);
+    _ord_wBuildStep3();
   }
 
-  function wBackToStep1() { wSetStep(1); }
-  function wBackToStep2() { wSetStep(2); }
+  function wBackToStep1() { _ord_wSetStep(1); }
+  function wBackToStep2() { _ord_wSetStep(2); }
 
-  function wSetStep(n) {
-    wCurrentStep = n;
+  function _ord_wSetStep(n) {
+    _ord_wCurrentStep = n;
     [1,2,3].forEach(function(i) {
       document.getElementById('wstep-' + i).classList.toggle('hidden', i !== n);
     });
-    wUpdateStepIndicator();
-    // Scroll wizard to top
+    _ord_wUpdateStepIndicator();
     document.getElementById('wizard-overlay').scrollTop = 0;
   }
 
-  function wUpdateStepIndicator() {
+  function _ord_wUpdateStepIndicator() {
     [1,2,3].forEach(function(i) {
       var circle = document.getElementById('wsc-' + i);
       var label  = document.getElementById('wsl-' + i);
-      circle.className = 'wstep-circle' + (i < wCurrentStep ? ' done' : i === wCurrentStep ? ' active' : '');
-      label.className  = 'wstep-label'  + (i < wCurrentStep ? ' done' : i === wCurrentStep ? ' active' : '');
-      circle.innerHTML = i < wCurrentStep ? '✓' : String(i);
+      circle.className = 'wstep-circle' + (i < _ord_wCurrentStep ? ' done' : i === _ord_wCurrentStep ? ' active' : '');
+      label.className  = 'wstep-label'  + (i < _ord_wCurrentStep ? ' done' : i === _ord_wCurrentStep ? ' active' : '');
+      circle.innerHTML = i < _ord_wCurrentStep ? '✓' : String(i);
     });
-    document.getElementById('wline-1').className = 'wstep-line' + (wCurrentStep > 1 ? ' done' : '');
-    document.getElementById('wline-2').className = 'wstep-line' + (wCurrentStep > 2 ? ' done' : '');
+    document.getElementById('wline-1').className = 'wstep-line' + (_ord_wCurrentStep > 1 ? ' done' : '');
+    document.getElementById('wline-2').className = 'wstep-line' + (_ord_wCurrentStep > 2 ? ' done' : '');
   }
 
-  // ── Step 2 — Item picker ──────────────────────────────────────
-  function wRenderItemList(q) {
+  // ── Step 2 — Item picker ─────────────────────────────────────
+  function _ord_wRenderItemList(q) {
     q = (q||'').toLowerCase();
-    var svcs = wAllServices.filter(function(s){ return !q || s.lab_name.toLowerCase().includes(q) || s.lab_code.toLowerCase().includes(q); });
-    var pkgs = wAllPackages.filter(function(p){ return !q || p.package_name.toLowerCase().includes(q); });
+    var svcs = _ord_wAllServices.filter(function(s){ return !q || s.lab_name.toLowerCase().includes(q) || (s.lab_code||'').toLowerCase().includes(q); });
+    var pkgs = _ord_wAllPackages.filter(function(p){ return !q || p.package_name.toLowerCase().includes(q); });
     var list = document.getElementById('w-item-list');
     if (!svcs.length && !pkgs.length) {
       list.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">No services found.</p>'; return;
@@ -1129,24 +1040,24 @@
       html += '<p class="section-divider">Lab Services</p>';
       html += svcs.map(function(s) {
         var key = 'svc_' + s.lab_id;
-        var chk = wSelectedItems[key] ? 'checked' : '';
-        return '<div class="item-row" data-key="' + escHtml(key) + '" data-type="service" data-ref="' + escHtml(s.lab_id) + '" data-name="' + escHtml(s.lab_name) + '" data-fee="' + (Number(s.default_fee)||0) + '" onclick="wToggleItem(this)">' +
-          '<input type="checkbox" class="item-check" id="wchk-' + escHtml(key) + '" ' + chk + ' onclick="event.stopPropagation()"/>' +
+        var chk = _ord_wSelectedItems[key] ? 'checked' : '';
+        return '<div class="item-row" data-key="' + _ord_escHtml(key) + '" data-type="service" data-ref="' + _ord_escHtml(s.lab_id) + '" data-name="' + _ord_escHtml(s.lab_name) + '" data-fee="' + (Number(s.default_fee)||0) + '" onclick="wToggleItem(this)">' +
+          '<input type="checkbox" class="item-check" id="wchk-' + _ord_escHtml(key) + '" ' + chk + ' onclick="event.stopPropagation()"/>' +
           '<span class="type-svc">Svc</span>' +
-          '<label for="wchk-' + escHtml(key) + '" class="item-name" onclick="event.stopPropagation()">' + escHtml(s.lab_name) + ' <span class="text-[11px] text-slate-400">' + escHtml(s.lab_code) + '</span></label>' +
-          '<span class="item-fee">₱' + fmt(s.default_fee) + '</span></div>';
+          '<label for="wchk-' + _ord_escHtml(key) + '" class="item-name" onclick="event.stopPropagation()">' + _ord_escHtml(s.lab_name) + ' <span class="text-[11px] text-slate-400">' + _ord_escHtml(s.lab_code||'') + '</span></label>' +
+          '<span class="item-fee">₱' + _ord_fmt(s.default_fee) + '</span></div>';
       }).join('');
     }
     if (pkgs.length) {
       html += '<p class="section-divider mt-3">Packages</p>';
       html += pkgs.map(function(p) {
         var key = 'pkg_' + p.package_id;
-        var chk = wSelectedItems[key] ? 'checked' : '';
-        return '<div class="item-row" data-key="' + escHtml(key) + '" data-type="package" data-ref="' + escHtml(p.package_id) + '" data-name="' + escHtml(p.package_name) + '" data-fee="' + (Number(p.default_fee)||0) + '" onclick="wToggleItem(this)">' +
-          '<input type="checkbox" class="item-check" id="wchk-' + escHtml(key) + '" ' + chk + ' onclick="event.stopPropagation()"/>' +
+        var chk = _ord_wSelectedItems[key] ? 'checked' : '';
+        return '<div class="item-row" data-key="' + _ord_escHtml(key) + '" data-type="package" data-ref="' + _ord_escHtml(p.package_id) + '" data-name="' + _ord_escHtml(p.package_name) + '" data-fee="' + (Number(p.default_fee)||0) + '" onclick="wToggleItem(this)">' +
+          '<input type="checkbox" class="item-check" id="wchk-' + _ord_escHtml(key) + '" ' + chk + ' onclick="event.stopPropagation()"/>' +
           '<span class="type-pkg">Pkg</span>' +
-          '<label for="wchk-' + escHtml(key) + '" class="item-name" onclick="event.stopPropagation()">' + escHtml(p.package_name) + '</label>' +
-          '<span class="item-fee">₱' + fmt(p.default_fee) + '</span></div>';
+          '<label for="wchk-' + _ord_escHtml(key) + '" class="item-name" onclick="event.stopPropagation()">' + _ord_escHtml(p.package_name) + '</label>' +
+          '<span class="item-fee">₱' + _ord_fmt(p.default_fee) + '</span></div>';
       }).join('');
     }
     list.innerHTML = html;
@@ -1154,52 +1065,51 @@
 
   function wToggleItem(rowEl) {
     var key = rowEl.dataset.key;
-    if (wSelectedItems[key]) { delete wSelectedItems[key]; }
-    else { wSelectedItems[key] = { item_type: rowEl.dataset.type, item_ref_id: rowEl.dataset.ref, item_name_snapshot: rowEl.dataset.name, fee: Number(rowEl.dataset.fee)||0 }; }
+    if (_ord_wSelectedItems[key]) { delete _ord_wSelectedItems[key]; }
+    else { _ord_wSelectedItems[key] = { item_type: rowEl.dataset.type, item_ref_id: rowEl.dataset.ref, item_name_snapshot: rowEl.dataset.name, fee: Number(rowEl.dataset.fee)||0 }; }
     var cb = document.getElementById('wchk-' + key);
-    if (cb) cb.checked = !!wSelectedItems[key];
-    wUpdateStep2Counter();
+    if (cb) cb.checked = !!_ord_wSelectedItems[key];
+    _ord_wUpdateStep2Counter();
   }
 
-  function wFilterItems() { wRenderItemList(document.getElementById('w-item-search').value); }
+  function wFilterItems() { _ord_wRenderItemList(document.getElementById('w-item-search').value); }
 
-  function wUpdateStep2Counter() {
-    var count = Object.keys(wSelectedItems).length;
-    var sub   = Object.values(wSelectedItems).reduce(function(s,i){ return s+(Number(i.fee)||0); }, 0);
+  function _ord_wUpdateStep2Counter() {
+    var count = Object.keys(_ord_wSelectedItems).length;
+    var sub   = Object.values(_ord_wSelectedItems).reduce(function(s,i){ return s+(Number(i.fee)||0); }, 0);
     document.getElementById('ws2-count').textContent    = count + (count===1 ? ' item' : ' items');
-    document.getElementById('ws2-subtotal').textContent = '₱' + fmt(sub);
+    document.getElementById('ws2-subtotal').textContent = '₱' + _ord_fmt(sub);
     document.getElementById('wstep2-next').disabled     = count === 0;
   }
 
-  // ── Step 3 — Billing ──────────────────────────────────────────
-  function wBuildStep3() {
-    var name     = wSelectedPatient.last_name + ', ' + wSelectedPatient.first_name;
-    var items    = Object.values(wSelectedItems);
-    var initials = (wSelectedPatient.first_name.charAt(0) + wSelectedPatient.last_name.charAt(0)).toUpperCase();
+  // ── Step 3 — Billing ─────────────────────────────────────────
+  function _ord_wBuildStep3() {
+    var name     = _ord_wSelectedPatient.last_name + ', ' + _ord_wSelectedPatient.first_name;
+    var items    = Object.values(_ord_wSelectedItems);
+    var initials = (_ord_wSelectedPatient.first_name.charAt(0) + _ord_wSelectedPatient.last_name.charAt(0)).toUpperCase();
     var subtotal = items.reduce(function(s,i){ return s+(Number(i.fee)||0); }, 0);
 
-    document.getElementById('ws3-avatar').textContent       = initials;
-    document.getElementById('ws3-patient-name').textContent = name;
-    document.getElementById('ws3-items-summary').textContent = items.length + ' item(s) · ₱' + fmt(subtotal);
+    document.getElementById('ws3-avatar').textContent        = initials;
+    document.getElementById('ws3-patient-name').textContent  = name;
+    document.getElementById('ws3-items-summary').textContent = items.length + ' item(s) · ₱' + _ord_fmt(subtotal);
 
     document.getElementById('ws3-items-list').innerHTML = items.map(function(i) {
       var badge = i.item_type==='package' ? '<span class="type-pkg">Pkg</span>' : '<span class="type-svc">Svc</span>';
       return '<div class="flex items-center justify-between gap-2 py-1.5 border-b border-slate-50 last:border-0">' +
-        '<div class="flex items-center gap-2">' + badge + '<span class="text-xs text-slate-700 font-medium">' + escHtml(i.item_name_snapshot) + '</span></div>' +
-        '<span class="text-xs font-semibold text-blue-600" style="font-family:\'DM Mono\',monospace">₱' + fmt(i.fee) + '</span></div>';
+        '<div class="flex items-center gap-2">' + badge + '<span class="text-xs text-slate-700 font-medium">' + _ord_escHtml(i.item_name_snapshot) + '</span></div>' +
+        '<span class="text-xs font-semibold text-blue-600" style="font-family:\'DM Mono\',monospace">₱' + _ord_fmt(i.fee) + '</span></div>';
     }).join('');
 
-    // Auto-apply discounts
-    var discIds  = wSelectedPatient.discount_ids || [];
+    var discIds   = _ord_wSelectedPatient.discount_ids || [];
     var totalDisc = 0, discHtml = '';
-    if (discIds.length && wAllDiscounts.length) {
+    if (discIds.length && _ord_wAllDiscounts.length) {
       discIds.forEach(function(did) {
-        var d = wAllDiscounts.find(function(x){ return x.discount_id === did; });
+        var d = _ord_wAllDiscounts.find(function(x){ return x.discount_id === did; });
         if (!d || !d.is_active) return;
         var amt = d.discount_type==='percentage' ? subtotal*(Number(d.value)/100) : Number(d.value);
         totalDisc += amt;
-        discHtml += '<span class="disc-badge">' + escHtml(d.discount_name) + ' · ' +
-          (d.discount_type==='percentage' ? d.value+'%' : '₱'+fmt(d.value)) + '</span>';
+        discHtml += '<span class="disc-badge">' + _ord_escHtml(d.discount_name) + ' · ' +
+          (d.discount_type==='percentage' ? d.value+'%' : '₱'+_ord_fmt(d.value)) + '</span>';
       });
     }
     if (discHtml) {
@@ -1213,26 +1123,26 @@
   }
 
   function wRecalc() {
-    var sub   = Object.values(wSelectedItems).reduce(function(s,i){ return s+(Number(i.fee)||0); }, 0);
+    var sub   = Object.values(_ord_wSelectedItems).reduce(function(s,i){ return s+(Number(i.fee)||0); }, 0);
     var disc  = Number(document.getElementById('w-discount').value) || 0;
     var total = Math.max(sub - disc, 0);
-    document.getElementById('wb-subtotal').textContent = '₱' + fmt(sub);
-    document.getElementById('wb-discount').textContent = disc > 0 ? '-₱' + fmt(disc) : '-₱0.00';
-    document.getElementById('wb-total').textContent    = '₱' + fmt(total);
+    document.getElementById('wb-subtotal').textContent = '₱' + _ord_fmt(sub);
+    document.getElementById('wb-discount').textContent = disc > 0 ? '-₱' + _ord_fmt(disc) : '-₱0.00';
+    document.getElementById('wb-total').textContent    = '₱' + _ord_fmt(total);
   }
 
-  // ── Save order ────────────────────────────────────────────────
+  // ── Save order ───────────────────────────────────────────────
   function wSaveOrder() {
-    var items = Object.values(wSelectedItems);
-    if (!wSelectedPatient) { showToast('No patient selected.', 'error'); return; }
-    if (!items.length)     { showToast('No items selected.', 'error'); return; }
+    var items = Object.values(_ord_wSelectedItems);
+    if (!_ord_wSelectedPatient) { _ord_showToast('No patient selected.', 'error'); return; }
+    if (!items.length)          { _ord_showToast('No items selected.', 'error'); return; }
 
     var drSel   = document.getElementById('w-doctor');
     var drOpt   = drSel.options[drSel.selectedIndex];
     var sub     = items.reduce(function(s,i){ return s+(Number(i.fee)||0); }, 0);
     var disc    = Number(document.getElementById('w-discount').value) || 0;
-    var patName = wSelectedPatient.last_name + ', ' + wSelectedPatient.first_name +
-                  (wSelectedPatient.middle_name ? ' ' + wSelectedPatient.middle_name.charAt(0) + '.' : '');
+    var patName = _ord_wSelectedPatient.last_name + ', ' + _ord_wSelectedPatient.first_name +
+                  (_ord_wSelectedPatient.middle_name ? ' ' + _ord_wSelectedPatient.middle_name.charAt(0) + '.' : '');
 
     var btn = document.getElementById('w-save-btn');
     btn.disabled = true;
@@ -1242,20 +1152,20 @@
       .withSuccessHandler(function(res) {
         btn.disabled = false;
         btn.innerHTML = '<span id="w-save-label">Save as Draft</span>';
-        if (_checkExpired(res)) return;
+        if (_ord_checkExpired(res)) return;
         if (res.success) {
-          showToast('Order ' + res.data.order_number + ' saved as DRAFT!', 'success');
+          _ord_showToast('Order ' + res.data.order_number + ' saved as DRAFT!', 'success');
           closeWizard();
-          loadOrders();
-        } else { showToast(res.error || 'Failed to create order.', 'error'); }
+          _ord_loadOrders();
+        } else { _ord_showToast(res.error || 'Failed to create order.', 'error'); }
       })
       .withFailureHandler(function(err) {
         btn.disabled = false;
         btn.innerHTML = '<span id="w-save-label">Save as Draft</span>';
-        showToast(err.message, 'error');
+        _ord_showToast(err.message, 'error');
       })
       .handleOrderRequest('CREATE_ORDER', {
-        patient_id:          wSelectedPatient.patient_id,
+        patient_id:          _ord_wSelectedPatient.patient_id,
         patient_snapshot:    patName,
         referring_doctor_id: drSel.value || '',
         doctor_snapshot:     (drSel.value && drOpt) ? (drOpt.getAttribute('data-name') || drOpt.text) : '',
@@ -1271,50 +1181,49 @@
   // ══════════════════════════════════════════════════════════════
 
   function openViewModal(orderId, branchId) {
-    var o = allOrders.find(function(x){ return x.order_id === orderId; });
+    var o = _ord_allOrders.find(function(x){ return x.order_id === orderId; });
     if (!o) return;
-    viewingOrder = o; viewingItems = [];
+    _ord_viewingOrder = o; _ord_viewingItems = [];
 
     document.getElementById('v-order-num').textContent    = o.order_number;
     document.getElementById('v-patient-name').textContent = o.patient_snapshot || '—';
     var badge = document.getElementById('v-status-badge');
-    badge.className = 'badge badge-' + o.status;
-    badge.textContent = statusLabel(o.status);
+    badge.className  = 'badge badge-' + o.status;
+    badge.textContent = _ord_statusLabel(o.status);
 
     var STEPS = ['DRAFT','OPEN','PAID','IN_PROGRESS','FOR_RELEASE','RELEASED'];
     var cur = STEPS.indexOf(o.status);
     STEPS.forEach(function(s, i) {
-      var el = document.getElementById('step-' + s);
-      el.className = 'step' + (i < cur ? ' done' : i === cur ? ' active' : '');
+      document.getElementById('step-' + s).className = 'step' + (i < cur ? ' done' : i === cur ? ' active' : '');
     });
 
     document.getElementById('v-doctor').textContent     = o.doctor_snapshot || 'Walk-in';
     document.getElementById('v-created-by').textContent = o.created_by || '—';
-    document.getElementById('v-date').textContent       = fmtDate(o.order_date);
+    document.getElementById('v-date').textContent       = _ord_fmtDate(o.order_date);
 
     var payRow = document.getElementById('v-payment');
     if (['PAID','IN_PROGRESS','FOR_RELEASE','RELEASED'].includes(o.status)) {
-      payRow.textContent = (o.payment_method||'—') + ' — ₱' + fmt(o.amount_paid);
+      payRow.textContent = (o.payment_method||'—') + ' — ₱' + _ord_fmt(o.amount_paid);
       document.getElementById('v-paid-row').classList.remove('hidden');
-      document.getElementById('v-paid').textContent   = '₱' + fmt(o.amount_paid);
-      document.getElementById('v-change').textContent = '₱' + fmt(o.change);
+      document.getElementById('v-paid').textContent   = '₱' + _ord_fmt(o.amount_paid);
+      document.getElementById('v-change').textContent = '₱' + _ord_fmt(o.change);
     } else {
       payRow.textContent = 'Not yet paid';
       document.getElementById('v-paid-row').classList.add('hidden');
     }
 
-    document.getElementById('v-subtotal').textContent = '₱' + fmt(o.payment_amount);
-    document.getElementById('v-discount').textContent = '-₱' + fmt(o.payment_discount);
-    document.getElementById('v-total').textContent    = '₱' + fmt(o.payment_amount - o.payment_discount);
+    document.getElementById('v-subtotal').textContent = '₱' + _ord_fmt(o.payment_amount);
+    document.getElementById('v-discount').textContent = '-₱' + _ord_fmt(o.payment_discount);
+    document.getElementById('v-total').textContent    = '₱' + _ord_fmt(o.payment_amount - o.payment_discount);
     document.getElementById('v-notes').textContent    = o.notes || '—';
     document.getElementById('v-items').innerHTML      = '<p class="text-xs text-slate-400 italic py-2">Loading items…</p>';
 
     google.script.run
       .withSuccessHandler(function(res) {
         if (!res.success) { document.getElementById('v-items').innerHTML = '<p class="text-xs text-red-400">Failed to load items.</p>'; return; }
-        viewingItems = res.data || [];
-        renderViewItems();
-        renderFooterActions();
+        _ord_viewingItems = res.data || [];
+        _ord_renderViewItems();
+        _ord_renderFooterActions();
       })
       .withFailureHandler(function() { document.getElementById('v-items').innerHTML = '<p class="text-xs text-red-400">Error loading items.</p>'; })
       .handleOrderRequest('GET_ORDER_ITEMS', { order_id: orderId, branch_id: branchId || o.branch_id }, _ord_getToken());
@@ -1322,22 +1231,22 @@
     document.getElementById('view-modal').classList.remove('hidden');
   }
 
-  function renderViewItems() {
-    if (!viewingItems.length) { document.getElementById('v-items').innerHTML = '<p class="text-xs text-slate-400 italic">No items.</p>'; return; }
-    document.getElementById('v-items').innerHTML = viewingItems.map(function(item) {
+  function _ord_renderViewItems() {
+    if (!_ord_viewingItems.length) { document.getElementById('v-items').innerHTML = '<p class="text-xs text-slate-400 italic">No items.</p>'; return; }
+    document.getElementById('v-items').innerHTML = _ord_viewingItems.map(function(item) {
       var typeBadge       = item.item_type==='package' ? '<span class="type-pkg">Package</span>' : '<span class="type-svc">Service</span>';
       var itemStatusBadge = '<span class="item-badge item-' + item.item_status + '">' + item.item_status + '</span>';
       var resultBadge     = item.result_status
         ? '<span class="result-badge result-' + item.result_status + '">' + item.result_status.replace(/_/g,' ') + '</span>'
         : '<span class="result-badge result-empty">No Result</span>';
       var itemActions = '';
-      if (isTech) {
-        if (item.item_status==='PENDING' && ['PAID','IN_PROGRESS'].includes(viewingOrder.status))
+      if (_ord_isTech) {
+        if (item.item_status==='PENDING' && ['PAID','IN_PROGRESS'].includes(_ord_viewingOrder.status))
           itemActions += '<button onclick="doStartItem(\'' + item.item_id + '\')" class="act-btn act-amber">Start</button>';
         if (item.item_status==='RUNNING')
           itemActions += '<button onclick="doCompleteItem(\'' + item.item_id + '\')" class="act-btn act-green">Done</button>';
         if (item.item_status==='DONE' && !item.result_status)
-          itemActions += '<button onclick="openUploadModal(\'' + item.item_id + '\',\'' + escHtml(item.item_name_snapshot) + '\')" class="act-btn act-primary">Upload Result</button>';
+          itemActions += '<button onclick="openUploadModal(\'' + item.item_id + '\',\'' + _ord_escHtml(item.item_name_snapshot) + '\')" class="act-btn act-primary">Upload Result</button>';
         if (item.result_status==='FOR_VERIFICATION') {
           itemActions += '<button onclick="doVerify(\'' + item.item_id + '\')" class="act-btn act-green">Verify</button>';
           itemActions += '<button onclick="doReject(\'' + item.item_id + '\')" class="act-btn act-red">Reject</button>';
@@ -1349,8 +1258,8 @@
       }
       return '<div class="border border-slate-100 rounded-xl p-3 space-y-2">' +
         '<div class="flex items-start justify-between gap-2">' +
-          '<div class="flex items-center gap-2 flex-wrap">' + typeBadge + '<span class="text-sm font-semibold text-slate-800">' + escHtml(item.item_name_snapshot) + '</span></div>' +
-          '<span class="text-sm font-bold text-blue-600 flex-shrink-0" style="font-family:\'DM Mono\',monospace">₱' + fmt(item.fee) + '</span>' +
+          '<div class="flex items-center gap-2 flex-wrap">' + typeBadge + '<span class="text-sm font-semibold text-slate-800">' + _ord_escHtml(item.item_name_snapshot) + '</span></div>' +
+          '<span class="text-sm font-bold text-blue-600 flex-shrink-0" style="font-family:\'DM Mono\',monospace">₱' + _ord_fmt(item.fee) + '</span>' +
         '</div>' +
         '<div class="flex items-center gap-2 flex-wrap">' + itemStatusBadge + resultBadge + '</div>' +
         (itemActions ? '<div class="flex items-center gap-2 flex-wrap pt-1">' + itemActions + '</div>' : '') +
@@ -1358,12 +1267,12 @@
     }).join('');
   }
 
-  function renderFooterActions() {
+  function _ord_renderFooterActions() {
     var footer = document.getElementById('v-footer');
     footer.querySelectorAll('.dyn-btn').forEach(function(b){ b.remove(); });
-    if (!isTech && !isBranchAdmin) return;
-    var o = viewingOrder, frag = '';
-    if (isTech) {
+    if (!_ord_isTech && !_ord_isBranchAdmin) return;
+    var o = _ord_viewingOrder, frag = '';
+    if (_ord_isTech) {
       if (o.status==='DRAFT') {
         frag += '<button class="dyn-btn act-btn act-green flex-1" onclick="doConfirmOrder()">Confirm Order → Open</button>';
         frag += '<button class="dyn-btn act-btn act-red" onclick="doDeleteOrder()">Delete</button>';
@@ -1371,111 +1280,113 @@
       if (o.status==='OPEN')
         frag += '<button class="dyn-btn act-btn act-green flex-1" onclick="openPayModal()">Record Payment</button>';
       if (o.status==='FOR_RELEASE') {
-        var allVerified = viewingItems.length>0 && viewingItems.every(function(i){ return i.result_status==='VERIFIED'; });
+        var allVerified = _ord_viewingItems.length>0 && _ord_viewingItems.every(function(i){ return i.result_status==='VERIFIED'; });
         frag += allVerified
           ? '<button class="dyn-btn act-btn act-purple flex-1" onclick="doRelease()">Release Order</button>'
           : '<span class="dyn-btn text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-xl font-semibold flex-1 text-center">Verify all results to release</span>';
       }
     }
-    if (isBranchAdmin && o.status==='DRAFT')
+    if (_ord_isBranchAdmin && o.status==='DRAFT')
       frag += '<button class="dyn-btn act-btn act-red" onclick="doDeleteOrder()">Delete Draft</button>';
     if (frag) footer.insertAdjacentHTML('beforeend', frag);
   }
 
   function closeViewModal() {
     document.getElementById('view-modal').classList.add('hidden');
-    viewingOrder = null; viewingItems = [];
+    _ord_viewingOrder = null; _ord_viewingItems = [];
   }
 
   function doConfirmOrder() {
-    if (!viewingOrder) return;
-    callOrder('CONFIRM_ORDER', { order_id: viewingOrder.order_id, branch_id: viewingOrder.branch_id }, 'Order confirmed — now OPEN.', function(){ reloadView(); });
+    if (!_ord_viewingOrder) return;
+    _ord_callOrder('CONFIRM_ORDER', { order_id: _ord_viewingOrder.order_id, branch_id: _ord_viewingOrder.branch_id }, 'Order confirmed — now OPEN.', function(){ _ord_reloadView(); });
   }
   function doDeleteOrder() {
-    if (!viewingOrder) return;
-    if (!confirm('Delete order ' + viewingOrder.order_number + '? This cannot be undone.')) return;
-    callOrder('DELETE_ORDER', { order_id: viewingOrder.order_id, branch_id: viewingOrder.branch_id }, 'Order deleted.', function(){ closeViewModal(); loadOrders(); });
+    if (!_ord_viewingOrder) return;
+    if (!confirm('Delete order ' + _ord_viewingOrder.order_number + '? This cannot be undone.')) return;
+    _ord_callOrder('DELETE_ORDER', { order_id: _ord_viewingOrder.order_id, branch_id: _ord_viewingOrder.branch_id }, 'Order deleted.', function(){ closeViewModal(); _ord_loadOrders(); });
   }
   function doRelease() {
-    if (!viewingOrder) return;
-    if (!confirm('Release order ' + viewingOrder.order_number + ' to the patient?')) return;
-    callOrder('RELEASE_ORDER', { order_id: viewingOrder.order_id, branch_id: viewingOrder.branch_id }, 'Order released!', function(){ reloadView(); });
+    if (!_ord_viewingOrder) return;
+    if (!confirm('Release order ' + _ord_viewingOrder.order_number + ' to the patient?')) return;
+    _ord_callOrder('RELEASE_ORDER', { order_id: _ord_viewingOrder.order_id, branch_id: _ord_viewingOrder.branch_id }, 'Order released!', function(){ _ord_reloadView(); });
   }
   function doStartItem(itemId) {
-    callOrder('START_ITEM', { item_id: itemId, order_id: viewingOrder.order_id, branch_id: viewingOrder.branch_id }, 'Test started.', function(){ reloadView(); });
+    _ord_callOrder('START_ITEM', { item_id: itemId, order_id: _ord_viewingOrder.order_id, branch_id: _ord_viewingOrder.branch_id }, 'Test started.', function(){ _ord_reloadView(); });
   }
   function doCompleteItem(itemId) {
-    callOrder('COMPLETE_ITEM', { item_id: itemId, order_id: viewingOrder.order_id, branch_id: viewingOrder.branch_id }, 'Test completed.', function(){ reloadView(); });
+    _ord_callOrder('COMPLETE_ITEM', { item_id: itemId, order_id: _ord_viewingOrder.order_id, branch_id: _ord_viewingOrder.branch_id }, 'Test completed.', function(){ _ord_reloadView(); });
   }
   function doVerify(itemId) {
-    callOrder('VERIFY_RESULT', { item_id: itemId, order_id: viewingOrder.order_id, branch_id: viewingOrder.branch_id }, 'Result verified.', function(){ reloadView(); });
+    _ord_callOrder('VERIFY_RESULT', { item_id: itemId, order_id: _ord_viewingOrder.order_id, branch_id: _ord_viewingOrder.branch_id }, 'Result verified.', function(){ _ord_reloadView(); });
   }
   function doReject(itemId) {
     if (!confirm('Reject this result and send back for re-upload?')) return;
-    callOrder('REJECT_RESULT', { item_id: itemId, order_id: viewingOrder.order_id, branch_id: viewingOrder.branch_id }, 'Result sent back for correction.', function(){ reloadView(); });
+    _ord_callOrder('REJECT_RESULT', { item_id: itemId, order_id: _ord_viewingOrder.order_id, branch_id: _ord_viewingOrder.branch_id }, 'Result sent back for correction.', function(){ _ord_reloadView(); });
   }
-  function reloadView() {
-    loadOrders();
-    var oid = viewingOrder.order_id, bid = viewingOrder.branch_id;
+
+  function _ord_reloadView() {
+    _ord_loadOrders();
+    var oid = _ord_viewingOrder.order_id, bid = _ord_viewingOrder.branch_id;
     closeViewModal();
     setTimeout(function() {
-      var fresh = allOrders.find(function(o){ return o.order_id === oid; });
+      var fresh = _ord_allOrders.find(function(o){ return o.order_id === oid; });
       if (fresh) openViewModal(oid, bid);
     }, 800);
   }
-  function callOrder(action, payload, successMsg, onSuccess) {
+
+  function _ord_callOrder(action, payload, successMsg, onSuccess) {
     google.script.run
       .withSuccessHandler(function(res) {
-        if (_checkExpired(res)) return;
-        if (res.success) { showToast(successMsg, 'success'); if (onSuccess) onSuccess(res); }
-        else showToast(res.error || 'Action failed.', 'error');
+        if (_ord_checkExpired(res)) return;
+        if (res.success) { _ord_showToast(successMsg, 'success'); if (onSuccess) onSuccess(res); }
+        else _ord_showToast(res.error || 'Action failed.', 'error');
       })
-      .withFailureHandler(function(err){ showToast(err.message, 'error'); })
+      .withFailureHandler(function(err){ _ord_showToast(err.message, 'error'); })
       .handleOrderRequest(action, payload, _ord_getToken());
   }
 
-  // ── Payment Modal ─────────────────────────────────────────────
+  // ── Payment Modal ────────────────────────────────────────────
   function openPayModal() {
-    if (!viewingOrder) return;
-    payingOrder = viewingOrder;
-    var total = viewingOrder.payment_amount - viewingOrder.payment_discount;
-    document.getElementById('pay-order-num').textContent = viewingOrder.order_number;
-    document.getElementById('pay-total').textContent     = '₱' + fmt(total);
+    if (!_ord_viewingOrder) return;
+    _ord_payingOrder = _ord_viewingOrder;
+    var total = _ord_viewingOrder.payment_amount - _ord_viewingOrder.payment_discount;
+    document.getElementById('pay-order-num').textContent = _ord_viewingOrder.order_number;
+    document.getElementById('pay-total').textContent     = '₱' + _ord_fmt(total);
     document.getElementById('pay-method').value = '';
     document.getElementById('pay-amount').value = '';
     document.getElementById('pay-change').textContent = '₱0.00';
     document.getElementById('pay-modal').classList.remove('hidden');
   }
-  function closePayModal() { document.getElementById('pay-modal').classList.add('hidden'); payingOrder = null; }
+  function closePayModal() { document.getElementById('pay-modal').classList.add('hidden'); _ord_payingOrder = null; }
   function recalcChange() {
-    if (!payingOrder) return;
-    var total = payingOrder.payment_amount - payingOrder.payment_discount;
+    if (!_ord_payingOrder) return;
+    var total = _ord_payingOrder.payment_amount - _ord_payingOrder.payment_discount;
     var paid  = Number(document.getElementById('pay-amount').value) || 0;
-    document.getElementById('pay-change').textContent = '₱' + fmt(Math.max(paid - total, 0));
+    document.getElementById('pay-change').textContent = '₱' + _ord_fmt(Math.max(paid - total, 0));
   }
   function submitPayment() {
-    if (!payingOrder) return;
+    if (!_ord_payingOrder) return;
     var method = document.getElementById('pay-method').value;
     var amount = Number(document.getElementById('pay-amount').value);
-    if (!method) { showToast('Select a payment method.', 'error'); return; }
-    if (!amount || amount <= 0) { showToast('Enter amount received.', 'error'); return; }
+    if (!method) { _ord_showToast('Select a payment method.', 'error'); return; }
+    if (!amount || amount <= 0) { _ord_showToast('Enter amount received.', 'error'); return; }
     var btn = document.getElementById('pay-btn');
     btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
     google.script.run
       .withSuccessHandler(function(res) {
         btn.disabled = false; btn.innerHTML = '<span id="pay-label">Confirm Payment</span>';
-        if (_checkExpired(res)) return;
-        if (res.success) { showToast('Payment recorded — order is now PAID.', 'success'); closePayModal(); reloadView(); }
-        else showToast(res.error || 'Payment failed.', 'error');
+        if (_ord_checkExpired(res)) return;
+        if (res.success) { _ord_showToast('Payment recorded — order is now PAID.', 'success'); closePayModal(); _ord_reloadView(); }
+        else _ord_showToast(res.error || 'Payment failed.', 'error');
       })
-      .withFailureHandler(function(err){ btn.disabled=false; btn.innerHTML='<span id="pay-label">Confirm Payment</span>'; showToast(err.message,'error'); })
-      .handleOrderRequest('RECORD_PAYMENT', { order_id: payingOrder.order_id, branch_id: payingOrder.branch_id, payment_method: method, amount_paid: amount }, _ord_getToken());
+      .withFailureHandler(function(err){ btn.disabled=false; btn.innerHTML='<span id="pay-label">Confirm Payment</span>'; _ord_showToast(err.message,'error'); })
+      .handleOrderRequest('RECORD_PAYMENT', { order_id: _ord_payingOrder.order_id, branch_id: _ord_payingOrder.branch_id, payment_method: method, amount_paid: amount }, _ord_getToken());
   }
 
-  // ── Upload Modal ──────────────────────────────────────────────
+  // ── Upload Modal ─────────────────────────────────────────────
   function openUploadModal(itemId, itemName) {
-    uploadingItem = { item_id: itemId, order_id: viewingOrder.order_id, branch_id: viewingOrder.branch_id };
-    selectedFile  = null;
+    _ord_uploadingItem = { item_id: itemId, order_id: _ord_viewingOrder.order_id, branch_id: _ord_viewingOrder.branch_id };
+    _ord_selectedFile  = null;
     document.getElementById('upload-item-name').textContent = itemName;
     document.getElementById('file-input').value = '';
     document.getElementById('file-preview').classList.add('hidden');
@@ -1484,81 +1395,79 @@
     document.getElementById('upload-progress').classList.add('hidden');
     document.getElementById('upload-modal').classList.remove('hidden');
   }
-  function closeUploadModal() { document.getElementById('upload-modal').classList.add('hidden'); uploadingItem=null; selectedFile=null; }
-  function handleFileSelect(e) { if (e.target.files && e.target.files[0]) setFile(e.target.files[0]); }
+  function closeUploadModal() { document.getElementById('upload-modal').classList.add('hidden'); _ord_uploadingItem=null; _ord_selectedFile=null; }
+  function handleFileSelect(e) { if (e.target.files && e.target.files[0]) _ord_setFile(e.target.files[0]); }
   function handleDrop(e) {
     e.preventDefault();
     document.getElementById('upload-zone').classList.remove('dragover');
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) _ord_setFile(e.dataTransfer.files[0]);
   }
-  function setFile(file) {
+  function _ord_setFile(file) {
     var allowed = ['application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-    if (!allowed.includes(file.type)) { showToast('Only PDF and DOC/DOCX allowed.', 'error'); return; }
-    selectedFile = file;
+    if (!allowed.includes(file.type)) { _ord_showToast('Only PDF and DOC/DOCX allowed.', 'error'); return; }
+    _ord_selectedFile = file;
     document.getElementById('file-name').textContent = file.name;
     document.getElementById('file-size').textContent = (file.size/1024).toFixed(1) + ' KB';
     document.getElementById('file-preview').classList.remove('hidden');
     document.getElementById('file-preview').classList.add('flex');
   }
   function clearFile() {
-    selectedFile = null;
+    _ord_selectedFile = null;
     document.getElementById('file-input').value = '';
     document.getElementById('file-preview').classList.add('hidden');
     document.getElementById('file-preview').classList.remove('flex');
   }
   function submitUpload() {
-    if (!selectedFile) { showToast('Please select a file.', 'error'); return; }
-    if (!uploadingItem) return;
+    if (!_ord_selectedFile) { _ord_showToast('Please select a file.', 'error'); return; }
     var btn = document.getElementById('upload-btn');
     btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
     document.getElementById('upload-progress').classList.remove('hidden');
-    var pct = 0, bar = document.getElementById('upload-bar');
-    var prog = setInterval(function(){ pct = Math.min(pct+8, 85); bar.style.width = pct+'%'; }, 200);
+    var prog = setInterval(function(){}, 500);
     var reader = new FileReader();
     reader.onload = function(e) {
+      clearInterval(prog);
       var base64 = e.target.result.split(',')[1];
       google.script.run
         .withSuccessHandler(function(res) {
-          clearInterval(prog); bar.style.width = '100%';
-          btn.disabled = false; btn.innerHTML = '<span id="upload-label">Upload Result</span>';
-          if (_checkExpired(res)) return;
-          if (res.success) { showToast('Result uploaded!', 'success'); closeUploadModal(); reloadView(); }
-          else { showToast(res.error||'Upload failed.', 'error'); document.getElementById('upload-progress').classList.add('hidden'); }
+          btn.disabled=false; btn.innerHTML='<span id="upload-label">Upload Result</span>';
+          if (_ord_checkExpired(res)) return;
+          if (res.success) { _ord_showToast('Result uploaded!', 'success'); closeUploadModal(); _ord_reloadView(); }
+          else { _ord_showToast(res.error||'Upload failed.', 'error'); document.getElementById('upload-progress').classList.add('hidden'); }
         })
-        .withFailureHandler(function(err){ clearInterval(prog); btn.disabled=false; btn.innerHTML='<span id="upload-label">Upload Result</span>'; showToast(err.message,'error'); document.getElementById('upload-progress').classList.add('hidden'); })
-        .handleOrderRequest('UPLOAD_RESULT', { item_id: uploadingItem.item_id, order_id: uploadingItem.order_id, branch_id: uploadingItem.branch_id, file_data: base64, file_name: selectedFile.name, mime_type: selectedFile.type }, _ord_getToken());
+        .withFailureHandler(function(err){ clearInterval(prog); btn.disabled=false; btn.innerHTML='<span id="upload-label">Upload Result</span>'; _ord_showToast(err.message,'error'); document.getElementById('upload-progress').classList.add('hidden'); })
+        .handleOrderRequest('UPLOAD_RESULT', { item_id: _ord_uploadingItem.item_id, order_id: _ord_uploadingItem.order_id, branch_id: _ord_uploadingItem.branch_id, file_data: base64, file_name: _ord_selectedFile.name, mime_type: _ord_selectedFile.type }, _ord_getToken());
     };
-    reader.readAsDataURL(selectedFile);
+    reader.readAsDataURL(_ord_selectedFile);
   }
 
-  // ── Helpers ───────────────────────────────────────────────────
-  function statusLabel(s) {
+  // ── Helpers ──────────────────────────────────────────────────
+  function _ord_statusLabel(s) {
     return { DRAFT:'Draft', OPEN:'Open', PAID:'Paid', IN_PROGRESS:'In Progress', FOR_RELEASE:'For Release', RELEASED:'Released' }[s] || s;
   }
-  function fmt(val) { return Number(val||0).toLocaleString('en-PH', { minimumFractionDigits:2, maximumFractionDigits:2 }); }
-  function fmtDate(val) {
+  function _ord_fmt(val) { return Number(val||0).toLocaleString('en-PH', { minimumFractionDigits:2, maximumFractionDigits:2 }); }
+  function _ord_fmtDate(val) {
     if (!val) return '—';
     try { return new Date(val).toLocaleDateString('en-PH', { year:'numeric', month:'short', day:'numeric' }); }
     catch(_) { return String(val); }
   }
-  function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-  function showLoading(v) {
+  function _ord_escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+  function _ord_showLoading(v) {
     document.getElementById('ord-loading-state').classList.toggle('hidden', !v);
     if (v) { document.getElementById('ord-table-wrap').classList.add('hidden'); document.getElementById('ord-empty-state').classList.add('hidden'); }
   }
-  function showEmpty(msg) {
+  function _ord_showEmpty(msg) {
     document.getElementById('ord-empty-state').classList.remove('hidden');
     document.getElementById('ord-empty-state').classList.add('flex');
     document.getElementById('ord-table-wrap').classList.add('hidden');
     if (msg) document.getElementById('ord-empty-sub').textContent = msg;
   }
-  function showToast(msg, type) {
+  function _ord_showToast(msg, type) {
     var el = document.createElement('div');
     el.className = 'toast-item toast-' + (type||'success');
     el.innerHTML = '<svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">' +
       (type==='error' ? '<path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>'
                       : '<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>') +
-      '</svg><span>' + escHtml(msg) + '</span>';
+      '</svg><span>' + _ord_escHtml(msg) + '</span>';
     document.getElementById('ord-toast').appendChild(el);
     setTimeout(function(){ el.remove(); }, 4000);
   }
