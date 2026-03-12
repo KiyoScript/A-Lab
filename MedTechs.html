@@ -173,7 +173,7 @@
       </button>
     </div>
     <div class="p-6 space-y-4">
-      <input type="hidden" id="f-medtech-id"/>
+      <input type="hidden" id="mt-f-medtech-id"/>
       <div id="mt-branch-badge-wrap" class="hidden">
         <label class="field-label">Branch</label>
         <div class="flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-100 rounded-xl">
@@ -188,26 +188,26 @@
       <div class="grid grid-cols-2 gap-3">
         <div>
           <label class="field-label">Last Name <span class="text-red-400">*</span></label>
-          <input id="f-last-name" type="text" placeholder="Dela Cruz" class="field-input"/>
+          <input id="mt-f-last-name" type="text" placeholder="Dela Cruz" class="field-input"/>
         </div>
         <div>
           <label class="field-label">First Name <span class="text-red-400">*</span></label>
-          <input id="f-first-name" type="text" placeholder="Juan" class="field-input"/>
+          <input id="mt-f-first-name" type="text" placeholder="Juan" class="field-input"/>
         </div>
       </div>
       <div>
         <label class="field-label">Middle Name <span class="text-slate-300 font-normal">(optional)</span></label>
-        <input id="f-middle-name" type="text" placeholder="Santos" class="field-input"/>
+        <input id="mt-f-middle-name" type="text" placeholder="Santos" class="field-input"/>
       </div>
       <p class="form-section mt-2">Account Details</p>
       <div>
         <label class="field-label">Email Address <span class="text-red-400">*</span></label>
-        <input id="f-email" type="email" placeholder="jdelacruz@lab.com" class="field-input"/>
+        <input id="mt-f-email" type="email" placeholder="jdelacruz@lab.com" class="field-input"/>
       </div>
       <div>
         <label class="field-label">Role <span class="text-red-400">*</span></label>
         <div id="mt-role-grid" class="grid grid-cols-3 gap-2 mt-1"></div>
-        <input type="hidden" id="f-role"/>
+        <input type="hidden" id="mt-f-role"/>
       </div>
       <div>
         <label class="field-label">
@@ -216,7 +216,7 @@
           <span id="mt-pw-note" class="hidden text-slate-400 font-normal">(leave blank to keep current)</span>
         </label>
         <div class="relative">
-          <input id="f-password" type="password" placeholder="••••••••" class="field-input pr-10" autocomplete="new-password"/>
+          <input id="mt-f-password" type="password" placeholder="••••••••" class="field-input pr-10" autocomplete="new-password"/>
           <button type="button" onclick="mt_togglePwVisibility()"
             class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -229,7 +229,7 @@
       </div>
       <div>
         <label class="field-label">Status</label>
-        <select id="f-status" class="field-input">
+        <select id="mt-f-status" class="field-input">
           <option value="Active">Active</option>
           <option value="Inactive">Inactive</option>
         </select>
@@ -267,7 +267,7 @@
       <div>
         <label class="field-label">New Password <span class="text-red-400">*</span></label>
         <div class="relative">
-          <input id="f-new-password" type="password" placeholder="••••••••" class="field-input pr-10" autocomplete="new-password"/>
+          <input id="mt-f-new-password" type="password" placeholder="••••••••" class="field-input pr-10" autocomplete="new-password"/>
           <button type="button" onclick="mt_toggleNewPwVisibility()"
             class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -279,7 +279,7 @@
       </div>
       <div>
         <label class="field-label">Confirm Password <span class="text-red-400">*</span></label>
-        <input id="f-confirm-password" type="password" placeholder="••••••••" class="field-input" autocomplete="new-password"/>
+        <input id="mt-f-confirm-password" type="password" placeholder="••••••••" class="field-input" autocomplete="new-password"/>
       </div>
     </div>
     <div class="flex gap-3 px-6 pb-6">
@@ -530,7 +530,7 @@
 
   function mt_selectRole(roleKey) {
     _mt_selectedRole = roleKey;
-    document.getElementById('f-role').value = roleKey;
+    document.getElementById('mt-f-role').value = roleKey;
     MT_ROLES.forEach(function(r) {
       var btn = document.getElementById('mt-rb-' + r.key.replace(/\s+/g,'-'));
       if (!btn) return;
@@ -562,12 +562,12 @@
       _mt_editingId = medtechId;
       var mt = _mt_allMedTechs.find(function(m) { return m.medtech_id === medtechId; });
       if (!mt) return;
-      document.getElementById('f-medtech-id').value  = mt.medtech_id;
-      document.getElementById('f-last-name').value   = mt.last_name;
-      document.getElementById('f-first-name').value  = mt.first_name;
-      document.getElementById('f-middle-name').value = mt.middle_name || '';
-      document.getElementById('f-email').value       = mt.email;
-      document.getElementById('f-status').value      = mt.status;
+      document.getElementById('mt-f-medtech-id').value  = mt.medtech_id;
+      document.getElementById('mt-f-last-name').value   = mt.last_name;
+      document.getElementById('mt-f-first-name').value  = mt.first_name;
+      document.getElementById('mt-f-middle-name').value = mt.middle_name || '';
+      document.getElementById('mt-f-email').value       = mt.email;
+      document.getElementById('mt-f-status').value      = mt.status;
       mt_selectRole(mt.role);
     } else {
       mt_selectRole('Medical Technologist');
@@ -582,9 +582,9 @@
   }
 
   function _mt_clearForm() {
-    ['f-medtech-id','f-last-name','f-first-name','f-middle-name','f-email','f-password','f-role']
+    ['mt-f-medtech-id','mt-f-last-name','mt-f-first-name','mt-f-middle-name','mt-f-email','mt-f-password','mt-f-role']
       .forEach(function(id) { var el = document.getElementById(id); if (el) el.value = ''; });
-    document.getElementById('f-status').value = 'Active';
+    document.getElementById('mt-f-status').value = 'Active';
     _mt_selectedRole = '';
     MT_ROLES.forEach(function(r) {
       var btn = document.getElementById('mt-rb-' + r.key.replace(/\s+/g,'-'));
@@ -595,13 +595,13 @@
   // ── Save ─────────────────────────────────────────────────────────
   function mt_saveMedTech() {
     if (!_mt_isBranchAdmin) return;
-    var lastName   = document.getElementById('f-last-name').value.trim();
-    var firstName  = document.getElementById('f-first-name').value.trim();
-    var middleName = document.getElementById('f-middle-name').value.trim();
-    var email      = document.getElementById('f-email').value.trim();
-    var password   = document.getElementById('f-password').value;
-    var role       = document.getElementById('f-role').value || _mt_selectedRole;
-    var status     = document.getElementById('f-status').value;
+    var lastName   = document.getElementById('mt-f-last-name').value.trim();
+    var firstName  = document.getElementById('mt-f-first-name').value.trim();
+    var middleName = document.getElementById('mt-f-middle-name').value.trim();
+    var email      = document.getElementById('mt-f-email').value.trim();
+    var password   = document.getElementById('mt-f-password').value;
+    var role       = document.getElementById('mt-f-role').value || _mt_selectedRole;
+    var status     = document.getElementById('mt-f-status').value;
 
     if (!lastName)  { _mt_showToast('Last name is required.',  'error'); return; }
     if (!firstName) { _mt_showToast('First name is required.', 'error'); return; }
@@ -648,21 +648,21 @@
     if (!_mt_isBranchAdmin) return;
     document.getElementById('mt-pw-medtech-id').value       = medtechId;
     document.getElementById('mt-pw-modal-name').textContent = name;
-    document.getElementById('f-new-password').value      = '';
-    document.getElementById('f-confirm-password').value  = '';
+    document.getElementById('mt-f-new-password').value      = '';
+    document.getElementById('mt-f-confirm-password').value  = '';
     document.getElementById('mt-pw-modal-backdrop').classList.remove('hidden');
   }
 
   function mt_closePwModal() {
     document.getElementById('mt-pw-modal-backdrop').classList.add('hidden');
-    document.getElementById('f-new-password').value     = '';
-    document.getElementById('f-confirm-password').value = '';
+    document.getElementById('mt-f-new-password').value     = '';
+    document.getElementById('mt-f-confirm-password').value = '';
   }
 
   function mt_submitPasswordChange() {
     var medtechId = document.getElementById('mt-pw-medtech-id').value;
-    var newPw     = document.getElementById('f-new-password').value;
-    var confirmPw = document.getElementById('f-confirm-password').value;
+    var newPw     = document.getElementById('mt-f-new-password').value;
+    var confirmPw = document.getElementById('mt-f-confirm-password').value;
     if (!newPw || newPw.length < 6) { _mt_showToast('Password must be at least 6 characters.', 'error'); return; }
     if (newPw !== confirmPw)         { _mt_showToast('Passwords do not match.', 'error'); return; }
 
@@ -718,11 +718,11 @@
 
   // ── PW visibility ────────────────────────────────────────────────
   function mt_togglePwVisibility() {
-    var inp = document.getElementById('f-password');
+    var inp = document.getElementById('mt-f-password');
     inp.type = inp.type === 'password' ? 'text' : 'password';
   }
   function mt_toggleNewPwVisibility() {
-    var inp = document.getElementById('f-new-password');
+    var inp = document.getElementById('mt-f-new-password');
     inp.type = inp.type === 'password' ? 'text' : 'password';
   }
 

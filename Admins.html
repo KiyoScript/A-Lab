@@ -1,6 +1,6 @@
 <style>
       * { font-family: 'DM Sans', sans-serif; }
-      body { background: #f8fafc; color: #0f172a; height: 100vh; overflow: auto; }
+      body { color: #0f172a; }
       .card { background:#fff; border:1px solid #e2e8f0; border-radius:1rem; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
       ::-webkit-scrollbar { width:5px; }
       ::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:99px; }
@@ -35,7 +35,7 @@
         background:#fff; border:1px solid #e2e8f0; color:#475569;
         border-radius:0.75rem; padding:0.5rem 0.75rem; font-size:0.875rem; outline:none;
       }
-      #toast { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
+      #adm-toast { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
       .toast-item {
         display:flex; align-items:center; gap:10px; padding:12px 18px;
         border-radius:12px; font-size:13px; font-weight:500; color:#fff;
@@ -122,7 +122,7 @@
               <th class="text-right px-5 py-3">Actions</th>
             </tr>
           </thead>
-          <tbody id="admin-tbody" class="divide-y divide-slate-50"></tbody>
+          <tbody id="adm-tbody" class="divide-y divide-slate-50"></tbody>
         </table>
       </div>
     </div>
@@ -147,7 +147,7 @@
         <button id="adm-role-btn-super"  class="role-btn flex-1 py-2 rounded-xl border-2 border-slate-200 text-slate-500 text-xs font-bold" onclick="adm_setRole('super_admin')">Super Admin</button>
       </div>
       <div class="px-6 py-4 space-y-3">
-        <input type="hidden" id="f-admin-id"/>
+        <input type="hidden" id="adm-f-admin-id"/>
         <div id="adm-branch-field">
           <label class="block text-xs font-semibold text-slate-600 mb-1.5">Branch <span class="text-red-500">*</span></label>
           <select id="adm-f-branch-id" class="form-field bg-white"><option value="">Select branch…</option></select>
@@ -174,9 +174,9 @@
       </div>
       <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100">
         <button onclick="adm_closeModal()" class="px-4 py-2.5 text-sm font-semibold text-slate-600 hover:text-slate-800">Cancel</button>
-        <button id="adm-save-btn" onclick="saveAdmin()"
+        <button id="adm-save-btn" onclick="adm_saveAdmin()"
           class="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-sm min-w-[110px] justify-center">
-          <span id="save-label">Save Admin</span>
+          <span id="adm-save-label">Save Admin</span>
         </button>
       </div>
     </div>
@@ -200,7 +200,7 @@
   </div>
 
   <!-- TOAST -->
-  <div id="adm-toast"></div>
+<div id="adm-toast"></div>
 
   <script>
     // ── State (all prefixed _adm_ to avoid global collisions) ────────
@@ -363,7 +363,7 @@
         return matchQ && matchS && matchB;
       });
 
-      var tbody = document.getElementById('admin-tbody');
+      var tbody = document.getElementById('adm-tbody');
       var wrap  = document.getElementById('adm-table-wrap');
       var empty = document.getElementById('adm-empty-state');
       tbody.innerHTML = '';
@@ -416,7 +416,7 @@
       _adm_editingRole = admin ? (admin.role || _adm_currentTab + '_admin') : null;
       document.getElementById('adm-modal-title').textContent    = admin ? 'Edit Admin' : 'Add Admin';
       document.getElementById('adm-modal-subtitle').textContent = admin ? 'Update admin details below.' : 'Fill in the details below.';
-      document.getElementById('f-admin-id').value       = (admin && admin.admin_id)  || '';
+      document.getElementById('adm-f-admin-id').value       = (admin && admin.admin_id)  || '';
       document.getElementById('adm-f-full-name').value  = (admin && admin.full_name) || '';
       document.getElementById('adm-f-username').value   = (admin && admin.username)  || '';
       document.getElementById('adm-f-password').value   = '';
@@ -443,7 +443,7 @@
       document.getElementById('adm-modal-backdrop').classList.add('hidden');
     }
 
-    function saveAdmin() {
+    function adm_saveAdmin() {
       var fullName = document.getElementById('adm-f-full-name').value.trim();
       var username = document.getElementById('adm-f-username').value.trim();
       var password = document.getElementById('adm-f-password').value;
@@ -455,7 +455,7 @@
       if (role === 'branch_admin' && !document.getElementById('adm-f-branch-id').value) { _adm_showToast('Please select a branch.', 'error'); return; }
 
       var payload = {
-        admin_id:  document.getElementById('f-admin-id').value,
+        admin_id:  document.getElementById('adm-f-admin-id').value,
         full_name: fullName,
         username:  username,
         password:  password,
