@@ -1,0 +1,724 @@
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body { font-family: 'DM Sans', sans-serif; background: #f8fafc; color: #1e293b; margin: 0; }
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.35); border-top-color: #fff; border-radius: 50%; animation: mt-spin .6s linear infinite; }
+  @keyframes mt-spin { to { transform: rotate(360deg); } }
+  .badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; }
+  .badge-active   { background: rgba(5,150,105,0.1);  color: #059669; }
+  .badge-inactive { background: rgba(148,163,184,0.15); color: #64748b; }
+  .badge-branch   { background: rgba(5,150,105,0.1);  color: #059669; }
+  table { border-collapse: collapse; width: 100%; }
+  th { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: #94a3b8; background: #f8fafc; padding: 10px 20px; text-align: left; border-bottom: 1px solid #e2e8f0; white-space: nowrap; }
+  .data-row { border-bottom: 1px solid #f1f5f9; transition: background .15s; }
+  .data-row:hover { background: #f0fdf9; }
+  .data-row:last-child { border-bottom: none; }
+  .stat-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px 20px; }
+  .modal-card { background: #fff; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.18); max-height: 90vh; overflow-y: auto; }
+  .modal-card::-webkit-scrollbar { width: 5px; }
+  .modal-card::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 9px; }
+  .field-input { width: 100%; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 9px 12px; font-size: 13.5px; font-family: 'DM Sans', sans-serif; color: #1e293b; background: #fff; outline: none; transition: border-color .15s, box-shadow .15s; }
+  .field-input:focus { border-color: #059669; box-shadow: 0 0 0 3px rgba(5,150,105,.1); }
+  .field-label { font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 5px; display: block; }
+  .form-section { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #94a3b8; padding-bottom: 6px; border-bottom: 1px solid #f1f5f9; margin-bottom: 12px; }
+  .search-wrap { position: relative; }
+  .search-wrap svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; pointer-events: none; }
+  .search-input { width: 100%; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 9px 12px 9px 38px; font-size: 13.5px; font-family: 'DM Sans', sans-serif; color: #1e293b; background: #fff; outline: none; transition: border-color .15s; }
+  .search-input:focus { border-color: #059669; }
+  #mt-toast { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+  .toast-item { display: flex; align-items: center; gap: 10px; padding: 12px 18px; border-radius: 12px; font-size: 13px; font-weight: 500; color: #fff; box-shadow: 0 4px 20px rgba(0,0,0,0.15); pointer-events: auto; animation: mt-slideUp .3s ease; max-width: 320px; }
+  .toast-success { background: #059669; }
+  .toast-error   { background: #ef4444; }
+  .toast-warning { background: #f59e0b; }
+  @keyframes mt-slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes mt-fadeUp  { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+  .fade-up { animation: mt-fadeUp .3s ease both; }
+  .pw-req { font-size: 11px; color: #94a3b8; margin-top: 4px; }
+</style>
+
+<div class="p-5">
+<div id="mt-toast"></div>
+
+<!-- ── PAGE HEADER ──────────────────────────────────────────── -->
+<div class="flex items-center justify-between mb-5 flex-wrap gap-3 fade-up">
+  <div>
+    <h1 class="text-xl font-bold text-slate-800">Technologists</h1>
+    <p class="text-xs text-slate-400 mt-0.5">Manage medical technologist accounts per branch.</p>
+  </div>
+  <button id="mt-add-btn" onclick="mt_openModal(null)"
+    class="hidden items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-sm">
+    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+    </svg>
+    Add Technologist
+  </button>
+</div>
+
+<!-- ── STATS ─────────────────────────────────────────────────── -->
+<div id="mt-stats-section" class="hidden grid grid-cols-3 gap-3 mb-5 fade-up">
+  <div class="stat-card text-center"><p class="text-2xl font-bold text-slate-800" id="mt-stat-total">—</p><p class="text-xs text-slate-400 mt-0.5 font-medium">Total</p></div>
+  <div class="stat-card text-center"><p class="text-2xl font-bold text-emerald-500" id="mt-stat-active">—</p><p class="text-xs text-slate-400 mt-0.5 font-medium">Active</p></div>
+  <div class="stat-card text-center"><p class="text-2xl font-bold text-slate-400" id="mt-stat-inactive">—</p><p class="text-xs text-slate-400 mt-0.5 font-medium">Inactive</p></div>
+</div>
+
+<!-- ── FILTERS ───────────────────────────────────────────────── -->
+<div class="flex flex-wrap items-center gap-2 mb-4 fade-up">
+  <div class="search-wrap flex-1 min-w-[180px] max-w-sm">
+    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
+    </svg>
+    <input id="mt-search-input" type="text" placeholder="Search technologists…" oninput="mt_filterTable()"
+      class="search-input"/>
+  </div>
+  <select id="mt-status-filter" onchange="mt_filterTable()" class="border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-100 focus:border-emerald-400 transition">
+    <option value="">All Status</option>
+    <option value="Active">Active</option>
+    <option value="Inactive">Inactive</option>
+  </select>
+  <select id="mt-branch-filter" onchange="mt_filterTable()" class="border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-100 focus:border-emerald-400 transition hidden">
+    <option value="">All Branches</option>
+  </select>
+</div>
+
+<!-- ── TABLE ────────────────────────────────────────────────── -->
+<div id="mt-table-wrap" class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hidden fade-up">
+  <div class="overflow-x-auto">
+    <table>
+      <thead>
+        <tr>
+          <th class="px-5">Name</th>
+          <th class="px-3">Email</th>
+          <th class="px-3 hidden md:table-cell">Role</th>
+          <th id="mt-th-branch" class="px-3 hidden">Branch</th>
+          <th class="px-3">Status</th>
+          <th id="mt-th-actions" class="px-5 text-right hidden">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="mt-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<div id="mt-empty-state" class="hidden flex-col items-center justify-center py-20 text-center">
+  <div class="w-16 h-16 rounded-2xl bg-emerald-50 flex items-center justify-center mb-4">
+    <svg class="w-8 h-8 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+    </svg>
+  </div>
+  <p class="text-slate-600 font-semibold text-sm">No technologists found</p>
+  <p class="text-slate-400 text-xs mt-1" id="mt-empty-sub">Add the first technologist to get started.</p>
+</div>
+
+<div id="mt-loading-state" class="flex flex-col items-center justify-center py-20">
+  <div class="w-8 h-8 rounded-full animate-spin mb-3" style="border:2px solid #a7f3d0;border-top-color:#059669"></div>
+  <p class="text-xs text-slate-400">Loading Technologists…</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     ADD / EDIT MODAL
+══════════════════════════════════════════════════════════ -->
+<div id="mt-modal-backdrop" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+  <div class="modal-card w-full max-w-xl" onclick="event.stopPropagation()">
+    <div class="flex items-start justify-between p-6 pb-4 border-b border-slate-100">
+      <div>
+        <h2 id="mt-modal-title" class="text-base font-bold text-slate-800">Add Technologist</h2>
+        <p id="mt-modal-sub" class="text-xs text-slate-400 mt-0.5">Fill in the technologist's information below</p>
+      </div>
+      <button onclick="mt_closeModal()" class="text-slate-400 hover:text-slate-600 transition p-1 rounded-lg hover:bg-slate-100">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <div class="p-6 space-y-5">
+      <input type="hidden" id="mt-f-medtech-id"/>
+      <input type="hidden" id="mt-f-branch-id-hidden"/>
+
+      <p class="form-section">Personal Information</p>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label class="field-label">Last Name <span class="text-red-400">*</span></label>
+          <input id="mt-f-last-name" class="field-input" type="text" placeholder="Dela Cruz"/>
+        </div>
+        <div>
+          <label class="field-label">First Name <span class="text-red-400">*</span></label>
+          <input id="mt-f-first-name" class="field-input" type="text" placeholder="Juan"/>
+        </div>
+        <div>
+          <label class="field-label">Middle Name</label>
+          <input id="mt-f-middle-name" class="field-input" type="text" placeholder="Santos"/>
+        </div>
+      </div>
+
+      <p class="form-section">Account Details</p>
+      <div id="mt-branch-field" class="hidden">
+        <label class="field-label">Branch <span class="text-red-400">*</span></label>
+        <select id="mt-f-branch-id" class="field-input">
+          <option value="">Select branch…</option>
+        </select>
+      </div>
+      <div>
+        <label class="field-label">Email Address <span class="text-red-400">*</span></label>
+        <input id="mt-f-email" class="field-input" type="email" placeholder="juan.delacruz@branch.com" autocomplete="off"/>
+        <p class="pw-req">Used as the login identifier. Must be unique within the branch.</p>
+      </div>
+      <div>
+        <label class="field-label">Role</label>
+        <select id="mt-f-role" class="field-input">
+          <option value="Medical Technologist">Medical Technologist</option>
+          <option value="Senior Med Tech">Senior Med Tech</option>
+          <option value="Lab Supervisor">Lab Supervisor</option>
+          <option value="Lab Manager">Lab Manager</option>
+        </select>
+      </div>
+      <div>
+        <label class="field-label" id="mt-pw-label">Password <span class="text-red-400">*</span></label>
+        <div class="relative">
+          <input id="mt-f-password" class="field-input pr-10" type="password" placeholder="Min. 6 characters" autocomplete="new-password"/>
+          <button type="button" onclick="mt_togglePw('mt-f-password')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+            </svg>
+          </button>
+        </div>
+        <p class="pw-req" id="mt-pw-hint">Required for new technologists. They will be prompted to change it on first login.</p>
+      </div>
+
+      <p class="form-section">Status</p>
+      <label class="flex items-center gap-2 cursor-pointer select-none w-fit">
+        <div class="relative">
+          <input type="checkbox" id="mt-f-is-active" class="sr-only peer" checked/>
+          <div class="w-10 h-5 bg-slate-200 peer-checked:bg-emerald-500 rounded-full transition-colors"></div>
+          <div class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-5"></div>
+        </div>
+        <span id="mt-status-label" class="text-sm font-medium text-slate-600">Active</span>
+      </label>
+    </div>
+    <div class="flex items-center justify-end gap-3 p-6 pt-0 border-t border-slate-100 mt-2">
+      <button onclick="mt_closeModal()" class="px-4 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">Cancel</button>
+      <button id="mt-save-btn" onclick="mt_saveMedTech()"
+        class="px-5 py-2.5 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-colors shadow-sm flex items-center gap-2">
+        Save Technologist
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     CHANGE PASSWORD MODAL
+══════════════════════════════════════════════════════════ -->
+<div id="mt-pw-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm" onclick="event.stopPropagation()">
+    <div class="flex items-start justify-between p-6 pb-4 border-b border-slate-100">
+      <div>
+        <h2 class="text-base font-bold text-slate-800">Change Password</h2>
+        <p id="mt-pw-modal-name" class="text-xs text-slate-400 mt-0.5">—</p>
+      </div>
+      <button onclick="mt_closePwModal()" class="text-slate-400 hover:text-slate-600 transition p-1 rounded-lg hover:bg-slate-100">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <div class="p-6 space-y-4">
+      <input type="hidden" id="mt-pw-medtech-id"/>
+      <input type="hidden" id="mt-pw-branch-id"/>
+      <div>
+        <label class="field-label">New Password <span class="text-red-400">*</span></label>
+        <div class="relative">
+          <input id="mt-f-new-pw" type="password" placeholder="Min. 6 characters" class="field-input pr-10" autocomplete="new-password"/>
+          <button type="button" onclick="mt_togglePw('mt-f-new-pw')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+            </svg>
+          </button>
+        </div>
+        <p class="pw-req">This will immediately update the technologist's login credentials.</p>
+      </div>
+      <div>
+        <label class="field-label">Confirm Password <span class="text-red-400">*</span></label>
+        <input id="mt-f-confirm-pw" type="password" placeholder="Re-enter password" class="field-input" autocomplete="new-password"/>
+      </div>
+    </div>
+    <div class="flex gap-3 p-6 pt-0 border-t border-slate-100">
+      <button onclick="mt_closePwModal()" class="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors">Cancel</button>
+      <button id="mt-pw-save-btn" onclick="mt_submitPasswordChange()"
+        class="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2">
+        Update Password
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     DELETE MODAL
+══════════════════════════════════════════════════════════ -->
+<div id="mt-delete-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center" onclick="event.stopPropagation()">
+    <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
+      <svg class="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+      </svg>
+    </div>
+    <h3 class="text-base font-bold text-slate-800 mb-1">Delete Technologist</h3>
+    <p class="text-sm text-slate-500 mb-6">Are you sure you want to delete <strong id="mt-delete-name" class="text-slate-700"></strong>? This action cannot be undone.</p>
+    <div class="flex gap-3">
+      <button onclick="mt_closeDeleteModal()" class="flex-1 px-4 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">Cancel</button>
+      <button id="mt-confirm-delete-btn" onclick="mt_confirmDelete()"
+        class="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 rounded-xl transition-colors flex items-center justify-center gap-2">
+        Delete
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── Token & session helpers ───────────────────────────────────
+  function _mt_getToken() {
+    return (typeof alab_token !== 'undefined' ? alab_token : null)
+      || localStorage.getItem('alab_token') || '';
+  }
+  function _mt_checkExpired(res) {
+    if (res && res.expired) {
+      localStorage.removeItem('alab_token');
+      window.top.location.href = (typeof baseUrl !== 'undefined' ? baseUrl : '') + '?page=Login';
+      return true;
+    }
+    return false;
+  }
+
+  // ── State ──────────────────────────────────────────────────────
+  var _mt_listenersAttached = false;
+  var _mt_currentSession    = null;
+  var _mt_allMedTechs       = [];
+  var _mt_allBranches       = [];
+  var _mt_isSuperAdmin      = false;
+  var _mt_isBranchAdmin     = false;
+  var _mt_deletingId        = null;
+
+  // ── Entry point (called once by Index.html tab system) ─────────
+  function init_MedTechs() {
+    if (!_mt_listenersAttached) {
+      _mt_listenersAttached = true;
+      document.getElementById('mt-f-is-active').addEventListener('change', mt_updateStatusLabel);
+      document.getElementById('mt-modal-backdrop').addEventListener('click', mt_closeModal);
+      document.getElementById('mt-pw-modal').addEventListener('click', mt_closePwModal);
+      document.getElementById('mt-delete-modal').addEventListener('click', mt_closeDeleteModal);
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') { mt_closeModal(); mt_closePwModal(); mt_closeDeleteModal(); }
+      });
+    }
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (_mt_checkExpired(res)) return;
+        if (res && res.success) {
+          _mt_currentSession = res.data;
+          _mt_isSuperAdmin   = _mt_currentSession.role === 'super_admin';
+          _mt_isBranchAdmin  = _mt_currentSession.role === 'branch_admin';
+          _mt_applyRoleUI();
+        }
+        _mt_loadBranches();
+      })
+      .withFailureHandler(function() { _mt_loadBranches(); })
+      .handleAdminRequest('GET_SESSION', {}, _mt_getToken());
+  }
+
+  // ── Role-based UI adjustments ──────────────────────────────────
+  function _mt_applyRoleUI() {
+    document.getElementById('mt-stats-section').classList.remove('hidden');
+    if (_mt_isSuperAdmin || _mt_isBranchAdmin) {
+      document.getElementById('mt-add-btn').classList.remove('hidden');
+      document.getElementById('mt-add-btn').classList.add('flex');
+      document.getElementById('mt-th-actions').classList.remove('hidden');
+    }
+    if (_mt_isSuperAdmin) {
+      document.getElementById('mt-branch-filter').classList.remove('hidden');
+      document.getElementById('mt-th-branch').classList.remove('hidden');
+    }
+  }
+
+  // ── Load branches (for filter dropdown and modal select) ───────
+  function _mt_loadBranches() {
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (res && res.success) {
+          _mt_allBranches = (res.data || []).filter(function(b) { return b.status === 'Active'; });
+          _mt_populateBranchFilter();
+          _mt_populateBranchSelect();
+        }
+        _mt_loadData();
+      })
+      .withFailureHandler(function() { _mt_loadData(); })
+      .handleBranchRequest('GET_BRANCHES', {}, _mt_getToken());
+  }
+
+  function _mt_populateBranchFilter() {
+    var sel = document.getElementById('mt-branch-filter');
+    sel.innerHTML = '<option value="">All Branches</option>';
+    _mt_allBranches.forEach(function(b) {
+      sel.insertAdjacentHTML('beforeend',
+        '<option value="' + _mt_escHtml(b.branch_id) + '">' + _mt_escHtml(b.branch_name) + '</option>');
+    });
+  }
+
+  function _mt_populateBranchSelect() {
+    var sel = document.getElementById('mt-f-branch-id');
+    sel.innerHTML = '<option value="">Select branch…</option>';
+    _mt_allBranches.forEach(function(b) {
+      sel.insertAdjacentHTML('beforeend',
+        '<option value="' + _mt_escHtml(b.branch_id) + '">' + _mt_escHtml(b.branch_name) + '</option>');
+    });
+  }
+
+  // ── Load medtechs ──────────────────────────────────────────────
+  function _mt_loadData() {
+    _mt_showLoading(true);
+    google.script.run
+      .withSuccessHandler(function(res) {
+        _mt_showLoading(false);
+        if (_mt_checkExpired(res)) return;
+        if (res && res.success) {
+          _mt_allMedTechs = res.data || [];
+          _mt_updateStats(_mt_allMedTechs);
+          mt_filterTable();
+        } else {
+          _mt_showToast(res ? (res.error || 'Failed to load technologists.') : 'Failed to load.', 'error');
+          _mt_renderTable([]);
+        }
+      })
+      .withFailureHandler(function(err) {
+        _mt_showLoading(false);
+        _mt_showToast('Error: ' + err.message, 'error');
+        _mt_renderTable([]);
+      })
+      .handleMedTechRequest('GET_MEDTECHS', {}, _mt_getToken());
+  }
+
+  // ── Stats ──────────────────────────────────────────────────────
+  function _mt_updateStats(data) {
+    var active = data.filter(function(m) { return m.status === 'Active'; }).length;
+    document.getElementById('mt-stat-total').textContent    = data.length;
+    document.getElementById('mt-stat-active').textContent   = active;
+    document.getElementById('mt-stat-inactive').textContent = data.length - active;
+  }
+
+  // ── Filter ─────────────────────────────────────────────────────
+  function mt_filterTable() {
+    var q      = document.getElementById('mt-search-input').value.trim().toLowerCase();
+    var status = document.getElementById('mt-status-filter').value;
+    var branch = document.getElementById('mt-branch-filter').value;
+
+    var filtered = _mt_allMedTechs.filter(function(m) {
+      var name = (m.last_name + ' ' + m.first_name + ' ' + (m.middle_name || '')).toLowerCase();
+      var matchQ      = !q || name.includes(q) || m.email.toLowerCase().includes(q) ||
+                        m.role.toLowerCase().includes(q);
+      var matchStatus = !status || m.status === status;
+      var matchBranch = !branch || m.branch_id === branch;
+      return matchQ && matchStatus && matchBranch;
+    });
+
+    _mt_updateStats(filtered);
+    _mt_renderTable(filtered);
+    document.getElementById('mt-empty-sub').textContent =
+      (q || status || branch)
+        ? 'No technologists match your filters.'
+        : 'Add the first technologist to get started.';
+  }
+
+  // ── Render table ───────────────────────────────────────────────
+  function _mt_renderTable(data) {
+    var tbody = document.getElementById('mt-tbody');
+    var wrap  = document.getElementById('mt-table-wrap');
+    var empty = document.getElementById('mt-empty-state');
+
+    if (!data.length) {
+      wrap.classList.add('hidden');
+      empty.classList.remove('hidden'); empty.classList.add('flex');
+      return;
+    }
+    empty.classList.add('hidden'); empty.classList.remove('flex');
+    wrap.classList.remove('hidden');
+
+    tbody.innerHTML = data.map(function(m) {
+      var displayName = _mt_escHtml(m.last_name) + ', ' + _mt_escHtml(m.first_name) +
+        (m.middle_name ? ' ' + _mt_escHtml(m.middle_name.charAt(0)) + '.' : '');
+
+      var statusBadge = m.status === 'Active'
+        ? '<span class="badge badge-active"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>Active</span>'
+        : '<span class="badge badge-inactive">Inactive</span>';
+
+      var roleCell = '<span class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg">' +
+        _mt_escHtml(m.role) + '</span>';
+
+      var branchCell = _mt_isSuperAdmin
+        ? '<td class="px-3 py-3.5"><span class="text-xs text-slate-500">' + _mt_escHtml(m.branch_name || '—') + '</span></td>'
+        : '';
+
+      var actionBtns = '';
+      if (_mt_isSuperAdmin || _mt_isBranchAdmin) {
+        var mJson    = JSON.stringify(m).replace(/'/g, "&#39;");
+        var pwJson   = JSON.stringify({ id: m.medtech_id, name: m.last_name + ', ' + m.first_name, branch_id: m.branch_id }).replace(/'/g, "&#39;");
+        var delJson  = JSON.stringify({ id: m.medtech_id, name: m.last_name + ', ' + m.first_name }).replace(/'/g, "&#39;");
+        actionBtns =
+          '<button onclick=\'mt_openModal(' + mJson + ')\' title="Edit" class="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition">' +
+            '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 11l6-6 3 3-6 6H9v-3z"/></svg>' +
+          '</button>' +
+          '<button onclick=\'mt_openPwModal(' + pwJson + ')\' title="Change Password" class="p-1.5 text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition">' +
+            '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>' +
+          '</button>' +
+          '<button onclick=\'mt_openDeleteModal(' + delJson + ')\' title="Delete" class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition">' +
+            '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>' +
+          '</button>';
+      }
+
+      return '<tr class="data-row">' +
+        '<td class="px-5 py-3.5">' +
+          '<div class="font-semibold text-slate-800 text-sm">' + displayName + '</div>' +
+          '<div class="text-xs text-slate-400 mt-0.5">' + _mt_escHtml(m.medtech_id) + '</div>' +
+        '</td>' +
+        '<td class="px-3 py-3.5 text-xs text-slate-500 font-mono">' + _mt_escHtml(m.email) + '</td>' +
+        '<td class="px-3 py-3.5 hidden md:table-cell">' + roleCell + '</td>' +
+        branchCell +
+        '<td class="px-3 py-3.5">' + statusBadge + '</td>' +
+        ((_mt_isSuperAdmin || _mt_isBranchAdmin)
+          ? '<td class="px-5 py-3.5 text-right"><div class="flex items-center justify-end gap-1">' + actionBtns + '</div></td>'
+          : '<td class="px-5 py-3.5"></td>'
+        ) +
+      '</tr>';
+    }).join('');
+  }
+
+  // ── Add / Edit Modal ───────────────────────────────────────────
+  function mt_openModal(mt) {
+    var isEdit = !!mt;
+    document.getElementById('mt-f-medtech-id').value    = mt ? mt.medtech_id   : '';
+    document.getElementById('mt-f-branch-id-hidden').value = mt ? mt.branch_id : '';
+    document.getElementById('mt-f-last-name').value     = mt ? mt.last_name    : '';
+    document.getElementById('mt-f-first-name').value    = mt ? mt.first_name   : '';
+    document.getElementById('mt-f-middle-name').value   = mt ? (mt.middle_name || '') : '';
+    document.getElementById('mt-f-email').value         = mt ? mt.email        : '';
+    document.getElementById('mt-f-email').readOnly      = isEdit; // email is the login identifier, don't change
+    document.getElementById('mt-f-email').classList.toggle('bg-slate-50', isEdit);
+    document.getElementById('mt-f-password').value      = '';
+    document.getElementById('mt-f-is-active').checked   = mt ? mt.status === 'Active' : true;
+    mt_updateStatusLabel();
+
+    // Role dropdown
+    var roleSelect = document.getElementById('mt-f-role');
+    if (mt && mt.role) {
+      // Try to match existing option; if not found, add it temporarily
+      var matched = false;
+      for (var i = 0; i < roleSelect.options.length; i++) {
+        if (roleSelect.options[i].value === mt.role) { roleSelect.value = mt.role; matched = true; break; }
+      }
+      if (!matched) {
+        var opt = document.createElement('option');
+        opt.value = mt.role; opt.textContent = mt.role;
+        roleSelect.appendChild(opt);
+        roleSelect.value = mt.role;
+      }
+    } else {
+      roleSelect.value = 'Medical Technologist';
+    }
+
+    // Branch field — show only for super_admin on create; hidden otherwise
+    var branchField = document.getElementById('mt-branch-field');
+    if (_mt_isSuperAdmin && !isEdit) {
+      branchField.classList.remove('hidden');
+      document.getElementById('mt-f-branch-id').value = '';
+    } else {
+      branchField.classList.add('hidden');
+    }
+
+    document.getElementById('mt-modal-title').textContent = isEdit ? 'Edit Technologist' : 'Add Technologist';
+    document.getElementById('mt-modal-sub').textContent   = isEdit ? 'Update technologist details below' : 'Fill in the technologist\'s information below';
+    document.getElementById('mt-pw-label').innerHTML      = isEdit
+      ? 'New Password <span class="text-slate-400 font-normal">(leave blank to keep)</span>'
+      : 'Password <span class="text-red-400">*</span>';
+    document.getElementById('mt-pw-hint').textContent = isEdit
+      ? 'Leave blank to keep current password.'
+      : 'Required. The technologist will be prompted to change it on first login.';
+    document.getElementById('mt-save-btn').textContent = isEdit ? 'Save Changes' : 'Save Technologist';
+
+    document.getElementById('mt-modal-backdrop').classList.remove('hidden');
+    setTimeout(function() { document.getElementById('mt-f-last-name').focus(); }, 100);
+  }
+
+  function mt_closeModal() { document.getElementById('mt-modal-backdrop').classList.add('hidden'); }
+
+  function mt_updateStatusLabel() {
+    document.getElementById('mt-status-label').textContent =
+      document.getElementById('mt-f-is-active').checked ? 'Active' : 'Inactive';
+  }
+
+  // ── Save (Create or Update) ────────────────────────────────────
+  function mt_saveMedTech() {
+    var id        = document.getElementById('mt-f-medtech-id').value.trim();
+    var lastName  = document.getElementById('mt-f-last-name').value.trim();
+    var firstName = document.getElementById('mt-f-first-name').value.trim();
+    var email     = document.getElementById('mt-f-email').value.trim();
+    var password  = document.getElementById('mt-f-password').value.trim();
+    var isActive  = document.getElementById('mt-f-is-active').checked;
+
+    if (!lastName)  { _mt_showToast('Last name is required.',  'warning'); return; }
+    if (!firstName) { _mt_showToast('First name is required.', 'warning'); return; }
+    if (!id && !email) { _mt_showToast('Email is required.',   'warning'); return; }
+    if (!id && email.indexOf('@') === -1) { _mt_showToast('Please enter a valid email address.', 'warning'); return; }
+    if (!id && !password) { _mt_showToast('Password is required for new technologists.', 'warning'); return; }
+    if (password && password.length < 6) { _mt_showToast('Password must be at least 6 characters.', 'warning'); return; }
+    if (_mt_isSuperAdmin && !id) {
+      var branchSel = document.getElementById('mt-f-branch-id').value;
+      if (!branchSel) { _mt_showToast('Please select a branch.', 'warning'); return; }
+    }
+
+    var btn = document.getElementById('mt-save-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Saving…';
+
+    var payload = {
+      medtech_id:  id,
+      last_name:   lastName,
+      first_name:  firstName,
+      middle_name: document.getElementById('mt-f-middle-name').value.trim(),
+      role:        document.getElementById('mt-f-role').value,
+      status:      isActive ? 'Active' : 'Inactive',
+      branch_id:   id
+        ? document.getElementById('mt-f-branch-id-hidden').value
+        : (_mt_isSuperAdmin ? document.getElementById('mt-f-branch-id').value : '')
+    };
+    if (!id) payload.email    = email;
+    if (password) payload.password = password;
+
+    var action = id ? 'UPDATE_MEDTECH' : 'CREATE_MEDTECH';
+    google.script.run
+      .withSuccessHandler(function(res) {
+        btn.disabled = false;
+        btn.textContent = id ? 'Save Changes' : 'Save Technologist';
+        if (_mt_checkExpired(res)) return;
+        if (res && res.success) {
+          _mt_showToast(id ? 'Technologist updated.' : 'Technologist added.', 'success');
+          mt_closeModal();
+          _mt_loadData();
+        } else {
+          _mt_showToast(res ? (res.error || 'Failed to save.') : 'Failed to save.', 'error');
+        }
+      })
+      .withFailureHandler(function(err) {
+        btn.disabled = false;
+        btn.textContent = id ? 'Save Changes' : 'Save Technologist';
+        _mt_showToast('Error: ' + err.message, 'error');
+      })
+      .handleMedTechRequest(action, payload, _mt_getToken());
+  }
+
+  // ── Change Password Modal ──────────────────────────────────────
+  function mt_openPwModal(info) {
+    document.getElementById('mt-pw-medtech-id').value        = info.id;
+    document.getElementById('mt-pw-branch-id').value         = info.branch_id || '';
+    document.getElementById('mt-pw-modal-name').textContent  = info.name;
+    document.getElementById('mt-f-new-pw').value             = '';
+    document.getElementById('mt-f-confirm-pw').value         = '';
+    document.getElementById('mt-pw-modal').classList.remove('hidden');
+  }
+
+  function mt_closePwModal() { document.getElementById('mt-pw-modal').classList.add('hidden'); }
+
+  function mt_submitPasswordChange() {
+    var medtechId = document.getElementById('mt-pw-medtech-id').value;
+    var branchId  = document.getElementById('mt-pw-branch-id').value;
+    var newPw     = document.getElementById('mt-f-new-pw').value.trim();
+    var confirmPw = document.getElementById('mt-f-confirm-pw').value.trim();
+
+    if (!newPw || newPw.length < 6) { _mt_showToast('Password must be at least 6 characters.', 'warning'); return; }
+    if (newPw !== confirmPw)         { _mt_showToast('Passwords do not match.', 'warning'); return; }
+
+    var btn = document.getElementById('mt-pw-save-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>';
+
+    google.script.run
+      .withSuccessHandler(function(res) {
+        btn.disabled = false; btn.textContent = 'Update Password';
+        if (_mt_checkExpired(res)) return;
+        if (res && res.success) { mt_closePwModal(); _mt_showToast('Password updated successfully.', 'success'); }
+        else _mt_showToast(res ? (res.error || 'Failed to update password.') : 'Failed.', 'error');
+      })
+      .withFailureHandler(function(err) {
+        btn.disabled = false; btn.textContent = 'Update Password';
+        _mt_showToast('Error: ' + err.message, 'error');
+      })
+      .handleMedTechRequest('CHANGE_MT_PASSWORD', { medtech_id: medtechId, new_password: newPw, branch_id: branchId }, _mt_getToken());
+  }
+
+  // ── Delete Modal ───────────────────────────────────────────────
+  function mt_openDeleteModal(info) {
+    _mt_deletingId = info.id;
+    document.getElementById('mt-delete-name').textContent = info.name;
+    document.getElementById('mt-delete-modal').classList.remove('hidden');
+  }
+
+  function mt_closeDeleteModal() {
+    _mt_deletingId = null;
+    document.getElementById('mt-delete-modal').classList.add('hidden');
+  }
+
+  function mt_confirmDelete() {
+    if (!_mt_deletingId) return;
+    var btn = document.getElementById('mt-confirm-delete-btn');
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Deleting…';
+
+    google.script.run
+      .withSuccessHandler(function(res) {
+        btn.disabled = false; btn.textContent = 'Delete';
+        mt_closeDeleteModal();
+        if (_mt_checkExpired(res)) return;
+        if (res && res.success) { _mt_showToast('Technologist deleted.', 'success'); _mt_loadData(); }
+        else _mt_showToast(res ? (res.error || 'Failed to delete.') : 'Failed.', 'error');
+      })
+      .withFailureHandler(function(err) {
+        btn.disabled = false; btn.textContent = 'Delete';
+        mt_closeDeleteModal();
+        _mt_showToast('Error: ' + err.message, 'error');
+      })
+      .handleMedTechRequest('DELETE_MEDTECH', { medtech_id: _mt_deletingId }, _mt_getToken());
+  }
+
+  // ── Loading state ─────────────────────────────────────────────
+  function _mt_showLoading(v) {
+    document.getElementById('mt-loading-state').classList.toggle('hidden', !v);
+    if (v) {
+      document.getElementById('mt-table-wrap').classList.add('hidden');
+      document.getElementById('mt-empty-state').classList.add('hidden');
+      document.getElementById('mt-empty-state').classList.remove('flex');
+    }
+  }
+
+  // ── Toast notifications ────────────────────────────────────────
+  function _mt_showToast(msg, type) {
+    var icons = {
+      success: '<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>',
+      error:   '<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>',
+      warning: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>'
+    };
+    var item = document.createElement('div');
+    item.className = 'toast-item toast-' + (type || 'success');
+    item.innerHTML =
+      '<svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">' +
+      (icons[type] || icons.success) + '</svg>' +
+      '<span>' + _mt_escHtml(String(msg)) + '</span>';
+    document.getElementById('mt-toast').appendChild(item);
+    setTimeout(function() { item.remove(); }, 3800);
+  }
+
+  // ── HTML escaping ──────────────────────────────────────────────
+  function _mt_escHtml(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── Password visibility toggle ─────────────────────────────────
+  function mt_togglePw(inputId) {
+    var inp = document.getElementById(inputId);
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+  }
+</script>
