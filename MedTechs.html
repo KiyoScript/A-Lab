@@ -417,11 +417,15 @@
           _mt_updateStats(_mt_allMedTechs);
         } else {
           _mt_showToast('Failed to load: ' + res.error, 'error');
+          _mt_renderTable([]);
+          _mt_updateStats([]);
         }
       })
       .withFailureHandler(function(err) {
         _mt_showLoading(false);
-        _mt_showToast('Error: ' + err.message, 'error');
+        _mt_showToast('Error: ' + (err && err.message ? err.message : 'Unknown error'), 'error');
+        _mt_renderTable([]);
+        _mt_updateStats([]);
       })
       .handleMedTechRequest('GET_MEDTECHS', {}, _mt_getToken());
   }
