@@ -351,6 +351,7 @@
   // ── Entry point ──────────────────────────────────────────────────
   function init_MedTechs() {
     _mt_buildRoleGrid();
+    _mt_showLoading(true);
     google.script.run
       .withSuccessHandler(function(res) {
         if (_mt_checkExpired(res)) return;

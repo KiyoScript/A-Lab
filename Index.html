@@ -295,16 +295,14 @@
     // - Shows the target tab pane (CSS only, zero network cost)
     // - Fires init_*() exactly once via initializedTabs{} guard
     // ─────────────────────────────────────────────────────────────
-    function switchTab(pageName) {
-      document.querySelectorAll('.tab-pane').forEach(function(p) {
-        p.classList.remove('active');
-        p.style.display = 'none';
-      });
-      var target = document.getElementById('tab-' + pageName);
-      if (target) {
-        target.classList.add('active');
-        target.style.display = 'block';
-      }
+      function switchTab(pageName) {
+        document.querySelectorAll('.tab-pane').forEach(function(p) {
+          p.classList.remove('active');
+        });
+        var target = document.getElementById('tab-' + pageName);
+        if (target) {
+          target.classList.add('active');
+        }
 
       var activeLink = document.querySelector('.nav-link.active');
       if (activeLink) {
@@ -340,11 +338,9 @@
     // ─────────────────────────────────────────────────────────────
     (function kickstartDefaultTab() {
       var defaultTab = 'Dashboard';
-      document.querySelectorAll('.tab-pane').forEach(function(p) { p.style.display = 'none'; });
       var defaultEl = document.getElementById('tab-' + defaultTab);
       if (defaultEl) {
         defaultEl.classList.add('active');
-        defaultEl.style.display = 'block';
       }
       if (typeof window['init_' + defaultTab] === 'function') {
         initializedTabs[defaultTab] = true;

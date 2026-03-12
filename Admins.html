@@ -234,6 +234,7 @@
 
     // ── Init — called by Index.html switchTab() ──────────────────────
     function init_Admins() {
+      _adm_showLoading(true);
       google.script.run
         .withSuccessHandler(function(res) {
           if (_adm_checkExpired(res)) return;
