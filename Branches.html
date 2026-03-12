@@ -52,7 +52,7 @@
       <h1 class="text-xl font-bold text-slate-800">Branches</h1>
       <p id="header-subtitle" class="text-sm text-slate-400 mt-0.5">Manage laboratory branches. Each new branch automatically gets its own Google Spreadsheet.</p>
     </div>
-    <button id="add-branch-btn" onclick="openModal('create')"
+    <button id="add-branch-btn" onclick="br_openModal('create')"
       class="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-sm">
       <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
@@ -74,9 +74,9 @@
       <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
       </svg>
-      <input id="search-input" type="text" placeholder="Search branches…" oninput="filterTable()" class="search-input"/>
+      <input id="search-input" type="text" placeholder="Search branches…" oninput="br_filterTable()" class="search-input"/>
     </div>
-    <select id="status-filter" onchange="filterTable()" class="filter-select">
+    <select id="status-filter" onchange="br_filterTable()" class="filter-select">
       <option value="">All Status</option>
       <option value="Active">Active</option>
       <option value="Inactive">Inactive</option>
@@ -125,7 +125,7 @@
         <h2 id="modal-title" class="text-base font-bold text-slate-800">Add Branch</h2>
         <p id="modal-subtitle" class="text-xs text-slate-400 mt-0.5">A Google Spreadsheet will be created automatically.</p>
       </div>
-      <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-1">
+      <button onclick="br_closeModal()" class="text-slate-400 hover:text-slate-600 p-1">
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
         </svg>
@@ -169,8 +169,8 @@
       </div>
     </div>
     <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100">
-      <button onclick="closeModal()" class="px-4 py-2.5 text-sm font-semibold text-slate-600 hover:text-slate-800">Cancel</button>
-      <button id="save-btn" onclick="saveBranch()"
+      <button onclick="br_closeModal()" class="px-4 py-2.5 text-sm font-semibold text-slate-600 hover:text-slate-800">Cancel</button>
+      <button id="save-btn" onclick="br_saveBranch()"
         class="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-sm min-w-[110px] justify-center">
         <span id="save-label">Save Branch</span>
       </button>
@@ -186,7 +186,7 @@
         <h2 id="services-modal-title" class="text-base font-bold text-slate-800">Branch Services</h2>
         <p id="services-modal-sub" class="text-xs text-slate-400 mt-0.5">Toggle which lab services are available at this branch.</p>
       </div>
-      <button onclick="closeServicesModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100">
+      <button onclick="br_closeServicesModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100">
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
         </svg>
@@ -194,7 +194,7 @@
     </div>
     <div class="px-6 py-3 border-b border-slate-100 shrink-0">
       <input id="services-search" type="text" placeholder="Search lab services…"
-        oninput="filterServices()"
+        oninput="br_filterServices()"
         class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-blue-400"/>
     </div>
     <div id="services-body" class="overflow-y-auto flex-1 px-6 py-4 space-y-5">
@@ -204,7 +204,7 @@
     </div>
     <div class="px-6 py-4 border-t border-slate-100 shrink-0 flex items-center justify-between">
       <p class="text-xs text-slate-400">Changes are saved instantly when you toggle a service.</p>
-      <button onclick="closeServicesModal()" class="px-4 py-2 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">Done</button>
+      <button onclick="br_closeServicesModal()" class="px-4 py-2 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">Done</button>
     </div>
   </div>
 </div>
@@ -221,8 +221,8 @@
     <p class="text-sm text-slate-500 mb-1">This will remove <strong id="delete-name" class="text-slate-700"></strong> from the registry.</p>
     <p class="text-xs text-slate-400 mb-6">The branch spreadsheet will be kept to preserve data.</p>
     <div class="flex gap-3">
-      <button onclick="closeDeleteModal()" class="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
-      <button id="confirm-delete-btn" onclick="confirmDelete()" class="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold">Delete</button>
+      <button onclick="br_closeDeleteModal()" class="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
+      <button id="confirm-delete-btn" onclick="br_confirmDelete()" class="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold">Delete</button>
     </div>
   </div>
 </div>
@@ -328,9 +328,9 @@
           'Open Sheet</a>'
         : '<span class="text-slate-300 text-xs">—</span>';
       var actions = _br_isSuperAdmin
-        ? '<button onclick="openServicesModal(\'' + _br_escHtml(b.branch_id) + '\',\'' + _br_escHtml(b.branch_name) + '\')" class="text-xs font-semibold text-emerald-600 hover:text-emerald-700 px-3 py-1.5 rounded-lg hover:bg-emerald-50 transition-colors">Services</button>' +
-          '<button onclick=\'openModal("edit",' + JSON.stringify(b).replace(/'/g,"&#39;") + ')\' class="text-xs font-semibold text-blue-600 hover:text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors">Edit</button>' +
-          '<button onclick="openDeleteModal(\'' + _br_escHtml(b.branch_id) + '\',\'' + _br_escHtml(b.branch_name) + '\')" class="text-xs font-semibold text-red-500 hover:text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors">Delete</button>'
+        ? '<button onclick="br_openServicesModal(\'' + _br_escHtml(b.branch_id) + '\',\'' + _br_escHtml(b.branch_name) + '\')" class="text-xs font-semibold text-emerald-600 hover:text-emerald-700 px-3 py-1.5 rounded-lg hover:bg-emerald-50 transition-colors">Services</button>' +
+          '<button onclick=\'br_openModal("edit",' + JSON.stringify(b).replace(/'/g,"&#39;") + ')\' class="text-xs font-semibold text-blue-600 hover:text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors">Edit</button>' +
+          '<button onclick="br_openDeleteModal(\'' + _br_escHtml(b.branch_id) + '\',\'' + _br_escHtml(b.branch_name) + '\')" class="text-xs font-semibold text-red-500 hover:text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors">Delete</button>'
         : '<span class="text-xs text-slate-400 italic">View Only</span>';
       tbody.insertAdjacentHTML('beforeend',
         '<tr class="data-row">' +
@@ -346,7 +346,7 @@
     });
   }
 
-  function filterTable() {
+  function br_filterTable() {
     var q      = document.getElementById('search-input').value.toLowerCase();
     var status = document.getElementById('status-filter').value;
     _br_renderTable(_br_allBranches.filter(function(b) {
@@ -356,7 +356,7 @@
     }));
   }
 
-  function openModal(mode, branch) {
+  function br_openModal(mode, branch) {
     if (!_br_isSuperAdmin) return;
     _br_editingId = mode === 'edit' ? branch.branch_id : null;
     document.getElementById('modal-title').textContent    = mode === 'edit' ? 'Edit Branch' : 'Add Branch';
@@ -372,12 +372,12 @@
     document.getElementById('modal-backdrop').classList.remove('hidden');
   }
 
-  function closeModal() {
+  function br_closeModal() {
     _br_editingId = null;
     document.getElementById('modal-backdrop').classList.add('hidden');
   }
 
-  function saveBranch() {
+  function br_saveBranch() {
     if (!_br_isSuperAdmin) return;
     var name = document.getElementById('f-branch-name').value.trim();
     var code = document.getElementById('f-branch-code').value.trim();
@@ -398,7 +398,7 @@
         _br_setSaving(false);
         if (_br_checkExpired(res)) return;
         if (res.success) {
-          closeModal();
+          br_closeModal();
           _br_showToast(_br_editingId ? 'Branch updated!' : 'Branch created — spreadsheet ready! 🎉', 'success');
           _br_loadBranches();
         } else {
@@ -417,31 +417,31 @@
       : '<span id="save-label">' + (_br_editingId ? 'Update Branch' : 'Save Branch') + '</span>';
   }
 
-  function openDeleteModal(id, name) {
+  function br_openDeleteModal(id, name) {
     if (!_br_isSuperAdmin) return;
     _br_deletingId = id;
     document.getElementById('delete-name').textContent = name;
     document.getElementById('delete-modal').classList.remove('hidden');
   }
 
-  function closeDeleteModal() {
+  function br_closeDeleteModal() {
     _br_deletingId = null;
     document.getElementById('delete-modal').classList.add('hidden');
   }
 
-  function confirmDelete() {
+  function br_confirmDelete() {
     if (!_br_deletingId || !_br_isSuperAdmin) return;
     var btn = document.getElementById('confirm-delete-btn');
     btn.textContent = 'Deleting…'; btn.disabled = true;
     google.script.run
       .withSuccessHandler(function(res) {
-        closeDeleteModal(); btn.textContent = 'Delete'; btn.disabled = false;
+        br_closeDeleteModal(); btn.textContent = 'Delete'; btn.disabled = false;
         if (_br_checkExpired(res)) return;
         if (res.success) { _br_showToast('Branch deleted.', 'success'); _br_loadBranches(); }
         else _br_showToast('Error: ' + res.error, 'error');
       })
       .withFailureHandler(function(err) {
-        closeDeleteModal(); btn.textContent = 'Delete'; btn.disabled = false;
+        br_closeDeleteModal(); btn.textContent = 'Delete'; btn.disabled = false;
         _br_showToast('Error: ' + err.message, 'error');
       })
       .handleBranchRequest('DELETE_BRANCH', { branch_id: _br_deletingId }, _br_getToken());
@@ -476,14 +476,14 @@
     return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
-  document.getElementById('modal-backdrop').addEventListener('click', closeModal);
-  document.getElementById('delete-modal').addEventListener('click', closeDeleteModal);
+  document.getElementById('modal-backdrop').addEventListener('click', br_closeModal);
+  document.getElementById('delete-modal').addEventListener('click', br_closeDeleteModal);
   document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') { closeModal(); closeDeleteModal(); closeServicesModal(); }
+    if (e.key === 'Escape') { br_closeModal(); br_closeDeleteModal(); br_closeServicesModal(); }
   });
 
   // ── Branch Services Modal ────────────────────────────────────────
-  function openServicesModal(branchId, branchName) {
+  function br_openServicesModal(branchId, branchName) {
     _br_servicesBranchId = branchId;
     document.getElementById('services-modal-title').textContent = branchName + ' — Services';
     document.getElementById('services-modal-sub').textContent   = 'Toggle which lab services are available at this branch.';
@@ -512,7 +512,7 @@
       .handleBranchLabRequest('GET_BRANCH_LAB_SERVICES', { branch_id: branchId }, _br_getToken());
   }
 
-  function closeServicesModal() {
+  function br_closeServicesModal() {
     _br_servicesBranchId = null;
     _br_servicesData     = [];
     document.getElementById('services-modal').classList.add('hidden');
@@ -541,7 +541,7 @@
           '</div>' +
           '<label class="relative inline-flex items-center cursor-pointer">' +
           '<input type="checkbox" id="' + toggleId + '" ' + (lab.is_enabled ? 'checked' : '') +
-          ' onchange="toggleService(\'' + lab.lab_id + '\', this.checked, this)" class="sr-only peer"/>' +
+          ' onchange="br_toggleService(\'' + lab.lab_id + '\', this.checked, this)" class="sr-only peer"/>' +
           '<div class="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:bg-emerald-500 transition-colors after:content-[\'\'] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5"></div>' +
           '</label></div>';
       }).join('');
@@ -554,13 +554,13 @@
 
       return '<div class="dept-group" data-dept="' + _br_escHtml(dept.dept_name.toLowerCase()) + '">' +
         '<div class="w-full flex items-center justify-between py-2 px-1 mb-1">' +
-        '<button onclick="toggleDeptGroup(\'' + deptKey + '\')" class="flex items-center gap-1.5 flex-1 hover:bg-slate-50 rounded-lg transition-colors group py-1 px-1">' +
+        '<button onclick="br_toggleDeptGroup(\'' + deptKey + '\')" class="flex items-center gap-1.5 flex-1 hover:bg-slate-50 rounded-lg transition-colors group py-1 px-1">' +
         '<svg id="arrow-' + deptKey + '" class="w-3.5 h-3.5 text-slate-400 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>' +
         '<span class="text-[11px] font-bold text-slate-500 uppercase tracking-widest group-hover:text-slate-700">' + _br_escHtml(dept.dept_name) + '</span>' +
         countLabel + '</button>' +
         '<label class="relative inline-flex items-center cursor-pointer ml-3">' +
         '<input type="checkbox" id="dept-toggle-' + deptKey + '" ' + ((allOn || mixed) ? 'checked' : '') +
-        ' onchange="toggleDeptServices(\'' + deptKey + '\',' + labIds + ',this.checked,this,' + prevStates + ')" class="sr-only peer"/>' +
+        ' onchange="br_toggleDeptServices(\'' + deptKey + '\',' + labIds + ',this.checked,this,' + prevStates + ')" class="sr-only peer"/>' +
         '<div class="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:bg-emerald-500 transition-colors after:content-[\'\'] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5"></div>' +
         '</label></div>' +
         '<div id="' + deptKey + '" class="bg-slate-50 rounded-xl px-4 overflow-hidden transition-all duration-200">' + labRows + '</div>' +
@@ -568,7 +568,7 @@
     }).join('');
   }
 
-  function toggleDeptGroup(deptKey) {
+  function br_toggleDeptGroup(deptKey) {
     var panel = document.getElementById(deptKey);
     var arrow = document.getElementById('arrow-' + deptKey);
     var isOpen = panel.style.maxHeight !== '0px' && panel.style.maxHeight !== '';
@@ -585,7 +585,7 @@
     }
   }
 
-  function toggleDeptServices(deptKey, labIds, isEnabled, deptCheckbox, prevStates) {
+  function br_toggleDeptServices(deptKey, labIds, isEnabled, deptCheckbox, prevStates) {
     if (!labIds || labIds.length === 0) return;
     deptCheckbox.disabled = true;
     labIds.forEach(function(labId) {
@@ -632,7 +632,7 @@
     });
   }
 
-  function toggleService(labId, isEnabled, checkbox) {
+  function br_toggleService(labId, isEnabled, checkbox) {
     checkbox.disabled = true;
     google.script.run
       .withSuccessHandler(function(res) {
@@ -655,7 +655,7 @@
       }, _br_getToken());
   }
 
-  function filterServices() {
+  function br_filterServices() {
     var q = document.getElementById('services-search').value.toLowerCase().trim();
     document.querySelectorAll('.dept-group').forEach(function(group) {
       var anyVisible = false;
