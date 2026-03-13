@@ -31,8 +31,11 @@
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
 
-    .tab-pane { display: none; width: 100%; height: 100%; overflow-y: auto; }
-    .tab-pane.active { display: block; animation: fadeIn 0.3s ease; }
+    html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+    body { margin: 0; padding: 0; }
+
+    .tab-pane { display: none; width: 100%; }
+    .tab-pane.active { display: block; overflow-y: auto; height: 100%; animation: fadeIn 0.3s ease; }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(6px); }
       to   { opacity: 1; transform: translateY(0); }
@@ -144,7 +147,7 @@
         <div class="w-8 h-8 rounded-full animate-spin" style="border:2px solid #bbd8ff;border-top-color:#2f76f5"></div>
         <p class="text-xs text-slate-400">Loading…</p>
       </div>
-        <div id="tab-content" class="w-full h-full overflow-hidden">
+        <div id="tab-content" class="w-full h-full overflow-y-auto">
         <div id="tab-DoctorDashboard"      class="tab-pane"><?!= include('DoctorDashboard') ?></div>
         <div id="tab-Orders"               class="tab-pane"><?!= include('Orders') ?></div>
         <div id="tab-DoctorPatients"       class="tab-pane"><?!= include('DoctorPatients') ?></div>
@@ -181,36 +184,41 @@
       if (alab_token) localStorage.setItem('alab_token', alab_token);
     })();
 
+    // Kickstart dashboard immediately — don't wait for auth
+    (function kickstartDefaultTab() {
+      var pane = document.getElementById('tab-DoctorDashboard');
+      if (pane) pane.classList.add('active');
+      if (typeof window['init_DoctorDashboard'] === 'function') {
+        initializedTabs['DoctorDashboard'] = true;
+        window['init_DoctorDashboard']();
+      }
+    })();
+
+    // Single combined call — replaces the old getScriptUrl → GET_SESSION chain
     google.script.run
-      .withSuccessHandler(function(url) {
-        baseUrl = url;
-        google.script.run
-          .withSuccessHandler(function(res) {
-            if (!res.success || !res.data || res.data.role !== 'doctor') {
-              localStorage.removeItem('alab_token');
-              window.top.location.href = url + '?page=Login';
-              return;
-            }
-            var d = res.data;
-            document.getElementById('sidebar-name').textContent = 'Dr. ' + (d.full_name || 'Doctor');
-            document.getElementById('sidebar-role').textContent = d.branch_name ? d.branch_name : 'Doctor';
-            var avatarUrl = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(d.full_name || 'Doctor') + '&background=2f76f5&color=fff&size=64&font-size=0.4';
-            document.getElementById('sidebar-avatar').src = avatarUrl;
-            document.getElementById('header-avatar').src  = avatarUrl;
-            document.getElementById('init-loading').classList.add('hidden');
-            switchTab('DoctorDashboard');
-          })
-          .withFailureHandler(function() {
-            localStorage.removeItem('alab_token');
-            window.top.location.href = url + '?page=Login';
-          })
-          .handleAdminRequest('GET_SESSION', {}, alab_token);
+      .withSuccessHandler(function(init) {
+        baseUrl = init.url;
+        var res = init.session;
+
+        if (!res || !res.success || !res.data || res.data.role !== 'doctor') {
+          localStorage.removeItem('alab_token');
+          window.top.location.href = init.url + '?page=Login';
+          return;
+        }
+
+        var d = res.data;
+        document.getElementById('sidebar-name').textContent = 'Dr. ' + (d.full_name || 'Doctor');
+        document.getElementById('sidebar-role').textContent = d.branch_name ? d.branch_name : 'Doctor';
+        var avatarUrl = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(d.full_name || 'Doctor') + '&background=2f76f5&color=fff&size=64&font-size=0.4';
+        document.getElementById('sidebar-avatar').src = avatarUrl;
+        document.getElementById('header-avatar').src  = avatarUrl;
+        document.getElementById('init-loading').classList.add('hidden');
       })
       .withFailureHandler(function(err) {
         document.getElementById('init-loading').innerHTML =
           '<p class="text-red-500 text-sm">Failed to initialize: ' + err.message + '</p>';
       })
-      .getScriptUrl();
+      .getAppInitData(alab_token);
 
     function switchTab(pageName) {
       document.querySelectorAll('#tab-content .tab-pane').forEach(function(p) {
