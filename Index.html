@@ -329,13 +329,6 @@
       switchTab(pageName);
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // FIX ①: Fire init_Dashboard() IMMEDIATELY — do not wait for
-    // the session call to resolve. The Dashboard skeleton renders
-    // at once; real data fills in as soon as the server responds.
-    // The init-loading overlay hides after session auth completes,
-    // but data loading has already started behind it.
-    // ─────────────────────────────────────────────────────────────
     (function kickstartDefaultTab() {
       var defaultTab = 'Dashboard';
       var defaultEl = document.getElementById('tab-' + defaultTab);
@@ -348,21 +341,6 @@
       }
     })();
 
-    // ─────────────────────────────────────────────────────────────
-    // FIX ②: Combined init — one call returns { url, session }
-    // instead of two chained calls (getScriptUrl → GET_SESSION).
-    // Saves one full round-trip on every page load.
-    //
-    // ADD THIS FUNCTION TO Code.gs:
-    //
-    //   function getAppInitData(token) {
-    //     return {
-    //       url:     ScriptApp.getService().getUrl(),
-    //       session: getSession(token)
-    //     };
-    //   }
-    //
-    // ─────────────────────────────────────────────────────────────
     google.script.run
       .withSuccessHandler(function(init) {
         baseUrl = init.url;
@@ -395,12 +373,29 @@
 
         // Hide overlay — Dashboard data is already loading behind it
         document.getElementById('init-loading').classList.add('hidden');
+        setTimeout(_prefetchAllTabs, 2000);
       })
       .withFailureHandler(function(err) {
         document.getElementById('init-loading').innerHTML =
           '<p class="text-red-500 text-sm p-8 text-center">Failed to initialize: ' + (err.message || 'Unknown error') + '</p>';
       })
       .getAppInitData(alab_token);   // ← single combined call
+
+    function _prefetchAllTabs() {
+        var tabs = [
+          'Branches', 'Departments', 'LabServices',
+          'Packages', 'Discounts', 'Doctors',
+          'Patients', 'Admins', 'Orders', 'MedTechs'
+        ];
+        tabs.forEach(function(pageName, idx) {
+          setTimeout(function() {
+            if (initializedTabs[pageName]) return; // user already visited it, skip
+            initializedTabs[pageName] = true;       // mark done so switchTab() won't re-fire
+            var initFn = 'init_' + pageName;
+            if (typeof window[initFn] === 'function') window[initFn]();
+          }, idx * 300); // stagger: 0ms, 300ms, 600ms ... 2700ms
+        });
+      }
 
     // ── Nav helpers ───────────────────────────────────────────────
     function applyNavRoles(role) {
