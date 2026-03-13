@@ -215,9 +215,9 @@ function handleAdminRequest(action, payload, token) {
 function getBranchesInitData(token) {
   try {
     const session = getSession(token);
-    if (!session) return { success: false, expired: true };
+    if (!session || !session.data) return { success: false, expired: true };
     const branches = getBranches(token);
-    return { success: true, session: session, branches: branches };
+    return { success: true, session: session.data, branches: branches };
   } catch(e) {
     return { success: false, error: e.message };
   }
@@ -227,9 +227,9 @@ function getBranchesInitData(token) {
 function getDepartmentsInitData(token) {
   try {
     const session = getSession(token);
-    if (!session) return { success: false, expired: true };
+    if (!session || !session.data) return { success: false, expired: true };
     const depts = getDepartments({}, token);
-    return { success: true, session: session, depts: depts };
+    return { success: true, session: session.data, depts: depts };
   } catch(e) {
     return { success: false, error: e.message };
   }
@@ -239,9 +239,9 @@ function getDepartmentsInitData(token) {
 function getLabServicesInitData(token) {
   try {
     const session = getSession(token);
-    if (!session) return { success: false, expired: true };
+    if (!session || !session.data) return { success: false, expired: true };
     const labs = getLabServices(token);
-    return { success: true, session: session, labs: labs };
+    return { success: true, session: session.data, labs: labs };
   } catch(e) {
     return { success: false, error: e.message };
   }

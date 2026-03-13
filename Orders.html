@@ -647,8 +647,30 @@
     return false;
   }
 
+  // ── Session UI Helper ────────────────────────────────────────────
+  function _ord_applySessionUI() {
+    var btn = document.getElementById('create-btn');
+    if (btn) {
+      if (_ord_isTech) {
+        btn.classList.remove('hidden');
+        btn.classList.add('flex');
+      } else {
+        btn.classList.add('hidden');
+        btn.classList.remove('flex');
+      }
+    }
+
+    var sub = document.getElementById('header-sub');
+    if (sub) {
+      sub.textContent =
+        _ord_isSuperAdmin ? 'All branches — read only.' :
+        _ord_isDoctor     ? 'Your referrals — read only.' :
+        'Manage lab orders for your branch.';
+    }
+  }
+
   // ── Entry point called by Index.html switchTab() ─────────────────
-function init_Orders() {
+  function init_Orders() {
     
     // --- OPTIMISTIC UI ---------------------------------------
     if (typeof window.ALAB_SESSION !== 'undefined') {
@@ -696,36 +718,6 @@ function init_Orders() {
         _ord_showLoading(false);
         _ord_showToast('Error: ' + err.message, 'error');
         // Keep UI state
-      })
-      .getOrdersInitData(_ord_getToken());
-  }
-          _ord_isSuperAdmin  = res.session.role === 'super_admin';
-          _ord_isDoctor      = res.session.role === 'doctor';
- 
-          var btn = document.getElementById('create-btn');
-          if (_ord_isTech && btn) { btn.classList.remove('hidden'); btn.classList.add('flex'); }
- 
-          var sub = document.getElementById('header-sub');
-          if (sub) sub.textContent =
-            _ord_isSuperAdmin ? 'All branches — read only.' :
-            _ord_isDoctor     ? 'Your referrals — read only.' :
-            'Manage lab orders for your branch.';
-        }
-        if (res.orders && res.orders.success) {
-          _ord_allOrders = res.orders.data || [];
-          _ord_renderTable(_ord_allOrders);
-          _ord_updateStats(_ord_allOrders);
-        } else {
-          _ord_showEmpty('Failed to load orders.');
-        }
-      })
-      .withFailureHandler(function(err) {
-        _ord_showLoading(false);
-        _ord_showEmpty('Error loading orders.');
-      })
-      .getOrdersInitData(_ord_getToken());
-  }
-
   // ══════════════════════════════════════════════════════════════
   // ORDERS LIST
   // ══════════════════════════════════════════════════════════════
