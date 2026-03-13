@@ -369,6 +369,9 @@
             ? 'Super Admin'
             : (res.data.branch_name ? res.data.branch_name + ' Admin' : 'Branch Admin');
 
+        // Store session globally for tabs to use if fetch fails
+        window.ALAB_SESSION = res.data;
+
         applyNavRoles(res.data.role);
 
         // Hide overlay — Dashboard data is already loading behind it
@@ -387,14 +390,30 @@
           'Packages', 'Discounts', 'Doctors',
           'Patients', 'Admins', 'Orders', 'MedTechs'
         ];
-        tabs.forEach(function(pageName, idx) {
-          setTimeout(function() {
-            if (initializedTabs[pageName]) return; // user already visited it, skip
-            initializedTabs[pageName] = true;       // mark done so switchTab() won't re-fire
-            var initFn = 'init_' + pageName;
-            if (typeof window[initFn] === 'function') window[initFn]();
-          }, idx * 300); // stagger: 0ms, 300ms, 600ms ... 2700ms
-        });
+        
+        // Sequential fetch using recursion to avoid overwhelming the server
+        var i = 0;
+        function next() {
+          if (i >= tabs.length) return;
+          var pageName = tabs[i++];
+          if (initializedTabs[pageName]) {
+            next(); // Skip if already initialized
+            return;
+          }
+          
+          // Mark as initialized so switchTab won't re-trigger immediately
+          initializedTabs[pageName] = true;
+          
+          var initFn = 'init_' + pageName;
+          if (typeof window[initFn] === 'function') {
+            window[initFn]();
+          }
+          
+          // Wait 1.5s before next request
+          setTimeout(next, 1500); 
+        }
+        
+        next();
       }
 
     // ── Nav helpers ───────────────────────────────────────────────

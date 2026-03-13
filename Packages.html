@@ -263,17 +263,35 @@
 
   // ── Entry point called by Index.html switchTab() ────────────────
 function init_Packages() {
+    
+    // --- OPTIMISTIC UI ---------------------------------------
+    if (typeof window.ALAB_SESSION !== 'undefined') {
+       _pkg_isSuperAdmin  = window.ALAB_SESSION.role === 'super_admin';
+       _pkg_isBranchAdmin = window.ALAB_SESSION.role === 'branch_admin';
+       _pkg_currentSession = window.ALAB_SESSION;
+       _pkg_applySessionUI();
+    }
+    // ---------------------------------------------------------
+
     _pkg_showLoading(true);
     google.script.run
       .withSuccessHandler(function(res) {
         _pkg_showLoading(false);
         if (_pkg_checkExpired(res)) return;
-        if (res.success && res.session) {
+        
+        // Use response session, fallback to global
+        if (res.session) {
           _pkg_currentSession = res.session;
           _pkg_isSuperAdmin   = res.session.role === 'super_admin';
           _pkg_isBranchAdmin  = res.session.role === 'branch_admin';
           _pkg_applySessionUI();
+        } else if (window.ALAB_SESSION) {
+           _pkg_currentSession = window.ALAB_SESSION;
+           _pkg_isSuperAdmin   = window.ALAB_SESSION.role === 'super_admin';
+           _pkg_isBranchAdmin  = window.ALAB_SESSION.role === 'branch_admin';
+           _pkg_applySessionUI();
         }
+        
         if (res.packages && res.packages.success) {
           _pkg_allPackages = res.packages.data || [];
         }

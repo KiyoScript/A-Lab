@@ -253,17 +253,35 @@
 
   // ── Entry point called by Index.html switchTab() ────────────────
   function init_Discounts() {
+    
+    // --- OPTIMISTIC UI ---------------------------------------
+    if (typeof window.ALAB_SESSION !== 'undefined') {
+       _disc_isSuperAdmin  = window.ALAB_SESSION.role === 'super_admin';
+       _disc_isBranchAdmin = window.ALAB_SESSION.role === 'branch_admin';
+       _disc_currentSession = window.ALAB_SESSION;
+       _disc_applyRoleUI();
+    }
+    // ---------------------------------------------------------
+
     _disc_showLoading(true);
     google.script.run
       .withSuccessHandler(function(res) {
         _disc_showLoading(false);
         if (_disc_checkExpired(res)) return;
-        if (res.success && res.session) {
+        
+        // Use response session, fallback to global
+        if (res.session) {
           _disc_currentSession = res.session;
           _disc_isSuperAdmin   = res.session.role === 'super_admin';
           _disc_isBranchAdmin  = res.session.role === 'branch_admin';
           _disc_applyRoleUI();
+        } else if (window.ALAB_SESSION) {
+           _disc_currentSession = window.ALAB_SESSION;
+           _disc_isSuperAdmin   = window.ALAB_SESSION.role === 'super_admin';
+           _disc_isBranchAdmin  = window.ALAB_SESSION.role === 'branch_admin';
+           _disc_applyRoleUI();
         }
+
         if (res.discounts && res.discounts.success) {
           _disc_allDiscounts = res.discounts.data || [];
           _disc_renderStats();

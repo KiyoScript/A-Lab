@@ -258,20 +258,37 @@
 
   // ── Init — called by Index.html switchTab() ──────────────────────
   function init_Branches() {
+    // Optimistic UI check if global session exists
+    if (typeof window.ALAB_SESSION !== 'undefined') {
+       _br_isSuperAdmin = window.ALAB_SESSION.role === 'super_admin';
+       if (!_br_isSuperAdmin) {
+          document.getElementById('add-branch-btn').style.display = 'none';
+          document.getElementById('header-subtitle').textContent  = 'View your assigned branch details and spreadsheet.';
+          document.getElementById('empty-subtext').textContent    = 'No branch assigned to your account.';
+       }
+    }
+
     _br_showLoading(true);
     google.script.run
       .withSuccessHandler(function(res) {
         _br_showLoading(false);
         if (_br_checkExpired(res)) return;
-        if (res.success && res.session) {
+        
+        // Use session from response, or fallback to global if response session is missing (e.g. partial fail)
+        if (res.session) {
           _br_currentSession = res.session;
           _br_isSuperAdmin   = res.session.role === 'super_admin';
+        } else if (window.ALAB_SESSION) {
+          _br_currentSession = window.ALAB_SESSION; 
+          _br_isSuperAdmin   = window.ALAB_SESSION.role === 'super_admin';
         }
+
         if (!_br_isSuperAdmin) {
           document.getElementById('add-branch-btn').style.display = 'none';
           document.getElementById('header-subtitle').textContent  = 'View your assigned branch details and spreadsheet.';
           document.getElementById('empty-subtext').textContent    = 'No branch assigned to your account.';
         }
+        
         if (res.branches && res.branches.success) {
           _br_allBranches = res.branches.data || [];
           _br_renderStats();
@@ -283,6 +300,7 @@
       .withFailureHandler(function(err) {
         _br_showLoading(false);
         _br_showToast('Error: ' + err.message, 'error');
+        // If data fails but we have session, at least UI state is correct
         _br_renderTable([]);
       })
       .getBranchesInitData(_br_getToken());
