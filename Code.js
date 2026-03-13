@@ -323,20 +323,16 @@ function getOrdersInitData(token) {
      return { success: false, error: e.message };
    }
 }
-  } catch(e) {
-    return { success: false, error: e.message };
-  }
-}
 
 // ── Patients ────────────────────────────────────────────────────
 function getPatientsInitData(token) {
   try {
     const session  = getSession(token);
-    if (!session) return { success: false, expired: true };
+    if (!session || !session.data) return { success: false, expired: true };
     const patients  = getPatients({}, token);
     const branches  = getBranches(token);
     const discounts = getDiscountsAll(token);
-    return { success: true, session: session, patients: patients, branches: branches, discounts: discounts };
+    return { success: true, session: session.data, patients: patients, branches: branches, discounts: discounts };
   } catch(e) {
     return { success: false, error: e.message };
   }
@@ -346,24 +342,13 @@ function getPatientsInitData(token) {
 function getAdminsInitData(token) {
   try {
     const session = getSession(token);
-    if (!session) return { success: false, expired: true };
-    const isBranchAdmin = session.role === 'branch_admin';
+    if (!session || !session.data) return { success: false, expired: true };
+    const s = session.data;
+    const isBranchAdmin = s.role === 'branch_admin';
     const branches      = getBranches(token);
     const branchAdmins  = getBranchAdmins(token);
     const superAdmins   = isBranchAdmin ? { success: true, data: [] } : getSuperAdmins(token);
-    return { success: true, session: session, branches: branches, branchAdmins: branchAdmins, superAdmins: superAdmins };
-  } catch(e) {
-    return { success: false, error: e.message };
-  }
-}
-
-// ── Orders ──────────────────────────────────────────────────────
-function getOrdersInitData(token) {
-  try {
-    const session = getSession(token);
-    if (!session) return { success: false, expired: true };
-    const orders = getOrders({}, token);
-    return { success: true, session: session, orders: orders };
+    return { success: true, session: s, branches: branches, branchAdmins: branchAdmins, superAdmins: superAdmins };
   } catch(e) {
     return { success: false, error: e.message };
   }
