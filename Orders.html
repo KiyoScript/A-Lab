@@ -717,7 +717,10 @@
       .withFailureHandler(function(err) {
         _ord_showLoading(false);
         _ord_showToast('Error: ' + err.message, 'error');
-        // Keep UI state
+      })
+      .getOrdersInitData(_ord_getToken());
+  }
+
   // ══════════════════════════════════════════════════════════════
   // ORDERS LIST
   // ══════════════════════════════════════════════════════════════
