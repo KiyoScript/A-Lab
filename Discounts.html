@@ -309,6 +309,30 @@
       .handleDiscountRequest(action, {}, _disc_getToken());
   }
 
+  // ── Loading state ───────────────────────────────────────────────
+  function _disc_showLoading(show) {
+    var loading = document.getElementById('disc-loading-state');
+    var wrap    = document.getElementById('disc-table-wrap');
+    var empty   = document.getElementById('disc-empty-state');
+
+    if (show) {
+      if (loading) {
+        loading.classList.remove('hidden');
+        loading.classList.add('flex');
+      }
+      if (wrap)  wrap.classList.add('hidden');
+      if (empty) {
+        empty.classList.add('hidden');
+        empty.classList.remove('flex');
+      }
+    } else {
+      if (loading) {
+        loading.classList.add('hidden');
+        loading.classList.remove('flex');
+      }
+    }
+  }
+
   // ── Render ──────────────────────────────────────────────────────
   function _disc_renderStats() {
     var active = _disc_allDiscounts.filter(function(d) { return d.is_active; }).length;
