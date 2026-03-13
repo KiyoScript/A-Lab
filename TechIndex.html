@@ -170,41 +170,44 @@
       if (alab_token) localStorage.setItem('alab_token', alab_token);
     })();
 
+    // Kickstart dashboard immediately — don't wait for auth
+    (function kickstartDefaultTab() {
+      var pane = document.getElementById('tab-TechDashboard');
+      if (pane) pane.classList.add('active');
+      if (typeof window['init_TechDashboard'] === 'function') {
+        initializedTabs['TechDashboard'] = true;
+        window['init_TechDashboard']();
+      }
+    })();
+
+    // Single combined call — replaces the old getScriptUrl → GET_SESSION chain
     google.script.run
-      .withSuccessHandler(function(url) {
-        baseUrl = url;
-        google.script.run
-          .withSuccessHandler(function(res) {
-            if (!res.success || !res.data || res.data.role !== 'medtech') {
-              localStorage.removeItem('alab_token');
-              window.top.location.href = url + '?page=Login';
-              return;
-            }
-            var d = res.data;
+      .withSuccessHandler(function(init) {
+        baseUrl = init.url;
+        var res = init.session;
 
-            document.getElementById('sidebar-name').textContent = d.full_name || 'Technologist';
-            document.getElementById('sidebar-role').textContent = d.branch_name || d.medtech_role || 'Technologist';
+        if (!res || !res.success || !res.data || res.data.role !== 'medtech') {
+          localStorage.removeItem('alab_token');
+          window.top.location.href = init.url + '?page=Login';
+          return;
+        }
 
-            var avatarUrl = 'https://ui-avatars.com/api/?name=' +
-              encodeURIComponent(d.full_name || 'Tech') +
-              '&background=059669&color=fff&size=64&font-size=0.4';
-            document.getElementById('sidebar-avatar').src = avatarUrl;
-            document.getElementById('header-avatar').src  = avatarUrl;
+        var d = res.data;
+        document.getElementById('sidebar-name').textContent = d.full_name || 'Technologist';
+        document.getElementById('sidebar-role').textContent = d.branch_name || d.medtech_role || 'Technologist';
 
-            document.getElementById('init-loading').classList.add('hidden');
-            switchTab('TechDashboard');
-          })
-          .withFailureHandler(function() {
-            localStorage.removeItem('alab_token');
-            window.top.location.href = url + '?page=Login';
-          })
-          .handleAdminRequest('GET_SESSION', {}, alab_token);
+        var avatarUrl = 'https://ui-avatars.com/api/?name=' +
+          encodeURIComponent(d.full_name || 'Tech') +
+          '&background=059669&color=fff&size=64&font-size=0.4';
+        document.getElementById('sidebar-avatar').src = avatarUrl;
+        document.getElementById('header-avatar').src  = avatarUrl;
+        document.getElementById('init-loading').classList.add('hidden');
       })
       .withFailureHandler(function(err) {
         document.getElementById('init-loading').innerHTML =
           '<p class="text-red-500 text-sm">Failed to initialize: ' + err.message + '</p>';
       })
-      .getScriptUrl();
+      .getAppInitData(alab_token);
 
     function switchTab(pageName) {
       document.querySelectorAll('#tab-content .tab-pane').forEach(function(p) {

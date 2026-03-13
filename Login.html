@@ -111,12 +111,7 @@
   </div>
 
   <script>
-    var scriptUrl = '';
-
-    // Fetch script URL immediately on page load — needed for redirect
-    google.script.run
-      .withSuccessHandler(function(url) { scriptUrl = url; })
-      .getScriptUrl();
+    var scriptUrl = '<?= ScriptApp.getService().getUrl() ?>';
 
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Enter' && !document.getElementById('login-btn').disabled) doLogin();
@@ -223,11 +218,7 @@
       .withSuccessHandler(function(res) {
         if (res.success) {
           var targetPage = pendingRole === 'doctor' ? 'DoctorIndex' : 'Index';
-          google.script.run
-            .withSuccessHandler(function(url) {
-              window.top.location.href = url + '?page=' + targetPage + '&token=' + encodeURIComponent(pendingToken);
-            })
-            .getScriptUrl();
+          window.top.location.href = scriptUrl + '?page=' + targetPage + '&token=' + encodeURIComponent(pendingToken);
         } else {
           btn.disabled = false; btn.textContent = 'Set Password & Continue';
           err.textContent = res.error || 'Failed to update password.';
