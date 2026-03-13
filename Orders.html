@@ -649,15 +649,56 @@
 
   // ── Entry point called by Index.html switchTab() ─────────────────
 function init_Orders() {
+    
+    // --- OPTIMISTIC UI ---------------------------------------
+    if (typeof window.ALAB_SESSION !== 'undefined') {
+       _ord_currentSession = window.ALAB_SESSION;
+       _ord_isTech        = window.ALAB_SESSION.role === 'medtech';
+       _ord_isBranchAdmin = window.ALAB_SESSION.role === 'branch_admin';
+       _ord_isSuperAdmin  = window.ALAB_SESSION.role === 'super_admin';
+       _ord_isDoctor      = window.ALAB_SESSION.role === 'doctor';
+       _ord_applySessionUI();
+    }
+    // ---------------------------------------------------------
+
     _ord_showLoading(true);
     google.script.run
       .withSuccessHandler(function(res) {
         _ord_showLoading(false);
         if (_ord_checkExpired(res)) return;
-        if (res.success && res.session) {
+        
+        // Use response session, fallback to global
+        if (res.session) {
           _ord_currentSession = res.session;
           _ord_isTech        = res.session.role === 'medtech';
           _ord_isBranchAdmin = res.session.role === 'branch_admin';
+          _ord_isSuperAdmin  = res.session.role === 'super_admin';
+          _ord_isDoctor      = res.session.role === 'doctor';
+          _ord_applySessionUI();
+        } else if (window.ALAB_SESSION) {
+           _ord_currentSession = window.ALAB_SESSION;
+           _ord_isTech        = window.ALAB_SESSION.role === 'medtech';
+           _ord_isBranchAdmin = window.ALAB_SESSION.role === 'branch_admin';
+           _ord_isSuperAdmin  = window.ALAB_SESSION.role === 'super_admin';
+           _ord_isDoctor      = window.ALAB_SESSION.role === 'doctor';
+           _ord_applySessionUI();
+        }
+
+        if (res.orders && res.orders.success) {
+          _ord_allOrders = res.orders.data || [];
+          _ord_renderTable(_ord_allOrders);
+          _ord_updateStats(_ord_allOrders);
+        } else {
+          _ord_renderTable([]); _ord_updateStats([]);
+        }
+      })
+      .withFailureHandler(function(err) {
+        _ord_showLoading(false);
+        _ord_showToast('Error: ' + err.message, 'error');
+        // Keep UI state
+      })
+      .getOrdersInitData(_ord_getToken());
+  }
           _ord_isSuperAdmin  = res.session.role === 'super_admin';
           _ord_isDoctor      = res.session.role === 'doctor';
  

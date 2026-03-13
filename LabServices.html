@@ -247,16 +247,32 @@
 
   // ── Entry point called by Index.html switchTab() ────────────────
   function init_LabServices() {
+    
+    // --- OPTIMISTIC UI ---------------------------------------
+    if (typeof window.ALAB_SESSION !== 'undefined') {
+       _ls_isSuperAdmin = window.ALAB_SESSION.role === 'super_admin';
+       _ls_currentSession = window.ALAB_SESSION;
+       _ls_applySessionUI();
+    }
+    // ---------------------------------------------------------
+
     _ls_showLoading(true);
     google.script.run
       .withSuccessHandler(function(res) {
         _ls_showLoading(false);
         if (_ls_checkExpired(res)) return;
-        if (res.success && res.session) {
+        
+        // Use response session, fallback to global
+        if (res.session) {
           _ls_currentSession = res.session;
           _ls_isSuperAdmin   = res.session.role === 'super_admin';
           _ls_applySessionUI();
+        } else if (window.ALAB_SESSION) {
+           _ls_currentSession = window.ALAB_SESSION; 
+           _ls_isSuperAdmin   = window.ALAB_SESSION.role === 'super_admin';
+           _ls_applySessionUI();
         }
+
         if (res.labs && res.labs.success) {
           _ls_allLabs = res.labs.data || [];
         }
@@ -266,6 +282,7 @@
       .withFailureHandler(function(err) {
         _ls_showLoading(false);
         _ls_showToast('Error loading lab services: ' + err.message, 'error');
+        // Keep UI state
       })
       .getLabServicesInitData(_ls_getToken());
   }

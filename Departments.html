@@ -185,16 +185,31 @@
       lbl.className   = 'text-sm font-semibold ' + (this.checked ? 'text-emerald-600' : 'text-slate-400');
     });
 
+    // --- OPTIMISTIC UI ---------------------------------------
+    if (typeof window.ALAB_SESSION !== 'undefined') {
+       _dept_isSuperAdmin = window.ALAB_SESSION.role === 'super_admin';
+       _dept_currentSession = window.ALAB_SESSION;
+       _dept_applySessionUI();
+    }
+    // ---------------------------------------------------------
+
     _dept_showLoading(true);
     google.script.run
       .withSuccessHandler(function(res) {
         _dept_showLoading(false);
         if (_dept_checkExpired(res)) return;
-        if (res.success && res.session) {
+        
+        // Use response session, fallback to global
+        if (res.session) {
           _dept_currentSession = res.session;
           _dept_isSuperAdmin   = res.session.role === 'super_admin';
           _dept_applySessionUI();
+        } else if (window.ALAB_SESSION) {
+           _dept_currentSession = window.ALAB_SESSION; 
+           _dept_isSuperAdmin   = window.ALAB_SESSION.role === 'super_admin';
+           _dept_applySessionUI();
         }
+
         if (res.depts && res.depts.success) {
           _dept_allDepts = res.depts.data || [];
           _dept_renderTable(_dept_allDepts);
@@ -206,6 +221,7 @@
       .withFailureHandler(function(err) {
         _dept_showLoading(false);
         _dept_showToast('Error loading departments.', 'error');
+        // If data fails, keep UI state
         _dept_renderTable([]); _dept_updateStats([]);
       })
       .getDepartmentsInitData(_dept_getToken());

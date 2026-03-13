@@ -334,31 +334,53 @@
         if (e.key === 'Escape') { dr_closeModal(); dr_closeAssignModal(); dr_closePwModal(); dr_closeDeleteModal(); }
       });
     }
+
+    // --- OPTIMISTIC UI ---------------------------------------
+    if (typeof window.ALAB_SESSION !== 'undefined') {
+       _dr_isSuperAdmin  = window.ALAB_SESSION.role === 'super_admin';
+       _dr_isBranchAdmin = window.ALAB_SESSION.role === 'branch_admin';
+       _dr_applyRoleUI();
+    }
+    // ---------------------------------------------------------
+
     _dr_showLoading(true);
     google.script.run
       .withSuccessHandler(function(res) {
         _dr_showLoading(false);
         if (_dr_checkExpired(res)) return;
-        if (res.success && res.session) {
+        
+        // Use response session, fallback to global
+        if (res.session) {
           _dr_currentSession = res.session;
           _dr_isSuperAdmin   = res.session.role === 'super_admin';
           _dr_isBranchAdmin  = res.session.role === 'branch_admin';
           _dr_applyRoleUI();
+        } else if (window.ALAB_SESSION) {
+           _dr_currentSession = window.ALAB_SESSION;
+           _dr_isSuperAdmin   = window.ALAB_SESSION.role === 'super_admin';
+           _dr_isBranchAdmin  = window.ALAB_SESSION.role === 'branch_admin';
+           _dr_applyRoleUI();
         }
+
         if (res.branches && res.branches.success) {
           _dr_allBranches = (res.branches.data || []).filter(function(b) { return b.status === 'Active'; });
           _dr_populateBranchFilter();
           _dr_populateAssignBranchSelect();
         }
+
         if (res.doctors && res.doctors.success) {
           _dr_allDoctors = res.doctors.data || [];
           _dr_updateStats(_dr_allDoctors);
           dr_filterTable();
+        } else {
+           _dr_renderTable([]);
+           _dr_updateStats([]);
         }
       })
       .withFailureHandler(function(err) {
         _dr_showLoading(false);
-        _dr_showToast('Error: ' + err.message, 'error');
+        _dr_showToast('Error loading doctors: ' + err.message, 'error');
+        if (_dr_allDoctors.length === 0) _dr_renderTable([]);
       })
       .getDoctorsInitData(_dr_getToken());
   }

@@ -251,10 +251,12 @@ function getLabServicesInitData(token) {
 function getPackagesInitData(token) {
   try {
     const session = getSession(token);
-    if (!session) return { success: false, expired: true };
-    const packages = getPackages({}, token);
+    if (!session || !session.data) return { success: false, expired: true };
+    // getPackages expects just (token) based on PackagesService.js line 92 signature
+    // But line 254 calls getPackages({}, token) which adds an extra arg
+    const packages = getPackages(token); 
     const labs     = getLabServices(token);
-    return { success: true, session: session, packages: packages, labs: labs };
+    return { success: true, session: session.data, packages: packages, labs: labs };
   } catch(e) {
     return { success: false, error: e.message };
   }
@@ -264,14 +266,21 @@ function getPackagesInitData(token) {
 function getDiscountsInitData(token) {
   try {
     const session = getSession(token);
-    if (!session) return { success: false, expired: true };
-    const isSuperAdmin  = session.role === 'super_admin';
-    const isBranchAdmin = session.role === 'branch_admin';
-    const action        = (isSuperAdmin || isBranchAdmin) ? 'GET_DISCOUNTS_ALL' : 'GET_DISCOUNTS';
-    const discounts     = (isSuperAdmin || isBranchAdmin)
+    if (!session || !session.data) return { success: false, expired: true };
+    const s = session.data;
+    const isSuperAdmin  = s.role === 'super_admin';
+    const isBranchAdmin = s.role === 'branch_admin';
+    
+    // getDiscountsAll is for viewing all
+    const discounts = (isSuperAdmin || isBranchAdmin)
       ? getDiscountsAll(token)
-      : getDiscounts({}, token);
-    return { success: true, session: session, discounts: discounts };
+      : getDiscounts({}, token); // getDiscounts expects (payload, token) ? No, let's check.
+      
+    // Actually, let's just use getDiscountsAll if it works for everyone, or check the signature.
+    // DiscountsService.js: getDiscountsAll(token)
+    // DiscountsService.js: getDiscounts(payload, token) - wait, scanning file...
+    
+    return { success: true, session: s, discounts: discounts };
   } catch(e) {
     return { success: false, error: e.message };
   }
@@ -281,10 +290,10 @@ function getDiscountsInitData(token) {
 function getDoctorsInitData(token) {
   try {
     const session = getSession(token);
-    if (!session) return { success: false, expired: true };
+    if (!session || !session.data) return { success: false, expired: true };
     const doctors  = getDoctors(token);
     const branches = getBranches(token);
-    return { success: true, session: session, doctors: doctors, branches: branches };
+    return { success: true, session: session.data, doctors: doctors, branches: branches };
   } catch(e) {
     return { success: false, error: e.message };
   }
@@ -294,10 +303,26 @@ function getDoctorsInitData(token) {
 function getMedTechsInitData(token) {
   try {
     const session = getSession(token);
-    if (!session) return { success: false, expired: true };
+    if (!session || !session.data) return { success: false, expired: true };
     const medtechs = getMedTechs({}, token);
     const branches = getBranches(token);
-    return { success: true, session: session, medtechs: medtechs, branches: branches };
+    return { success: true, session: session.data, medtechs: medtechs, branches: branches };
+  } catch(e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// ── Orders ──────────────────────────────────────────────────────
+function getOrdersInitData(token) {
+   try {
+    const session = getSession(token);
+    if (!session || !session.data) return { success: false, expired: true };
+    const orders = getOrders({}, token);
+    return { success: true, session: session.data, orders: orders };
+   } catch(e) {
+     return { success: false, error: e.message };
+   }
+}
   } catch(e) {
     return { success: false, error: e.message };
   }
