@@ -334,19 +334,33 @@
         if (e.key === 'Escape') { dr_closeModal(); dr_closeAssignModal(); dr_closePwModal(); dr_closeDeleteModal(); }
       });
     }
+    _dr_showLoading(true);
     google.script.run
       .withSuccessHandler(function(res) {
+        _dr_showLoading(false);
         if (_dr_checkExpired(res)) return;
-        if (res && res.success) {
-          _dr_currentSession = res.data;
-          _dr_isSuperAdmin   = _dr_currentSession.role === 'super_admin';
-          _dr_isBranchAdmin  = _dr_currentSession.role === 'branch_admin';
+        if (res.success && res.session) {
+          _dr_currentSession = res.session;
+          _dr_isSuperAdmin   = res.session.role === 'super_admin';
+          _dr_isBranchAdmin  = res.session.role === 'branch_admin';
           _dr_applyRoleUI();
         }
-        _dr_loadBranches();
+        if (res.branches && res.branches.success) {
+          _dr_allBranches = (res.branches.data || []).filter(function(b) { return b.status === 'Active'; });
+          _dr_populateBranchFilter();
+          _dr_populateAssignBranchSelect();
+        }
+        if (res.doctors && res.doctors.success) {
+          _dr_allDoctors = res.doctors.data || [];
+          _dr_updateStats(_dr_allDoctors);
+          dr_filterTable();
+        }
       })
-      .withFailureHandler(function() { _dr_loadBranches(); })
-      .handleAdminRequest('GET_SESSION', {}, _dr_getToken());
+      .withFailureHandler(function(err) {
+        _dr_showLoading(false);
+        _dr_showToast('Error: ' + err.message, 'error');
+      })
+      .getDoctorsInitData(_dr_getToken());
   }
 
   // ── Role UI ───────────────────────────────────────────────
@@ -373,9 +387,9 @@
           _dr_populateBranchFilter();
           _dr_populateAssignBranchSelect();
         }
-        _dr_loadData();
+        _dr_silentReload();
       })
-      .withFailureHandler(function() { _dr_loadData(); })
+      .withFailureHandler(function() { _dr_silentReload(); })
       .handleBranchRequest('GET_BRANCHES', {}, _dr_getToken());
   }
 
@@ -396,29 +410,20 @@
   }
 
   // ── Load doctors ───────────────────────────────────────────
-  function _dr_loadData() {
-    _dr_showLoading(true);
+  function _dr_silentReload() {
     google.script.run
       .withSuccessHandler(function(res) {
-        _dr_showLoading(false);
         if (_dr_checkExpired(res)) return;
         if (res && res.success) {
           _dr_allDoctors = res.data || [];
           _dr_updateStats(_dr_allDoctors);
           dr_filterTable();
-        } else {
-          _dr_showToast(res ? (res.error || 'Failed to load doctors.') : 'Failed to load doctors.', 'error');
-          _dr_renderTable([]);
         }
       })
-      .withFailureHandler(function(err) {
-        _dr_showLoading(false);
-        _dr_showToast('Error: ' + err.message, 'error');
-        _dr_renderTable([]);
-      })
+      .withFailureHandler(function() { /* silent */ })
       .handleDoctorRequest('GET_DOCTORS', {}, _dr_getToken());
   }
-
+  
   // ── Stats ──────────────────────────────────────────────────
   function _dr_updateStats(data) {
     var active     = data.filter(function(d) { return d.is_active; }).length;
@@ -596,7 +601,7 @@
       .withSuccessHandler(function(res) {
         btn.disabled = false; btn.textContent = id ? 'Save Changes' : 'Save Doctor';
         if (_dr_checkExpired(res)) return;
-        if (res && res.success) { _dr_showToast(id ? 'Doctor updated.' : 'Doctor added.', 'success'); dr_closeModal(); _dr_loadData(); }
+        if (res && res.success) { _dr_showToast(id ? 'Doctor updated.' : 'Doctor added.', 'success'); dr_closeModal(); _dr_silentReload(); }
         else _dr_showToast(res ? (res.error || 'Failed to save.') : 'Failed to save.', 'error');
       })
       .withFailureHandler(function(err) {
@@ -633,7 +638,7 @@
       .withSuccessHandler(function(res) {
         btn.disabled = false; btn.textContent = 'Assign';
         if (_dr_checkExpired(res)) return;
-        if (res && res.success) { _dr_showToast('Doctor assigned successfully.', 'success'); dr_closeAssignModal(); _dr_loadData(); }
+        if (res && res.success) { _dr_showToast('Doctor assigned successfully.', 'success'); dr_closeAssignModal(); _dr_silentReload(); }
         else _dr_showToast(res ? (res.error || 'Failed to assign.') : 'Failed to assign.', 'error');
       })
       .withFailureHandler(function(err) {
@@ -700,7 +705,7 @@
       .withSuccessHandler(function(res) {
         btn.disabled = false; btn.textContent = 'Delete';
         if (_dr_checkExpired(res)) return;
-        if (res && res.success) { _dr_showToast('Doctor deleted.', 'success'); dr_closeDeleteModal(); _dr_loadData(); }
+        if (res && res.success) { _dr_showToast('Doctor deleted.', 'success'); dr_closeDeleteModal(); _dr_silentReload(); }
         else { _dr_showToast(res ? (res.error || 'Failed to delete.') : 'Failed to delete.', 'error'); dr_closeDeleteModal(); }
       })
       .withFailureHandler(function(err) {

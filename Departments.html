@@ -185,18 +185,30 @@
       lbl.className   = 'text-sm font-semibold ' + (this.checked ? 'text-emerald-600' : 'text-slate-400');
     });
 
+    _dept_showLoading(true);
     google.script.run
       .withSuccessHandler(function(res) {
+        _dept_showLoading(false);
         if (_dept_checkExpired(res)) return;
-        if (res.success) {
-          _dept_currentSession = res.data;
-          _dept_isSuperAdmin   = _dept_currentSession && _dept_currentSession.role === 'super_admin';
+        if (res.success && res.session) {
+          _dept_currentSession = res.session;
+          _dept_isSuperAdmin   = res.session.role === 'super_admin';
+          _dept_applySessionUI();
         }
-        _dept_applySessionUI();
-        _dept_loadData();
+        if (res.depts && res.depts.success) {
+          _dept_allDepts = res.depts.data || [];
+          _dept_renderTable(_dept_allDepts);
+          _dept_updateStats(_dept_allDepts);
+        } else {
+          _dept_renderTable([]); _dept_updateStats([]);
+        }
       })
-      .withFailureHandler(function() { _dept_loadData(); })
-      .handleAdminRequest('GET_SESSION', {}, _dept_getToken());
+      .withFailureHandler(function(err) {
+        _dept_showLoading(false);
+        _dept_showToast('Error loading departments.', 'error');
+        _dept_renderTable([]); _dept_updateStats([]);
+      })
+      .getDepartmentsInitData(_dept_getToken());
   }
 
   function _dept_applySessionUI() {
@@ -206,27 +218,18 @@
       document.getElementById('dept-th-actions').classList.remove('hidden');
     }
   }
-
-  function _dept_loadData() {
-    _dept_showLoading(true);
+  
+  function _dept_silentReload() {
     google.script.run
       .withSuccessHandler(function(res) {
-        _dept_showLoading(false);
         if (_dept_checkExpired(res)) return;
         if (res.success) {
           _dept_allDepts = res.data || [];
           _dept_renderTable(_dept_allDepts);
           _dept_updateStats(_dept_allDepts);
-        } else {
-          _dept_showToast('Error: ' + res.error, 'error');
-          _dept_renderTable([]); _dept_updateStats([]);
         }
       })
-      .withFailureHandler(function(err) {
-        _dept_showLoading(false);
-        _dept_showToast('Error loading departments.', 'error');
-        _dept_renderTable([]); _dept_updateStats([]);
-      })
+      .withFailureHandler(function() { /* silent */ })
       .handleDepartmentRequest('GET_DEPARTMENTS', {}, _dept_getToken());
   }
 
@@ -428,9 +431,9 @@
             _dept_setSaving(false);
             if (_dept_checkExpired(mapRes)) return;
             _dept_showToast(_dept_editingId ? 'Department updated!' : 'Department created!', 'success');
-            deptCloseModal(); _dept_loadData();
+            deptCloseModal(); _dept_silentReload();
           })
-          .withFailureHandler(function() { _dept_setSaving(false); deptCloseModal(); _dept_loadData(); })
+          .withFailureHandler(function() { _dept_setSaving(false); deptCloseModal(); _dept_silentReload(); })
           .handleDeptLabRequest('SAVE_DEPT_LAB_SERVICES', { dept_id: savedId, lab_ids: checkedLabIds }, _dept_getToken());
       })
       .withFailureHandler(function(err) { _dept_setSaving(false); _dept_showToast('Error: ' + err.message, 'error'); })
@@ -462,7 +465,7 @@
       .withSuccessHandler(function(res) {
         deptCloseDeleteModal(); btn.textContent = 'Delete'; btn.disabled = false;
         if (_dept_checkExpired(res)) return;
-        if (res.success) { _dept_showToast('Department deleted.', 'success'); _dept_loadData(); }
+        if (res.success) { _dept_showToast('Department deleted.', 'success'); _dept_silentReload(); }
         else _dept_showToast('Error: ' + res.error, 'error');
       })
       .withFailureHandler(function(err) {

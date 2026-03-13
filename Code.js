@@ -211,3 +211,135 @@ function handleAdminRequest(action, payload, token) {
   }
 }
 
+// ── Branches ────────────────────────────────────────────────────
+function getBranchesInitData(token) {
+  try {
+    const session = getSession(token);
+    if (!session) return { success: false, expired: true };
+    const branches = getBranches(token);
+    return { success: true, session: session, branches: branches };
+  } catch(e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// ── Departments ─────────────────────────────────────────────────
+function getDepartmentsInitData(token) {
+  try {
+    const session = getSession(token);
+    if (!session) return { success: false, expired: true };
+    const depts = getDepartments({}, token);
+    return { success: true, session: session, depts: depts };
+  } catch(e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// ── Lab Services ────────────────────────────────────────────────
+function getLabServicesInitData(token) {
+  try {
+    const session = getSession(token);
+    if (!session) return { success: false, expired: true };
+    const labs = getLabServices(token);
+    return { success: true, session: session, labs: labs };
+  } catch(e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// ── Packages ────────────────────────────────────────────────────
+function getPackagesInitData(token) {
+  try {
+    const session = getSession(token);
+    if (!session) return { success: false, expired: true };
+    const packages = getPackages({}, token);
+    const labs     = getLabServices(token);
+    return { success: true, session: session, packages: packages, labs: labs };
+  } catch(e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// ── Discounts ───────────────────────────────────────────────────
+function getDiscountsInitData(token) {
+  try {
+    const session = getSession(token);
+    if (!session) return { success: false, expired: true };
+    const isSuperAdmin  = session.role === 'super_admin';
+    const isBranchAdmin = session.role === 'branch_admin';
+    const action        = (isSuperAdmin || isBranchAdmin) ? 'GET_DISCOUNTS_ALL' : 'GET_DISCOUNTS';
+    const discounts     = (isSuperAdmin || isBranchAdmin)
+      ? getDiscountsAll(token)
+      : getDiscounts({}, token);
+    return { success: true, session: session, discounts: discounts };
+  } catch(e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// ── Doctors ─────────────────────────────────────────────────────
+function getDoctorsInitData(token) {
+  try {
+    const session = getSession(token);
+    if (!session) return { success: false, expired: true };
+    const doctors  = getDoctors(token);
+    const branches = getBranches(token);
+    return { success: true, session: session, doctors: doctors, branches: branches };
+  } catch(e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// ── MedTechs ────────────────────────────────────────────────────
+function getMedTechsInitData(token) {
+  try {
+    const session = getSession(token);
+    if (!session) return { success: false, expired: true };
+    const medtechs = getMedTechs({}, token);
+    const branches = getBranches(token);
+    return { success: true, session: session, medtechs: medtechs, branches: branches };
+  } catch(e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// ── Patients ────────────────────────────────────────────────────
+function getPatientsInitData(token) {
+  try {
+    const session  = getSession(token);
+    if (!session) return { success: false, expired: true };
+    const patients  = getPatients({}, token);
+    const branches  = getBranches(token);
+    const discounts = getDiscountsAll(token);
+    return { success: true, session: session, patients: patients, branches: branches, discounts: discounts };
+  } catch(e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// ── Admins ──────────────────────────────────────────────────────
+function getAdminsInitData(token) {
+  try {
+    const session = getSession(token);
+    if (!session) return { success: false, expired: true };
+    const isBranchAdmin = session.role === 'branch_admin';
+    const branches      = getBranches(token);
+    const branchAdmins  = getBranchAdmins(token);
+    const superAdmins   = isBranchAdmin ? { success: true, data: [] } : getSuperAdmins(token);
+    return { success: true, session: session, branches: branches, branchAdmins: branchAdmins, superAdmins: superAdmins };
+  } catch(e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// ── Orders ──────────────────────────────────────────────────────
+function getOrdersInitData(token) {
+  try {
+    const session = getSession(token);
+    if (!session) return { success: false, expired: true };
+    const orders = getOrders({}, token);
+    return { success: true, session: session, orders: orders };
+  } catch(e) {
+    return { success: false, error: e.message };
+  }
+}

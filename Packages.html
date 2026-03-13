@@ -262,20 +262,32 @@
   }
 
   // ── Entry point called by Index.html switchTab() ────────────────
-  function init_Packages() {
+function init_Packages() {
+    _pkg_showLoading(true);
     google.script.run
       .withSuccessHandler(function(res) {
+        _pkg_showLoading(false);
         if (_pkg_checkExpired(res)) return;
-        if (res.success) {
-          _pkg_currentSession = res.data;
-          _pkg_isSuperAdmin   = _pkg_currentSession.role === 'super_admin';
-          _pkg_isBranchAdmin  = _pkg_currentSession.role === 'branch_admin';
+        if (res.success && res.session) {
+          _pkg_currentSession = res.session;
+          _pkg_isSuperAdmin   = res.session.role === 'super_admin';
+          _pkg_isBranchAdmin  = res.session.role === 'branch_admin';
           _pkg_applySessionUI();
         }
-        _pkg_loadData();
+        if (res.packages && res.packages.success) {
+          _pkg_allPackages = res.packages.data || [];
+        }
+        if (res.labs && res.labs.success) {
+          _pkg_allLabServices = res.labs.data || [];
+        }
+        _pkg_renderTable(_pkg_allPackages);
+        _pkg_updateStats(_pkg_allPackages);
       })
-      .withFailureHandler(function() { _pkg_loadData(); })
-      .handleAdminRequest('GET_SESSION', {}, _pkg_getToken());
+      .withFailureHandler(function(err) {
+        _pkg_showLoading(false);
+        _pkg_showToast('Error loading packages: ' + err.message, 'error');
+      })
+      .getPackagesInitData(_pkg_getToken());
   }
 
   function _pkg_applySessionUI() {
@@ -287,41 +299,20 @@
   }
 
   // ── Load data (packages + lab services in parallel) ─────────────
-  function _pkg_loadData() {
-    _pkg_showLoading(true);
-    var pkgDone = false, labDone = false;
-    var pkgData = [], labData = [];
-
-    function tryRender() {
-      if (!pkgDone || !labDone) return;
-      _pkg_allPackages    = pkgData;
-      _pkg_allLabServices = labData;
-      _pkg_showLoading(false);
-      _pkg_renderTable(_pkg_allPackages);
-      _pkg_updateStats(_pkg_allPackages);
-    }
-
+  function _pkg_silentReload() {
     google.script.run
       .withSuccessHandler(function(res) {
         if (_pkg_checkExpired(res)) return;
-        if (res.success) pkgData = res.data || [];
-        pkgDone = true; tryRender();
+        if (res.success) {
+          _pkg_allPackages = res.data || [];
+          _pkg_renderTable(_pkg_allPackages);
+          _pkg_updateStats(_pkg_allPackages);
+        }
       })
-      .withFailureHandler(function(err) {
-        pkgDone = true; tryRender();
-        _pkg_showToast('Error loading packages: ' + err.message, 'error');
-      })
+      .withFailureHandler(function() { /* silent */ })
       .handlePackageRequest('GET_PACKAGES', {}, _pkg_getToken());
-
-    google.script.run
-      .withSuccessHandler(function(res) {
-        if (res.success) labData = res.data || [];
-        labDone = true; tryRender();
-      })
-      .withFailureHandler(function() { labDone = true; tryRender(); })
-      .handleLabServiceRequest('GET_LAB_SERVICES', {}, _pkg_getToken());
   }
-
+ 
   function _pkg_showLoading(v) {
     document.getElementById('pkg-loading').classList.toggle('hidden', !v);
     if (v) {
@@ -582,7 +573,7 @@
         if (res.success) {
           pkg_closeModal();
           _pkg_showToast(_pkg_editingId ? 'Package updated!' : 'Package created!', 'success');
-          _pkg_loadData();
+          _pkg_silentReload();
         } else {
           _pkg_showToast(res.error || 'Failed to save.', 'error');
         }
@@ -623,7 +614,7 @@
         btn.textContent = 'Delete'; btn.disabled = false;
         pkg_closeDeleteModal();
         if (_pkg_checkExpired(res)) return;
-        if (res.success) { _pkg_showToast('Package deleted.', 'success'); _pkg_loadData(); }
+        if (res.success) { _pkg_showToast('Package deleted.', 'success'); _pkg_silentReload(); }
         else _pkg_showToast(res.error || 'Failed to delete.', 'error');
       })
       .withFailureHandler(function(err) {

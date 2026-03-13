@@ -258,36 +258,25 @@
 
   // ── Init — called by Index.html switchTab() ──────────────────────
   function init_Branches() {
+    _br_showLoading(true);
     google.script.run
       .withSuccessHandler(function(res) {
+        _br_showLoading(false);
         if (_br_checkExpired(res)) return;
-        if (res.success) {
-          _br_currentSession = res.data;
-          _br_isSuperAdmin   = _br_currentSession.role === 'super_admin';
+        if (res.success && res.session) {
+          _br_currentSession = res.session;
+          _br_isSuperAdmin   = res.session.role === 'super_admin';
         }
         if (!_br_isSuperAdmin) {
           document.getElementById('add-branch-btn').style.display = 'none';
           document.getElementById('header-subtitle').textContent  = 'View your assigned branch details and spreadsheet.';
           document.getElementById('empty-subtext').textContent    = 'No branch assigned to your account.';
         }
-        _br_loadBranches();
-      })
-      .withFailureHandler(function() { _br_loadBranches(); })
-      .handleAdminRequest('GET_SESSION', {}, _br_getToken());
-  }
-
-  function _br_loadBranches() {
-    _br_showLoading(true);
-    google.script.run
-      .withSuccessHandler(function(res) {
-        _br_showLoading(false);
-        if (_br_checkExpired(res)) return;
-        if (res.success) {
-          _br_allBranches = res.data || [];
+        if (res.branches && res.branches.success) {
+          _br_allBranches = res.branches.data || [];
           _br_renderStats();
           _br_renderTable(_br_allBranches);
         } else {
-          _br_showToast('Error: ' + res.error, 'error');
           _br_renderTable([]);
         }
       })
@@ -296,8 +285,22 @@
         _br_showToast('Error: ' + err.message, 'error');
         _br_renderTable([]);
       })
-      .handleBranchRequest('GET_BRANCHES', {}, _br_getToken());
+      .getBranchesInitData(_br_getToken());
   }
+
+  function _br_silentReload() {
+  google.script.run
+    .withSuccessHandler(function(res) {
+      if (_br_checkExpired(res)) return;
+      if (res.success) {
+        _br_allBranches = res.data || [];
+        _br_renderStats();
+        _br_renderTable(_br_allBranches);
+      }
+    })
+    .withFailureHandler(function() { /* silent */ })
+    .handleBranchRequest('GET_BRANCHES', {}, _br_getToken());
+}
 
   function _br_renderStats() {
     var active = _br_allBranches.filter(function(b) { return b.status === 'Active'; }).length;
@@ -400,7 +403,7 @@
         if (res.success) {
           br_closeModal();
           _br_showToast(_br_editingId ? 'Branch updated!' : 'Branch created — spreadsheet ready! 🎉', 'success');
-          _br_loadBranches();
+          _br_silentReload();
         } else {
           _br_showToast('Error: ' + res.error, 'error');
         }
@@ -437,7 +440,7 @@
       .withSuccessHandler(function(res) {
         br_closeDeleteModal(); btn.textContent = 'Delete'; btn.disabled = false;
         if (_br_checkExpired(res)) return;
-        if (res.success) { _br_showToast('Branch deleted.', 'success'); _br_loadBranches(); }
+        if (res.success) { _br_showToast('Branch deleted.', 'success'); _br_silentReload(); }
         else _br_showToast('Error: ' + res.error, 'error');
       })
       .withFailureHandler(function(err) {

@@ -309,19 +309,33 @@
         if (e.key === 'Escape') { mt_closeModal(); mt_closePwModal(); mt_closeDeleteModal(); }
       });
     }
+    _mt_showLoading(true);
     google.script.run
       .withSuccessHandler(function(res) {
+        _mt_showLoading(false);
         if (_mt_checkExpired(res)) return;
-        if (res && res.success) {
-          _mt_currentSession = res.data;
-          _mt_isSuperAdmin   = _mt_currentSession.role === 'super_admin';
-          _mt_isBranchAdmin  = _mt_currentSession.role === 'branch_admin';
+        if (res.success && res.session) {
+          _mt_currentSession = res.session;
+          _mt_isSuperAdmin   = res.session.role === 'super_admin';
+          _mt_isBranchAdmin  = res.session.role === 'branch_admin';
           _mt_applyRoleUI();
         }
-        _mt_loadBranches();
+        if (res.branches && res.branches.success) {
+          _mt_allBranches = (res.branches.data || []).filter(function(b) { return b.status === 'Active'; });
+          _mt_populateBranchFilter();
+          _mt_populateBranchSelect();
+        }
+        if (res.medtechs && res.medtechs.success) {
+          _mt_allMedTechs = res.medtechs.data || [];
+          _mt_updateStats(_mt_allMedTechs);
+          mt_filterTable();
+        }
       })
-      .withFailureHandler(function() { _mt_loadBranches(); })
-      .handleAdminRequest('GET_SESSION', {}, _mt_getToken());
+      .withFailureHandler(function(err) {
+        _mt_showLoading(false);
+        _mt_showToast('Error: ' + err.message, 'error');
+      })
+      .getMedTechsInitData(_mt_getToken());
   }
 
   // ── Role-based UI adjustments ──────────────────────────────────
@@ -347,9 +361,9 @@
           _mt_populateBranchFilter();
           _mt_populateBranchSelect();
         }
-        _mt_loadData();
+        _mt_silentReload();
       })
-      .withFailureHandler(function() { _mt_loadData(); })
+      .withFailureHandler(function() { _mt_silentReload(); })
       .handleBranchRequest('GET_BRANCHES', {}, _mt_getToken());
   }
 
@@ -372,26 +386,17 @@
   }
 
   // ── Load medtechs ──────────────────────────────────────────────
-  function _mt_loadData() {
-    _mt_showLoading(true);
+  function _mt_silentReload() {
     google.script.run
       .withSuccessHandler(function(res) {
-        _mt_showLoading(false);
         if (_mt_checkExpired(res)) return;
         if (res && res.success) {
           _mt_allMedTechs = res.data || [];
           _mt_updateStats(_mt_allMedTechs);
           mt_filterTable();
-        } else {
-          _mt_showToast(res ? (res.error || 'Failed to load technologists.') : 'Failed to load.', 'error');
-          _mt_renderTable([]);
         }
       })
-      .withFailureHandler(function(err) {
-        _mt_showLoading(false);
-        _mt_showToast('Error: ' + err.message, 'error');
-        _mt_renderTable([]);
-      })
+      .withFailureHandler(function() { /* silent */ })
       .handleMedTechRequest('GET_MEDTECHS', {}, _mt_getToken());
   }
 
@@ -599,7 +604,7 @@
         if (res && res.success) {
           _mt_showToast(id ? 'Technologist updated.' : 'Technologist added.', 'success');
           mt_closeModal();
-          _mt_loadData();
+          _mt_silentReload();
         } else {
           _mt_showToast(res ? (res.error || 'Failed to save.') : 'Failed to save.', 'error');
         }
@@ -673,7 +678,7 @@
         btn.disabled = false; btn.textContent = 'Delete';
         mt_closeDeleteModal();
         if (_mt_checkExpired(res)) return;
-        if (res && res.success) { _mt_showToast('Technologist deleted.', 'success'); _mt_loadData(); }
+        if (res && res.success) { _mt_showToast('Technologist deleted.', 'success'); _mt_silentReload(); }
         else _mt_showToast(res ? (res.error || 'Failed to delete.') : 'Failed.', 'error');
       })
       .withFailureHandler(function(err) {

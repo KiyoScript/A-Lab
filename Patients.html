@@ -374,18 +374,34 @@ function init_Patients() {
       if (e.key === 'Escape') { pt_closeModal(); pt_closeDeleteModal(); }
     });
   }
+  pt_showLoading(true);
   google.script.run
     .withSuccessHandler(function(res) {
+      pt_showLoading(false);
       if (_pat_checkExpired(res)) return;
-      if (res.success) {
-        _pat_currentSession = res.data;
-        _pat_isSuperAdmin   = _pat_currentSession.role === 'super_admin';
+      if (res.success && res.session) {
+        _pat_currentSession = res.session;
+        _pat_isSuperAdmin   = res.session.role === 'super_admin';
         pt_applySessionUI();
       }
-      pt_loadData();
+      if (res.branches && res.branches.success) {
+        _pat_allBranches = res.branches.data || [];
+        populateBranchFilter();
+      }
+      if (res.discounts && res.discounts.success) {
+        _pat_allDiscounts = (res.discounts.data || []).filter(function(d) { return d.is_active; });
+      }
+      if (res.patients && res.patients.success) {
+        _pat_allPatients = res.patients.data || [];
+      }
+      pt_renderTable(_pat_allPatients);
+      pt_updateStats(_pat_allPatients);
     })
-    .withFailureHandler(function() { pt_loadData(); })
-    .handleAdminRequest('GET_SESSION', {}, _pat_getToken());
+    .withFailureHandler(function(err) {
+      pt_showLoading(false);
+      pt_showToast('Error loading patients: ' + err.message, 'error');
+    })
+    .getPatientsInitData(_pat_getToken());
 }
 
   function pt_applySessionUI() {
@@ -403,52 +419,17 @@ function init_Patients() {
   }
 
   // ── Load data ──────────────────────────────────────────────────
-  function pt_loadData() {
-    pt_showLoading(true);
-    var branchDone = false, discDone = false, patDone = false;
-    var branchData = [], discData = [], patData = [];
-
-    function tryRender() {
-      if (!branchDone || !discDone || !patDone) return;
-      _pat_allBranches  = branchData;
-      _pat_allDiscounts = discData.filter(function(d) { return d.is_active; });
-      _pat_allPatients  = patData;
-      populateBranchFilter();
-      pt_showLoading(false);
-      pt_renderTable(_pat_allPatients);
-      pt_updateStats(_pat_allPatients);
-    }
-
-    // Load branches (for filter + super admin select)
-    google.script.run
-      .withSuccessHandler(function(res) {
-        if (res.success) branchData = res.data || [];
-        branchDone = true; tryRender();
-      })
-      .withFailureHandler(function() { branchDone = true; tryRender(); })
-      .handleBranchRequest('GET_BRANCHES', {}, _pat_getToken());
-
-    // Load discounts (all admin roles)
+  function pt_silentReload() {
     google.script.run
       .withSuccessHandler(function(res) {
         if (_pat_checkExpired(res)) return;
-        if (res.success) discData = res.data || [];
-        discDone = true; tryRender();
+        if (res.success) {
+          _pat_allPatients = res.data || [];
+          pt_renderTable(_pat_allPatients);
+          pt_updateStats(_pat_allPatients);
+        }
       })
-      .withFailureHandler(function() { discDone = true; tryRender(); })
-      .handleDiscountRequest('GET_DISCOUNTS_ALL', {}, _pat_getToken());
-
-    // Load patients
-    google.script.run
-      .withSuccessHandler(function(res) {
-        if (_pat_checkExpired(res)) return;
-        if (res.success) patData = res.data || [];
-        patDone = true; tryRender();
-      })
-      .withFailureHandler(function(err) {
-        patDone = true; tryRender();
-        pt_showToast('Error loading patients: ' + err.message, 'error');
-      })
+      .withFailureHandler(function() { /* silent */ })
       .handlePatientRequest('GET_PATIENTS', {}, _pat_getToken());
   }
 
@@ -736,7 +717,7 @@ function init_Patients() {
         if (res.success) {
           pt_closeModal();
           pt_showToast(_pat_editingId ? 'Patient updated!' : 'Patient registered!', 'success');
-          pt_loadData();
+          pt_silentReload();
         } else {
           pt_showToast(res.error || 'Failed to save.', 'error');
         }
@@ -772,7 +753,7 @@ function init_Patients() {
         btn.textContent = 'Delete'; btn.disabled = false;
         pt_closeDeleteModal();
         if (_pat_checkExpired(res)) return;
-        if (res.success) { pt_showToast('Patient deleted.', 'success'); pt_loadData(); }
+        if (res.success) { pt_showToast('Patient deleted.', 'success'); pt_silentReload(); }
         else pt_showToast(res.error || 'Failed to delete.', 'error');
       })
       .withFailureHandler(function(err) { btn.textContent = 'Delete'; btn.disabled = false; pt_showToast('Error: ' + err.message, 'error'); })

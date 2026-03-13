@@ -253,19 +253,31 @@
 
   // ── Entry point called by Index.html switchTab() ────────────────
   function init_Discounts() {
+    _disc_showLoading(true);
     google.script.run
       .withSuccessHandler(function(res) {
+        _disc_showLoading(false);
         if (_disc_checkExpired(res)) return;
-        if (res.success) {
-          _disc_currentSession = res.data;
-          _disc_isSuperAdmin   = _disc_currentSession.role === 'super_admin';
-          _disc_isBranchAdmin  = _disc_currentSession.role === 'branch_admin';
+        if (res.success && res.session) {
+          _disc_currentSession = res.session;
+          _disc_isSuperAdmin   = res.session.role === 'super_admin';
+          _disc_isBranchAdmin  = res.session.role === 'branch_admin';
+          _disc_applyRoleUI();
         }
-        _disc_applyRoleUI();
-        _disc_loadData();
+        if (res.discounts && res.discounts.success) {
+          _disc_allDiscounts = res.discounts.data || [];
+          _disc_renderStats();
+          _disc_renderTable(_disc_allDiscounts);
+        } else {
+          _disc_renderTable([]);
+        }
       })
-      .withFailureHandler(function() { _disc_loadData(); })
-      .handleAdminRequest('GET_SESSION', {}, _disc_getToken());
+      .withFailureHandler(function(err) {
+        _disc_showLoading(false);
+        _disc_showToast('Error: ' + err.message, 'error');
+        _disc_renderTable([]);
+      })
+      .getDiscountsInitData(_disc_getToken());
   }
 
   function _disc_applyRoleUI() {
@@ -282,37 +294,19 @@
   }
 
   // ── Data loading ────────────────────────────────────────────────
-  function _disc_loadData() {
-    _disc_showLoading(true);
-    var action = (_disc_isSuperAdmin || _disc_isBranchAdmin) ? 'GET_DISCOUNTS' : 'GET_DISCOUNTS_ALL';
+  function _disc_silentReload() {
+    var action = (_disc_isSuperAdmin || _disc_isBranchAdmin) ? 'GET_DISCOUNTS_ALL' : 'GET_DISCOUNTS';
     google.script.run
       .withSuccessHandler(function(res) {
-        _disc_showLoading(false);
         if (_disc_checkExpired(res)) return;
         if (res.success) {
           _disc_allDiscounts = res.data || [];
           _disc_renderStats();
           _disc_renderTable(_disc_allDiscounts);
-        } else {
-          _disc_renderTable([]);
         }
       })
-      .withFailureHandler(function(err) {
-        _disc_showLoading(false);
-        _disc_showToast('Error: ' + err.message, 'error');
-        _disc_renderTable([]);
-      })
+      .withFailureHandler(function() { /* silent */ })
       .handleDiscountRequest(action, {}, _disc_getToken());
-  }
-
-  function _disc_showLoading(v) {
-    document.getElementById('disc-loading-state').classList.toggle('hidden', !v);
-    if (v) {
-      document.getElementById('disc-table-wrap').classList.add('hidden');
-      var es = document.getElementById('disc-empty-state');
-      es.classList.add('hidden');
-      es.classList.remove('flex');
-    }
   }
 
   // ── Render ──────────────────────────────────────────────────────
@@ -474,7 +468,7 @@
         if (res.success) {
           disc_closeModal();
           _disc_showToast(_disc_editingId ? 'Discount updated!' : 'Discount created!', 'success');
-          _disc_loadData();
+          _disc_silentReload();
         } else {
           _disc_showToast('Error: ' + res.error, 'error');
         }
@@ -516,7 +510,7 @@
         btn.textContent = 'Delete';
         btn.disabled    = false;
         if (_disc_checkExpired(res)) return;
-        if (res.success) { _disc_showToast('Discount deleted.', 'success'); _disc_loadData(); }
+        if (res.success) { _disc_showToast('Discount deleted.', 'success'); _disc_silentReload(); }
         else _disc_showToast('Error: ' + res.error, 'error');
       })
       .withFailureHandler(function(err) {

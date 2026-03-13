@@ -247,18 +247,27 @@
 
   // ── Entry point called by Index.html switchTab() ────────────────
   function init_LabServices() {
+    _ls_showLoading(true);
     google.script.run
       .withSuccessHandler(function(res) {
+        _ls_showLoading(false);
         if (_ls_checkExpired(res)) return;
-        if (res.success) {
-          _ls_currentSession = res.data;
-          _ls_isSuperAdmin   = _ls_currentSession.role === 'super_admin';
+        if (res.success && res.session) {
+          _ls_currentSession = res.session;
+          _ls_isSuperAdmin   = res.session.role === 'super_admin';
           _ls_applySessionUI();
         }
-        _ls_loadData();
+        if (res.labs && res.labs.success) {
+          _ls_allLabs = res.labs.data || [];
+        }
+        _ls_renderTable(_ls_allLabs);
+        _ls_updateStats(_ls_allLabs);
       })
-      .withFailureHandler(function() { _ls_loadData(); })
-      .handleAdminRequest('GET_SESSION', {}, _ls_getToken());
+      .withFailureHandler(function(err) {
+        _ls_showLoading(false);
+        _ls_showToast('Error loading lab services: ' + err.message, 'error');
+      })
+      .getLabServicesInitData(_ls_getToken());
   }
 
   function _ls_applySessionUI() {
@@ -270,20 +279,17 @@
   }
 
   // ── Data loading ────────────────────────────────────────────────
-  function _ls_loadData() {
-    _ls_showLoading(true);
+  function _ls_silentReload() {
     google.script.run
       .withSuccessHandler(function(res) {
-        _ls_showLoading(false);
         if (_ls_checkExpired(res)) return;
-        if (res.success) { _ls_allLabs = res.data || []; }
-        _ls_renderTable(_ls_allLabs);
-        _ls_updateStats(_ls_allLabs);
+        if (res.success) {
+          _ls_allLabs = res.data || [];
+          _ls_renderTable(_ls_allLabs);
+          _ls_updateStats(_ls_allLabs);
+        }
       })
-      .withFailureHandler(function(err) {
-        _ls_showLoading(false);
-        _ls_showToast('Error loading lab services: ' + err.message, 'error');
-      })
+      .withFailureHandler(function() { /* silent */ })
       .handleLabServiceRequest('GET_LAB_SERVICES', {}, _ls_getToken());
   }
 
@@ -418,7 +424,7 @@
         if (res.success) {
           ls_closeModal();
           _ls_showToast(_ls_editingId ? 'Lab service updated!' : 'Lab service created!', 'success');
-          _ls_loadData();
+          _ls_silentReload();
         } else {
           _ls_showToast(res.error || 'Failed to save.', 'error');
         }
@@ -461,7 +467,7 @@
         btn.disabled    = false;
         ls_closeDeleteModal();
         if (_ls_checkExpired(res)) return;
-        if (res.success) { _ls_showToast('Lab service deleted.', 'success'); _ls_loadData(); }
+        if (res.success) { _ls_showToast('Lab service deleted.', 'success'); _ls_silentReload(); }
         else _ls_showToast(res.error || 'Failed to delete.', 'error');
       })
       .withFailureHandler(function(err) {

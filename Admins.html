@@ -234,18 +234,39 @@
     // ── Init — called by Index.html switchTab() ──────────────────────
     function init_Admins() {
       _adm_showLoading(true);
-      google.script.run
-        .withSuccessHandler(function(res) {
-          if (_adm_checkExpired(res)) return;
-          if (res.success) {
-            _adm_currentSession = res.data;
-            _adm_isBranchAdmin  = _adm_currentSession.role === 'branch_admin';
-          }
-          _adm_applyRoleUI();
-          _adm_loadData();
-        })
-        .withFailureHandler(function() { _adm_loadData(); })
-        .handleAdminRequest('GET_SESSION', {}, _adm_getToken());
+      _adm_showLoading(true);
+        google.script.run
+          .withSuccessHandler(function(res) {
+            _adm_showLoading(false);
+            if (_adm_checkExpired(res)) return;
+            if (res.success && res.session) {
+              _adm_currentSession = res.session;
+              _adm_isBranchAdmin  = res.session.role === 'branch_admin';
+              _adm_applyRoleUI();
+            }
+            if (res.branches && res.branches.success) {
+              _adm_allBranches = res.branches.data || [];
+              _adm_populateBranchDropdown();
+            }
+            if (res.branchAdmins && res.branchAdmins.success) {
+              _adm_allBranchAdmins = res.branchAdmins.data || [];
+              if (_adm_isBranchAdmin && _adm_currentSession) {
+                _adm_allBranchAdmins = _adm_allBranchAdmins.filter(function(a) {
+                  return a.branch_id === _adm_currentSession.branch_id;
+                });
+              }
+            }
+            if (!_adm_isBranchAdmin && res.superAdmins && res.superAdmins.success) {
+              _adm_allSuperAdmins = res.superAdmins.data || [];
+            }
+            _adm_renderStats();
+            _adm_renderTable();
+          })
+          .withFailureHandler(function(err) {
+            _adm_showLoading(false);
+            _adm_showToast('Error loading admins: ' + err.message, 'error');
+          })
+          .getAdminsInitData(_adm_getToken());
     }
 
     function _adm_applyRoleUI() {
@@ -256,70 +277,23 @@
       }
     }
 
-    function _adm_loadData() {
-      _adm_showLoading(true);
-
-      var _loaded = { branches: false, branchAdmins: false, superAdmins: false };
-
-      function _tryRender() {
-        var superDone = _adm_isBranchAdmin || _loaded.superAdmins;
-        if (!_loaded.branches || !_loaded.branchAdmins || !superDone) return;
-        _adm_showLoading(false);
-        _adm_renderStats();
-        _adm_renderTable();
-      }
-
-      // Branches
+  function _adm_silentReload() {
       google.script.run
         .withSuccessHandler(function(res) {
           if (_adm_checkExpired(res)) return;
-          if (res.success) { _adm_allBranches = res.data || []; _adm_populateBranchDropdown(); }
-          _loaded.branches = true;
-          _tryRender();
-        })
-        .withFailureHandler(function(err) {
-          _adm_showToast('Error loading branches: ' + err.message, 'error');
-          _loaded.branches = true;
-          _tryRender();
-        })
-        .handleBranchRequest('GET_BRANCHES', {}, _adm_getToken());
-
-      // Branch Admins
-      google.script.run
-        .withSuccessHandler(function(res) {
-          if (_adm_checkExpired(res)) return;
-          _adm_allBranchAdmins = res.success ? (res.data || []) : [];
-          if (_adm_isBranchAdmin && _adm_currentSession) {
-            _adm_allBranchAdmins = _adm_allBranchAdmins.filter(function(a) {
-              return a.branch_id === _adm_currentSession.branch_id;
-            });
+          if (res.success) {
+            _adm_allBranchAdmins = res.data || [];
+            if (_adm_isBranchAdmin && _adm_currentSession) {
+              _adm_allBranchAdmins = _adm_allBranchAdmins.filter(function(a) {
+                return a.branch_id === _adm_currentSession.branch_id;
+              });
+            }
+            _adm_renderStats();
+            _adm_renderTable();
           }
-          _loaded.branchAdmins = true;
-          _tryRender();
         })
-        .withFailureHandler(function(err) {
-          _adm_showToast('Error loading branch admins: ' + err.message, 'error');
-          _loaded.branchAdmins = true;
-          _tryRender();
-        })
+        .withFailureHandler(function() { /* silent */ })
         .handleAdminRequest('GET_BRANCH_ADMINS', {}, _adm_getToken());
-
-      // Super Admins — skipped for branch_admin
-      if (!_adm_isBranchAdmin) {
-        google.script.run
-          .withSuccessHandler(function(res) {
-            if (_adm_checkExpired(res)) return;
-            _adm_allSuperAdmins = res.success ? (res.data || []) : [];
-            _loaded.superAdmins = true;
-            _tryRender();
-          })
-          .withFailureHandler(function(err) {
-            _adm_showToast('Error loading super admins: ' + err.message, 'error');
-            _loaded.superAdmins = true;
-            _tryRender();
-          })
-          .handleAdminRequest('GET_SUPER_ADMINS', {}, _adm_getToken());
-      }
     }
 
     function _adm_populateBranchDropdown() {
@@ -473,7 +447,7 @@
         .withSuccessHandler(function(res) {
           _adm_setSaving(false);
           if (_adm_checkExpired(res)) return;
-          if (res.success) { adm_closeModal(); _adm_showToast(_adm_editingId ? 'Admin updated!' : 'Admin created!', 'success'); _adm_loadData(); }
+          if (res.success) { adm_closeModal(); _adm_showToast(_adm_editingId ? 'Admin updated!' : 'Admin created!', 'success'); _adm_silentReload(); }
           else _adm_showToast('Error: ' + res.error, 'error');
         })
         .withFailureHandler(function(err) { _adm_setSaving(false); _adm_showToast('Error: ' + err.message, 'error'); })
@@ -509,7 +483,7 @@
         .withSuccessHandler(function(res) {
           adm_closeDeleteModal(); btn.textContent = 'Delete'; btn.disabled = false;
           if (_adm_checkExpired(res)) return;
-          if (res.success) { _adm_showToast('Admin deleted.', 'success'); _adm_loadData(); }
+          if (res.success) { _adm_showToast('Admin deleted.', 'success'); _adm_silentReload(); }
           else _adm_showToast('Error: ' + res.error, 'error');
         })
         .withFailureHandler(function(err) {

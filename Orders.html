@@ -648,56 +648,57 @@
   }
 
   // ── Entry point called by Index.html switchTab() ─────────────────
-  function init_Orders() {
-    google.script.run
-      .withSuccessHandler(function(res) {
-        if (_ord_checkExpired(res)) return;
-        if (!res.success) return;
-        _ord_currentSession = res.data;
-        _ord_isTech        = _ord_currentSession.role === 'medtech';
-        _ord_isBranchAdmin = _ord_currentSession.role === 'branch_admin';
-        _ord_isSuperAdmin  = _ord_currentSession.role === 'super_admin';
-        _ord_isDoctor      = _ord_currentSession.role === 'doctor';
-
-        var btn = document.getElementById('create-btn');
-        if (_ord_isTech && btn) { btn.classList.remove('hidden'); btn.classList.add('flex'); }
-
-        var sub = document.getElementById('header-sub');
-        if (sub) sub.textContent =
-          _ord_isSuperAdmin ? 'All branches — read only.' :
-          _ord_isDoctor     ? 'Your referrals — read only.' :
-          'Manage lab orders for your branch.';
-
-        _ord_loadOrders();
-      })
-      .withFailureHandler(function(){})
-      .handleAdminRequest('GET_SESSION', {}, _ord_getToken());
-  }
-
-  // ══════════════════════════════════════════════════════════════
-  // ORDERS LIST
-  // ══════════════════════════════════════════════════════════════
-
-  function _ord_loadOrders() {
+function init_Orders() {
     _ord_showLoading(true);
     google.script.run
       .withSuccessHandler(function(res) {
         _ord_showLoading(false);
         if (_ord_checkExpired(res)) return;
-        if (res.success) {
-          _ord_allOrders = res.data || [];
+        if (res.success && res.session) {
+          _ord_currentSession = res.session;
+          _ord_isTech        = res.session.role === 'medtech';
+          _ord_isBranchAdmin = res.session.role === 'branch_admin';
+          _ord_isSuperAdmin  = res.session.role === 'super_admin';
+          _ord_isDoctor      = res.session.role === 'doctor';
+ 
+          var btn = document.getElementById('create-btn');
+          if (_ord_isTech && btn) { btn.classList.remove('hidden'); btn.classList.add('flex'); }
+ 
+          var sub = document.getElementById('header-sub');
+          if (sub) sub.textContent =
+            _ord_isSuperAdmin ? 'All branches — read only.' :
+            _ord_isDoctor     ? 'Your referrals — read only.' :
+            'Manage lab orders for your branch.';
+        }
+        if (res.orders && res.orders.success) {
+          _ord_allOrders = res.orders.data || [];
           _ord_renderTable(_ord_allOrders);
           _ord_updateStats(_ord_allOrders);
         } else {
-          _ord_showToast('Failed to load: ' + res.error, 'error');
           _ord_showEmpty('Failed to load orders.');
         }
       })
       .withFailureHandler(function(err) {
         _ord_showLoading(false);
         _ord_showEmpty('Error loading orders.');
-        _ord_showToast(err.message, 'error');
       })
+      .getOrdersInitData(_ord_getToken());
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // ORDERS LIST
+  // ══════════════════════════════════════════════════════════════
+  function _ord_silentReload() {
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (_ord_checkExpired(res)) return;
+        if (res.success) {
+          _ord_allOrders = res.data || [];
+          _ord_renderTable(_ord_allOrders);
+          _ord_updateStats(_ord_allOrders);
+        }
+      })
+      .withFailureHandler(function() { /* silent */ })
       .handleOrderRequest('GET_ORDERS', {}, _ord_getToken());
   }
 
@@ -1156,7 +1157,7 @@
         if (res.success) {
           _ord_showToast('Order ' + res.data.order_number + ' saved as DRAFT!', 'success');
           closeWizard();
-          _ord_loadOrders();
+          _ord_silentReload();
         } else { _ord_showToast(res.error || 'Failed to create order.', 'error'); }
       })
       .withFailureHandler(function(err) {
@@ -1303,7 +1304,7 @@
   function doDeleteOrder() {
     if (!_ord_viewingOrder) return;
     if (!confirm('Delete order ' + _ord_viewingOrder.order_number + '? This cannot be undone.')) return;
-    _ord_callOrder('DELETE_ORDER', { order_id: _ord_viewingOrder.order_id, branch_id: _ord_viewingOrder.branch_id }, 'Order deleted.', function(){ closeViewModal(); _ord_loadOrders(); });
+    _ord_callOrder('DELETE_ORDER', { order_id: _ord_viewingOrder.order_id, branch_id: _ord_viewingOrder.branch_id }, 'Order deleted.', function(){ closeViewModal(); _ord_silentReload(); });
   }
   function doRelease() {
     if (!_ord_viewingOrder) return;
@@ -1325,7 +1326,7 @@
   }
 
   function _ord_reloadView() {
-    _ord_loadOrders();
+    _ord_silentReload();
     var oid = _ord_viewingOrder.order_id, bid = _ord_viewingOrder.branch_id;
     closeViewModal();
     setTimeout(function() {
