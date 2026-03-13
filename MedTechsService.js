@@ -80,7 +80,7 @@ function _mtRowToObj(row) {
 }
 
 // ─── Look up a branch's spreadsheet_id by branch_id ──────────────
-function _getBranchSsId(branch_id) {
+function _mt_getBranchSsId(branch_id) {
   const sh   = _getRegistrySheet();
   const data = sh.getDataRange().getValues();
   for (var i = 1; i < data.length; i++) {
@@ -120,7 +120,7 @@ function getMedTechs(payload, token) {
 
     if (session.role === 'branch_admin') {
       // Branch admin can only see their own branch
-      const ssId = _getBranchSsId(session.branch_id);
+      const ssId = _mt_getBranchSsId(session.branch_id);
       if (!ssId) return { success: false, error: 'Branch spreadsheet not found.' };
       const sh   = _getMedTechSheet(ssId);
       const data = sh.getDataRange().getValues();
@@ -131,7 +131,7 @@ function getMedTechs(payload, token) {
     } else {
       // super_admin: specific branch or all branches
       if (payload && payload.branch_id) {
-        const ssId = _getBranchSsId(payload.branch_id);
+        const ssId = _mt_getBranchSsId(payload.branch_id);
         if (!ssId) return { success: false, error: 'Branch spreadsheet not found.' };
         const sh   = _getMedTechSheet(ssId);
         const data = sh.getDataRange().getValues();
@@ -192,7 +192,7 @@ function createMedTech(payload, token) {
       ? session.branch_name
       : _getBranchName(branchId);
 
-    const ssId = _getBranchSsId(branchId);
+    const ssId = _mt_getBranchSsId(branchId);
     if (!ssId) return { success: false, error: 'Branch spreadsheet not found.' };
 
     const sh         = _getMedTechSheet(ssId);
@@ -263,7 +263,7 @@ function updateMedTech(payload, token) {
       : String(payload.branch_id || '').trim();
     if (!branchId) return { success: false, error: 'branch_id is required.' };
 
-    const ssId = _getBranchSsId(branchId);
+    const ssId = _mt_getBranchSsId(branchId);
     if (!ssId) return { success: false, error: 'Branch spreadsheet not found.' };
 
     const sh   = _getMedTechSheet(ssId);
@@ -320,7 +320,7 @@ function deleteMedTech(medtech_id, token) {
     }
 
     for (var bi = 0; bi < branchIds.length; bi++) {
-      const ssId = _getBranchSsId(branchIds[bi]);
+      const ssId = _mt_getBranchSsId(branchIds[bi]);
       if (!ssId) continue;
       try {
         const sh   = _getMedTechSheet(ssId);
@@ -362,7 +362,7 @@ function changeMedTechPassword(payload, token) {
       : String(payload.branch_id || '').trim();
     if (!branchId) return { success: false, error: 'branch_id is required.' };
 
-    const ssId = _getBranchSsId(branchId);
+    const ssId = _mt_getBranchSsId(branchId);
     if (!ssId) return { success: false, error: 'Branch spreadsheet not found.' };
 
     const sh   = _getMedTechSheet(ssId);
@@ -403,7 +403,7 @@ function changeOwnMedTechPassword(payload, token) {
     if (!payload.new_password || String(payload.new_password).trim().length < 6)
       return { success: false, error: 'New password must be at least 6 characters.' };
 
-    const ssId = _getBranchSsId(session.branch_id);
+    const ssId = _mt_getBranchSsId(session.branch_id);
     if (!ssId) return { success: false, error: 'Branch spreadsheet not found.' };
 
     const sh   = _getMedTechSheet(ssId);
