@@ -208,28 +208,39 @@
     var err = document.getElementById('pw-error');
     err.classList.add('hidden');
 
-    if (np.length < 6)   { err.textContent = 'Password must be at least 6 characters.'; err.classList.remove('hidden'); return; }
-    if (np !== cp)        { err.textContent = 'Passwords do not match.'; err.classList.remove('hidden'); return; }
+    if (np.length < 6) { err.textContent = 'Password must be at least 6 characters.'; err.classList.remove('hidden'); return; }
+    if (np !== cp)     { err.textContent = 'Passwords do not match.'; err.classList.remove('hidden'); return; }
 
     var btn = document.getElementById('pw-submit-btn');
     btn.disabled = true; btn.textContent = 'Saving…';
 
-    google.script.run
-      .withSuccessHandler(function(res) {
-        if (res.success) {
-          var targetPage = pendingRole === 'doctor' ? 'DoctorIndex' : 'Index';
-          window.top.location.href = scriptUrl + '?page=' + targetPage + '&token=' + encodeURIComponent(pendingToken);
-        } else {
-          btn.disabled = false; btn.textContent = 'Set Password & Continue';
-          err.textContent = res.error || 'Failed to update password.';
-          err.classList.remove('hidden');
-        }
-      })
-      .withFailureHandler(function(e) {
+    var onSuccess = function(res) {
+      if (res.success) {
+        var targetPage = pendingRole === 'doctor' ? 'DoctorIndex' : pendingRole === 'medtech' ? 'TechIndex' : 'Index';
+        window.top.location.href = scriptUrl + '?page=' + targetPage + '&token=' + encodeURIComponent(pendingToken);
+      } else {
         btn.disabled = false; btn.textContent = 'Set Password & Continue';
-        err.textContent = 'Error: ' + e.message; err.classList.remove('hidden');
-      })
-      .handleDoctorRequest('CHANGE_OWN_DOCTOR_PASSWORD', { new_password: np }, pendingToken);
+        err.textContent = res.error || 'Failed to update password.';
+        err.classList.remove('hidden');
+      }
+    };
+
+    var onFail = function(e) {
+      btn.disabled = false; btn.textContent = 'Set Password & Continue';
+      err.textContent = 'Error: ' + e.message; err.classList.remove('hidden');
+    };
+
+    if (pendingRole === 'medtech') {
+      google.script.run
+        .withSuccessHandler(onSuccess)
+        .withFailureHandler(onFail)
+        .handleMedTechRequest('CHANGE_OWN_MT_PASSWORD', { new_password: np }, pendingToken);
+    } else {
+      google.script.run
+        .withSuccessHandler(onSuccess)
+        .withFailureHandler(onFail)
+        .handleDoctorRequest('CHANGE_OWN_DOCTOR_PASSWORD', { new_password: np }, pendingToken);
+    }
   }
 </script>
 
