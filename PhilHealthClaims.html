@@ -111,6 +111,7 @@
             <th class="px-4">Patient</th>
             <th class="px-3">PhilHealth PIN</th>
             <th class="px-3 hidden md:table-cell">Order</th>
+            <th id="phc-th-branch" class="px-3 hidden">Branch</th>
             <th class="px-3">Package</th>
             <th class="px-3">Benefit Used</th>
             <th class="px-3 hidden md:table-cell">Claim Date</th>
@@ -176,6 +177,10 @@
           if (!_phc_canWrite) {
             document.getElementById('phc-view-only-badge').classList.remove('hidden');
             document.getElementById('phc-view-only-badge').classList.add('flex');
+          }
+          if (res.session.role === 'super_admin') {
+            var branchTh = document.getElementById('phc-th-branch');
+            if (branchTh) branchTh.classList.remove('hidden');
           }
         }
         if (res.claims && res.claims.success) {
@@ -251,12 +256,17 @@
         }
       }
 
+      var branchCell = (_phc_session && _phc_session.role === 'super_admin')
+        ? '<td class="px-3 py-3.5 text-xs text-slate-500">' + _phc_esc(c.branch_name || '—') + '</td>'
+        : '';
+
       return '<tr class="phc-row">' +
         '<td class="px-4 py-3.5">' +
           '<p class="font-semibold text-slate-800 text-sm">' + _phc_esc(c.patient_snapshot || '—') + '</p>' +
         '</td>' +
         '<td class="px-3 py-3.5 text-xs font-mono text-slate-600">' + _phc_esc(c.philhealth_pin || '—') + '</td>' +
         '<td class="px-3 py-3.5 text-xs text-slate-500 hidden md:table-cell">' + _phc_esc(c.order_id || '—') + '</td>' +
+        branchCell +
         '<td class="px-3 py-3.5 text-xs text-slate-600">' + _phc_esc(c.benefit_package || '—') + '</td>' +
         '<td class="px-3 py-3.5 text-sm font-semibold text-emerald-600" style="font-family:\'DM Mono\',monospace">₱' + _phc_fmt(c.benefit_used) + '</td>' +
         '<td class="px-3 py-3.5 text-xs text-slate-400 hidden md:table-cell">' + _phc_fmtDate(c.claim_date) + '</td>' +
