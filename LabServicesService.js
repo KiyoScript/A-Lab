@@ -183,7 +183,7 @@ function updateLabService(payload, token) {
 
     const now = new Date().toISOString();
     const row = idx + 1;
-    sh.getRange(idx + 1, 2, 1, 12).setValues([[
+    sh.getRange(row, 2, 1, 10).setValues([[
       payload.lab_code.trim().toUpperCase(),
       payload.lab_name.trim(),
       payload.description   || '',
@@ -195,7 +195,7 @@ function updateLabService(payload, token) {
       Number(payload.philhealth_rate) || 0,
       now
     ]]);
-    sh.getRange(row, 10).setValue(now);
+    sh.getRange(row, 12).setValue(now);
 
     _cacheClear('LABS_super_admin_ALL');
 
