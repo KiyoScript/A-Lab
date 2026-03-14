@@ -216,7 +216,7 @@ function getBranchesInitData(token) {
   try {
     const session = getSession(token);
     if (!session || !session.data) return { success: false, expired: true };
-    const branches = getBranches(token);
+    const branches = getBranches({}, token);
     return { success: true, session: session.data, branches: branches };
   } catch(e) {
     return { success: false, error: e.message };
@@ -240,7 +240,7 @@ function getLabServicesInitData(token) {
   try {
     const session = getSession(token);
     if (!session || !session.data) return { success: false, expired: true };
-    const labs = getLabServices(token);
+    const labs = getLabServices({}, token);
     return { success: true, session: session.data, labs: labs };
   } catch(e) {
     return { success: false, error: e.message };
@@ -277,8 +277,8 @@ function getDoctorsInitData(token) {
   try {
     const session = getSession(token);
     if (!session || !session.data) return { success: false, expired: true };
-    const doctors  = getDoctors(token);
-    const branches = getBranches(token);
+    const doctors  = getDoctors({}, token);
+    const branches = getBranches({}, token);
     return { success: true, session: session.data, doctors: doctors, branches: branches };
   } catch(e) {
     return { success: false, error: e.message };
@@ -291,7 +291,7 @@ function getMedTechsInitData(token) {
     const session = getSession(token);
     if (!session || !session.data) return { success: false, expired: true };
     const medtechs = getMedTechs({}, token);
-    const branches = getBranches(token);
+    const branches = getBranches({}, token);
     return { success: true, session: session.data, medtechs: medtechs, branches: branches };
   } catch(e) {
     return { success: false, error: e.message };
@@ -316,7 +316,7 @@ function getPatientsInitData(token) {
     const session  = getSession(token);
     if (!session || !session.data) return { success: false, expired: true };
     const patients  = getPatients({}, token);
-    const branches  = getBranches(token);
+    const branches  = getBranches({}, token);
     const discounts = getDiscountsAll(token);
     return { success: true, session: session.data, patients: patients, branches: branches, discounts: discounts };
   } catch(e) {
@@ -331,7 +331,7 @@ function getAdminsInitData(token) {
     if (!session || !session.data) return { success: false, expired: true };
     const s = session.data;
     const isBranchAdmin = s.role === 'branch_admin';
-    const branches      = getBranches(token);
+    const branches      = getBranches({}, token);
     const branchAdmins  = getBranchAdmins(token);
     const superAdmins   = isBranchAdmin ? { success: true, data: [] } : getSuperAdmins(token);
     return { success: true, session: s, branches: branches, branchAdmins: branchAdmins, superAdmins: superAdmins };
