@@ -125,6 +125,14 @@
         <span class="nav-label">Discounts</span>
       </a>
 
+      <a id="nav-philhealth" href="#" onclick="setActive(this); switchTab('PhilHealthClaims'); return false;"
+        class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer">
+        <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+        </svg>
+        <span class="nav-label">PhilHealth Claims</span>
+      </a>
+
       <a id="nav-orders" href="#" onclick="setActive(this); switchTab('Orders'); return false;"
         class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer">
         <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -235,6 +243,7 @@
       <div id="tab-content" class="w-full h-full overflow-y-auto">
         <div id="tab-Dashboard"                  class="tab-pane"><?!= include('Dashboard') ?></div>
         <div id="tab-Orders"                     class="tab-pane"><?!= include('Orders') ?></div>
+        <div id="tab-PhilHealthClaims"           class="tab-pane"><?!= include('PhilHealthClaims') ?></div>
         <div id="tab-Branches"                   class="tab-pane"><?!= include('Branches') ?></div>
         <div id="tab-Departments"                class="tab-pane"><?!= include('Departments') ?></div>
         <div id="tab-LabServices"                class="tab-pane"><?!= include('LabServices') ?></div>
@@ -385,13 +394,13 @@
       .getAppInitData(alab_token);   // ← single combined call
 
     function _prefetchAllTabs() {
-        setTimeout(function() {
-          if (!initializedTabs['Orders']) {
-            initializedTabs['Orders'] = true;
-            if (typeof window['init_Orders'] === 'function') window['init_Orders']();
-          }
-        }, 3000);
-      }
+      setTimeout(function() {
+        if (!initializedTabs['Orders']) {
+          initializedTabs['Orders'] = true;
+          if (typeof window['init_Orders'] === 'function') window['init_Orders']();
+        }
+      }, 3000);
+    }
 
     // ── Nav helpers ───────────────────────────────────────────────
     function applyNavRoles(role) {
