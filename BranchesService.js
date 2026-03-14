@@ -236,9 +236,7 @@ function getBranches(token) {
   try {
     const session = _getSession(token);
 
-    var cacheKey = 'BRANCHES_' + (session ? session.role : '') + '_' + (session ? session.branch_id || 'ALL' : 'ALL');
-    return _cacheGet(cacheKey, function() {
-
+    // Direct read from Sheet to avoid stale cache issues
     const sh   = _getRegistrySheet();
     const data = sh.getDataRange().getValues();
     if (data.length <= 1) return { success: true, data: [] };
@@ -249,8 +247,6 @@ function getBranches(token) {
     }
 
     return { success: true, data: rows };
-
-    }); // end _cacheGet
   } catch (e) {
     return { success: false, error: e.message };
   }
@@ -286,6 +282,9 @@ function createBranch(payload) {
       ssInfo.url,
       now, now
     ]);
+
+    SpreadsheetApp.flush();
+    _cacheClear('BRANCHES_super_admin_ALL');
 
     return {
       success: true,
@@ -328,6 +327,9 @@ function updateBranch(payload) {
     ]]);
     sh.getRange(row, 11).setValue(now);
 
+    SpreadsheetApp.flush();
+    _cacheClear('BRANCHES_super_admin_ALL');
+
     try {
       const ssId = String(data[idx][7] || '');
       if (ssId) {
@@ -362,6 +364,7 @@ function deleteBranch(branchId) {
     if (idx === -1) return { success: false, error: 'Branch not found: ' + branchId };
     sh.deleteRow(idx + 1);
 
+    SpreadsheetApp.flush();
     _cacheClear('BRANCHES_super_admin_ALL');
 
     return { success: true };
