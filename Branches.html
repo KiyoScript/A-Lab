@@ -38,6 +38,7 @@
     .toast-success { background:#0f9959; }
     .toast-error   { background:#ef4444; }
     .toast-warning { background:#f59e0b; }
+    .toast-info    { background:#3b82f6; }
     @keyframes toastSlideUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
     @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
     .fade-up { animation: fadeUp 0.3s ease both; }
@@ -413,21 +414,25 @@
       email:       document.getElementById('f-email').value.trim(),
       status:      document.getElementById('f-status').value
     };
-    _br_setSaving(true);
+    
+    var isEdit = _br_editingId;
+    var reqType = isEdit ? 'UPDATE_BRANCH' : 'CREATE_BRANCH';
+
+    br_closeModal();
+    _br_showToast(isEdit ? 'Updating branch...' : 'Creating branch...', 'info');
+
     google.script.run
       .withSuccessHandler(function(res) {
-        _br_setSaving(false);
         if (_br_checkExpired(res)) return;
         if (res.success) {
-          br_closeModal();
-          _br_showToast(_br_editingId ? 'Branch updated!' : 'Branch created — spreadsheet ready! 🎉', 'success');
+          _br_showToast(isEdit ? 'Branch updated!' : 'Branch created — spreadsheet ready! 🎉', 'success');
           _br_silentReload();
         } else {
           _br_showToast('Error: ' + res.error, 'error');
         }
       })
-      .withFailureHandler(function(err) { _br_setSaving(false); _br_showToast('Error: ' + err.message, 'error'); })
-      .handleBranchRequest(_br_editingId ? 'UPDATE_BRANCH' : 'CREATE_BRANCH', payload, _br_getToken());
+      .withFailureHandler(function(err) { _br_showToast('Error: ' + err.message, 'error'); })
+      .handleBranchRequest(reqType, payload, _br_getToken());
   }
 
   function _br_setSaving(v) {
@@ -452,20 +457,21 @@
 
   function br_confirmDelete() {
     if (!_br_deletingId || !_br_isSuperAdmin) return;
-    var btn = document.getElementById('confirm-delete-btn');
-    btn.textContent = 'Deleting…'; btn.disabled = true;
+    
+    var idToDelete = _br_deletingId;
+    br_closeDeleteModal();
+    _br_showToast('Deleting branch...', 'info');
+
     google.script.run
       .withSuccessHandler(function(res) {
-        br_closeDeleteModal(); btn.textContent = 'Delete'; btn.disabled = false;
         if (_br_checkExpired(res)) return;
         if (res.success) { _br_showToast('Branch deleted.', 'success'); _br_silentReload(); }
         else _br_showToast('Error: ' + res.error, 'error');
       })
       .withFailureHandler(function(err) {
-        br_closeDeleteModal(); btn.textContent = 'Delete'; btn.disabled = false;
         _br_showToast('Error: ' + err.message, 'error');
       })
-      .handleBranchRequest('DELETE_BRANCH', { branch_id: _br_deletingId }, _br_getToken());
+      .handleBranchRequest('DELETE_BRANCH', { branch_id: idToDelete }, _br_getToken());
   }
 
   function _br_showLoading(v) {
@@ -481,7 +487,8 @@
     var icons = {
       success: '<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>',
       error:   '<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>',
-      warning: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>'
+      warning: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>',
+      info:    '<path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20A10 10 0 0012 2z"/>'
     };
     var item = document.createElement('div');
     item.className = 'toast-item toast-' + (type || 'success');
