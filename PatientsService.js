@@ -4,10 +4,11 @@
 // Patient ↔ Discount mapping → per-branch SS → "Patient_Discounts"
 //
 // Patients schema:
-//   A: patient_id    B: last_name      C: first_name
-//   D: middle_name   E: sex            F: birth_date
-//   G: contact_number  H: email_address  I: address
-//   J: branch_id     K: created_at     L: updated_at
+//   A: patient_id       B: last_name         C: first_name
+//   D: middle_name      E: sex               F: birth_date
+//   G: contact_number   H: email_address     I: address
+//   J: branch_id        K: philhealth_pin    L: is_philhealth_member
+//   M: created_at       N: updated_at
 //
 // Patient_Discounts schema:
 //   A: mapping_id   B: patient_id   C: discount_id   D: created_at
@@ -26,7 +27,8 @@ function _getPatientSheet(spreadsheetId) {
     const headers = [
       'patient_id', 'last_name', 'first_name', 'middle_name',
       'sex', 'birth_date', 'contact_number', 'email_address',
-      'address', 'branch_id', 'created_at', 'updated_at'
+      'address', 'branch_id', 'philhealth_pin', 'is_philhealth_member',
+      'created_at', 'updated_at'
     ];
     sh.appendRow(headers);
     sh.getRange(1, 1, 1, headers.length)
@@ -45,8 +47,10 @@ function _getPatientSheet(spreadsheetId) {
     sh.setColumnWidth(8,  200); // email_address
     sh.setColumnWidth(9,  250); // address
     sh.setColumnWidth(10, 140); // branch_id
-    sh.setColumnWidth(11, 180); // created_at
-    sh.setColumnWidth(12, 180); // updated_at
+    sh.setColumnWidth(11, 160); // philhealth_pin
+    sh.setColumnWidth(12, 180); // is_philhealth_member
+    sh.setColumnWidth(13, 180); // created_at
+    sh.setColumnWidth(14, 180); // updated_at
   }
 
   return sh;
@@ -94,19 +98,21 @@ function _patientRowToObj(row, branchName) {
   }
 
   return {
-    patient_id:      String(row[0]  || ''),
-    last_name:       String(row[1]  || ''),
-    first_name:      String(row[2]  || ''),
-    middle_name:     String(row[3]  || ''),
-    sex:             String(row[4]  || ''),
-    birth_date:      birthDate,
-    contact_number:  String(row[6]  || ''),
-    email_address:   String(row[7]  || ''),
-    address:         String(row[8]  || ''),
-    branch_id:       String(row[9]  || ''),
-    branch_name:     branchName     || '',
-    created_at:      String(row[10] || ''),
-    updated_at:      String(row[11] || '')
+    patient_id:           String(row[0]  || ''),
+    last_name:            String(row[1]  || ''),
+    first_name:           String(row[2]  || ''),
+    middle_name:          String(row[3]  || ''),
+    sex:                  String(row[4]  || ''),
+    birth_date:           String(row[5]  || ''),
+    contact_number:       String(row[6]  || ''),
+    email_address:        String(row[7]  || ''),
+    address:              String(row[8]  || ''),
+    branch_id:            String(row[9]  || ''),
+    philhealth_pin:       String(row[10] || ''),
+    is_philhealth_member: row[11] === true || String(row[11]).toLowerCase() === 'true',
+    branch_name:          branchName || '',
+    created_at:           String(row[12] || ''),
+    updated_at:           String(row[13] || '')
   };
 }
 
@@ -299,6 +305,8 @@ function createPatient(payload, token) {
       (payload.email_address || '').trim(),
       payload.address.trim(),
       targetBranchId,
+      (payload.philhealth_pin || '').trim(),
+      payload.is_philhealth_member === true,
       now,
       now
     ]);
@@ -322,8 +330,11 @@ function createPatient(payload, token) {
         email_address:  (payload.email_address || '').trim(),
         address:        payload.address.trim(),
         branch_id:      targetBranchId,
-        branch_name:    branchInfo.branchName,
-        discount_ids:   discountIds,
+        branch_id:            targetBranchId,
+        branch_name:          branchInfo.branchName,
+        philhealth_pin:       (payload.philhealth_pin || '').trim(),
+        is_philhealth_member: payload.is_philhealth_member === true,
+        discount_ids:         discountIds,
         discount_count: discountIds.length,
         created_at:     now,
         updated_at:     now
@@ -364,7 +375,7 @@ function updatePatient(payload, token) {
 
     const now = new Date().toISOString();
     const row = idx + 1;
-    sh.getRange(row, 2, 1, 8).setValues([[
+    sh.getRange(row, 2, 1, 10).setValues([[
       payload.last_name.trim(),
       payload.first_name.trim(),
       (payload.middle_name || '').trim(),
@@ -372,9 +383,11 @@ function updatePatient(payload, token) {
       payload.birth_date,
       payload.contact_number.trim(),
       (payload.email_address || '').trim(),
-      payload.address.trim()
+      payload.address.trim(),
+      (payload.philhealth_pin || '').trim(),
+      payload.is_philhealth_member === true
     ]]);
-    sh.getRange(row, 12).setValue(now);
+    sh.getRange(row, 14).setValue(now);
 
     // Update discount assignments
     if (payload.discount_ids !== undefined) {

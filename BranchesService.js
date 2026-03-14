@@ -222,6 +222,44 @@ function _createBranchSpreadsheet(branchName, branchCode) {
   itemsSheet.setFrozenRows(1);
   itemsSheet.setColumnWidths(1, itemsHeaders.length, 160);
 
+  // ── 7. ORDER_DOCTORS sheet ────────────────────────────────────
+  const ordDoctorsSheet = ss.insertSheet('Order_Doctors');
+  const ordDoctorsHeaders = [
+    'id', 'order_id', 'doctor_id', 'doctor_snapshot',
+    'role', 'added_by', 'added_at'
+  ];
+  ordDoctorsSheet.appendRow(ordDoctorsHeaders);
+  ordDoctorsSheet.getRange(1, 1, 1, ordDoctorsHeaders.length)
+    .setFontWeight('bold').setBackground('#0f172a')
+    .setFontColor('#ffffff').setHorizontalAlignment('center');
+  ordDoctorsSheet.setFrozenRows(1);
+  ordDoctorsSheet.setColumnWidth(1, 160); // id
+  ordDoctorsSheet.setColumnWidth(2, 160); // order_id
+  ordDoctorsSheet.setColumnWidth(3, 160); // doctor_id
+  ordDoctorsSheet.setColumnWidth(4, 200); // doctor_snapshot
+  ordDoctorsSheet.setColumnWidth(5, 140); // role
+  ordDoctorsSheet.setColumnWidth(6, 180); // added_by
+  ordDoctorsSheet.setColumnWidth(7, 180); // added_at
+
+  // ── 8. PHILHEALTH_CLAIMS sheet ────────────────────────────────
+  const phSheet = ss.insertSheet('PhilHealth_Claims');
+  const phHeaders = [
+    'claim_id', 'order_id', 'patient_id', 'patient_snapshot',
+    'philhealth_pin', 'benefit_package', 'remaining_before',
+    'benefit_used', 'patient_copay', 'status',
+    'claim_date', 'submitted_at', 'approved_at', 'notes',
+    'created_by', 'created_at', 'updated_at'
+  ];
+  phSheet.appendRow(phHeaders);
+  phSheet.getRange(1, 1, 1, phHeaders.length)
+    .setFontWeight('bold').setBackground('#0f172a')
+    .setFontColor('#ffffff').setHorizontalAlignment('center');
+  phSheet.setFrozenRows(1);
+  phSheet.setColumnWidths(1, phHeaders.length, 160);
+  phSheet.setColumnWidth(4, 200); // patient_snapshot
+  phSheet.setColumnWidth(6, 180); // benefit_package
+  phSheet.setColumnWidth(14, 280); // notes
+
   // ── Bring Admins to front ─────────────────────────────────────
   ss.setActiveSheet(adminsSheet);
   ss.moveActiveSheet(1);

@@ -180,6 +180,21 @@
         <input id="ls-f-specimen-type" type="text" placeholder="e.g. Blood, Urine, Stool" class="form-input"/>
       </div>
 
+      <!-- PhilHealth Coverage -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 mb-1.5">PhilHealth Coverage</label>
+        <div class="flex items-center gap-3 flex-wrap">
+          <select id="ls-f-is-philhealth" class="form-select" onchange="ls_togglePhilHealthRate()" style="flex:1;min-width:160px">
+            <option value="false">Not covered</option>
+            <option value="true">PhilHealth covered</option>
+          </select>
+          <div id="ls-philhealth-rate-wrap" class="flex-1 min-w-[140px]" style="display:none">
+            <input type="number" id="ls-f-philhealth-rate" min="0" step="0.01"
+              placeholder="PhilHealth rate (₱)" class="form-input"/>
+          </div>
+        </div>
+      </div>
+
       <!-- Status -->
       <div>
         <label class="block text-xs font-semibold text-slate-600 mb-1.5">Status</label>
@@ -352,7 +367,10 @@
         '<td class="px-3 py-3.5 text-sm font-semibold text-slate-700" style="font-family:\'DM Mono\',monospace">₱' + Number(l.default_fee || 0).toFixed(2) + '</td>' +
         '<td class="px-3 py-3.5 text-sm text-slate-500 hidden md:table-cell">' + (l.tat_hours ? l.tat_hours + 'h' : '—') + '</td>' +
         '<td class="px-3 py-3.5 text-sm text-slate-500 hidden lg:table-cell">' + _ls_escHtml(l.specimen_type || '—') + '</td>' +
-        '<td class="px-3 py-3.5"><span class="badge ' + (l.is_active ? 'badge-active' : 'badge-inactive') + '">' + (l.is_active ? 'Active' : 'Inactive') + '</span></td>' +
+        '<td class="px-3 py-3.5">' +
+          '<span class="badge ' + (l.is_active ? 'badge-active' : 'badge-inactive') + '">' + (l.is_active ? 'Active' : 'Inactive') + '</span>' +
+          (l.is_philhealth_covered ? '<span class="badge" style="background:#f0fdf4;color:#15803d;margin-left:4px">PhilHealth ₱' + Number(l.philhealth_rate || 0).toFixed(2) + '</span>' : '') +
+        '</td>' +
         actionsCell +
       '</tr>';
     }).join('');
@@ -395,7 +413,10 @@
         document.getElementById('ls-f-default-fee').value   = l.default_fee;
         document.getElementById('ls-f-tat-hours').value     = l.tat_hours;
         document.getElementById('ls-f-specimen-type').value = l.specimen_type;
-        document.getElementById('ls-f-is-active').value     = l.is_active ? 'true' : 'false';
+        document.getElementById('ls-f-is-active').value          = l.is_active ? 'true' : 'false';
+        document.getElementById('ls-f-is-philhealth').value       = l.is_philhealth_covered ? 'true' : 'false';
+        document.getElementById('ls-f-philhealth-rate').value     = l.philhealth_rate || '';
+        ls_togglePhilHealthRate();
       }
     }
     document.getElementById('ls-modal-backdrop').classList.remove('hidden');
@@ -407,13 +428,23 @@
     _ls_editingId = null;
   }
 
+  function ls_togglePhilHealthRate() {
+    var covered = document.getElementById('ls-f-is-philhealth').value === 'true';
+    var wrap    = document.getElementById('ls-philhealth-rate-wrap');
+    wrap.style.display = covered ? '' : 'none';
+    if (!covered) document.getElementById('ls-f-philhealth-rate').value = '';
+  }
+
   function _ls_clearForm() {
     ['ls-f-lab-id','ls-f-lab-code','ls-f-lab-name','ls-f-description','ls-f-specimen-type'].forEach(function(id) {
       document.getElementById(id).value = '';
     });
-    document.getElementById('ls-f-default-fee').value = '';
-    document.getElementById('ls-f-tat-hours').value   = '';
-    document.getElementById('ls-f-is-active').value   = 'true';
+    document.getElementById('ls-f-default-fee').value    = '';
+    document.getElementById('ls-f-tat-hours').value      = '';
+    document.getElementById('ls-f-is-active').value      = 'true';
+    document.getElementById('ls-f-is-philhealth').value  = 'false';
+    document.getElementById('ls-f-philhealth-rate').value = '';
+    ls_togglePhilHealthRate();
   }
 
   function ls_saveLab() {
@@ -423,14 +454,16 @@
     if (!labName) { _ls_showToast('Lab name is required.', 'error'); return; }
 
     var payload = {
-      lab_id:        document.getElementById('ls-f-lab-id').value,
-      lab_code:      labCode,
-      lab_name:      labName,
-      description:   document.getElementById('ls-f-description').value.trim(),
-      default_fee:   parseFloat(document.getElementById('ls-f-default-fee').value) || 0,
-      tat_hours:     parseInt(document.getElementById('ls-f-tat-hours').value)   || 0,
-      specimen_type: document.getElementById('ls-f-specimen-type').value.trim(),
-      is_active:     document.getElementById('ls-f-is-active').value === 'true'
+      lab_id:                document.getElementById('ls-f-lab-id').value,
+      lab_code:              labCode,
+      lab_name:              labName,
+      description:           document.getElementById('ls-f-description').value.trim(),
+      default_fee:           parseFloat(document.getElementById('ls-f-default-fee').value) || 0,
+      tat_hours:             parseInt(document.getElementById('ls-f-tat-hours').value)   || 0,
+      specimen_type:         document.getElementById('ls-f-specimen-type').value.trim(),
+      is_active:             document.getElementById('ls-f-is-active').value === 'true',
+      is_philhealth_covered: document.getElementById('ls-f-is-philhealth').value === 'true',
+      philhealth_rate:       parseFloat(document.getElementById('ls-f-philhealth-rate').value) || 0
     };
 
     _ls_setSaving(true);

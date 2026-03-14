@@ -4,9 +4,10 @@
 // NOT branch-specific. All roles can read; only super_admin can write.
 //
 // Schema:
-//   A: lab_id       B: lab_code     C: lab_name
-//   D: description  E: default_fee  F: tat_hours
-//   G: specimen_type  H: is_active  I: created_at  J: updated_at
+//   A: lab_id              B: lab_code           C: lab_name
+//   D: description         E: default_fee        F: tat_hours
+//   G: specimen_type       H: is_active          I: is_philhealth_covered
+//   J: philhealth_rate     K: created_at         L: updated_at
 // ═══════════════════════════════════════════════════════════════
 
 // ─── Get or create Lab Services sheet in Registry SS ─────────────
@@ -19,7 +20,8 @@ function _getLabSheet() {
     const headers = [
       'lab_id', 'lab_code', 'lab_name',
       'description', 'default_fee', 'tat_hours',
-      'specimen_type', 'is_active', 'created_at', 'updated_at'
+      'specimen_type', 'is_active', 'is_philhealth_covered',
+      'philhealth_rate', 'created_at', 'updated_at'
     ];
     sh.appendRow(headers);
     sh.getRange(1, 1, 1, headers.length)
@@ -36,8 +38,10 @@ function _getLabSheet() {
     sh.setColumnWidth(6,  100); // tat_hours
     sh.setColumnWidth(7,  160); // specimen_type
     sh.setColumnWidth(8,   90); // is_active
-    sh.setColumnWidth(9,  180); // created_at
-    sh.setColumnWidth(10, 180); // updated_at
+    sh.setColumnWidth(9,  180); // is_philhealth_covered
+    sh.setColumnWidth(10, 140); // philhealth_rate
+    sh.setColumnWidth(11, 180); // created_at
+    sh.setColumnWidth(12, 180); // updated_at
   }
 
   return sh;
@@ -46,16 +50,18 @@ function _getLabSheet() {
 // ─── Row → Object ─────────────────────────────────────────────────
 function _labRowToObj(row) {
   return {
-    lab_id:        String(row[0] || ''),
-    lab_code:      String(row[1] || ''),
-    lab_name:      String(row[2] || ''),
-    description:   String(row[3] || ''),
-    default_fee:   Number(row[4]) || 0,
-    tat_hours:     Number(row[5]) || 0,
-    specimen_type: String(row[6] || ''),
-    is_active:     row[7] === true || String(row[7]).toLowerCase() === 'true',
-    created_at:    String(row[8]  || ''),
-    updated_at:    String(row[9]  || '')
+    lab_id:                String(row[0]  || ''),
+    lab_code:              String(row[1]  || ''),
+    lab_name:              String(row[2]  || ''),
+    description:           String(row[3]  || ''),
+    default_fee:           Number(row[4]) || 0,
+    tat_hours:             Number(row[5]) || 0,
+    specimen_type:         String(row[6]  || ''),
+    is_active:             row[7] === true || String(row[7]).toLowerCase() === 'true',
+    is_philhealth_covered: row[8] === true || String(row[8]).toLowerCase() === 'true',
+    philhealth_rate:       Number(row[9]) || 0,
+    created_at:            String(row[10] || ''),
+    updated_at:            String(row[11] || '')
   };
 }
 
@@ -130,6 +136,8 @@ function createLabService(payload, token) {
       Number(payload.tat_hours)   || 0,
       payload.specimen_type || '',
       payload.is_active !== false,
+      payload.is_philhealth_covered === true,
+      Number(payload.philhealth_rate) || 0,
       now,
       now
     ]);
@@ -137,16 +145,18 @@ function createLabService(payload, token) {
     return {
       success: true,
       data: {
-        lab_id:        labId,
-        lab_code:      payload.lab_code.trim().toUpperCase(),
-        lab_name:      payload.lab_name.trim(),
-        description:   payload.description   || '',
-        default_fee:   Number(payload.default_fee) || 0,
-        tat_hours:     Number(payload.tat_hours)   || 0,
-        specimen_type: payload.specimen_type || '',
-        is_active:     payload.is_active !== false,
-        created_at:    now,
-        updated_at:    now
+        lab_id:                labId,
+        lab_code:              payload.lab_code.trim().toUpperCase(),
+        lab_name:              payload.lab_name.trim(),
+        description:           payload.description   || '',
+        default_fee:           Number(payload.default_fee) || 0,
+        tat_hours:             Number(payload.tat_hours)   || 0,
+        specimen_type:         payload.specimen_type || '',
+        is_active:             payload.is_active !== false,
+        is_philhealth_covered: payload.is_philhealth_covered === true,
+        philhealth_rate:       Number(payload.philhealth_rate) || 0,
+        created_at:            now,
+        updated_at:            now
       }
     };
   } catch (e) {
@@ -173,14 +183,17 @@ function updateLabService(payload, token) {
 
     const now = new Date().toISOString();
     const row = idx + 1;
-    sh.getRange(row, 2, 1, 7).setValues([[
+    sh.getRange(idx + 1, 2, 1, 12).setValues([[
       payload.lab_code.trim().toUpperCase(),
       payload.lab_name.trim(),
       payload.description   || '',
       Number(payload.default_fee) || 0,
       Number(payload.tat_hours)   || 0,
       payload.specimen_type || '',
-      payload.is_active !== false
+      payload.is_active !== false,
+      payload.is_philhealth_covered === true,
+      Number(payload.philhealth_rate) || 0,
+      now
     ]]);
     sh.getRange(row, 10).setValue(now);
 
