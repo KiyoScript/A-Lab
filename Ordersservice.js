@@ -77,6 +77,46 @@ function _getOrderItemSheet(spreadsheetId) {
   return sh;
 }
 
+// ─── PhilHealth_Claims sheet ──────────────────────────────────────
+function _getPhilHealthClaimSheet(spreadsheetId) {
+  const ss = SpreadsheetApp.openById(spreadsheetId);
+  let sh = ss.getSheetByName('PhilHealth_Claims');
+  if (!sh) {
+    sh = ss.insertSheet('PhilHealth_Claims');
+    const headers = [
+      'claim_id', 'order_id', 'patient_id', 'patient_snapshot',
+      'philhealth_pin', 'benefit_package', 'remaining_before',
+      'benefit_used', 'patient_copay', 'status',
+      'claim_date', 'submitted_at', 'approved_at', 'notes',
+      'created_by', 'created_at', 'updated_at'
+    ];
+    sh.appendRow(headers);
+    sh.getRange(1, 1, 1, headers.length)
+      .setFontWeight('bold').setBackground('#0f172a')
+      .setFontColor('#ffffff').setHorizontalAlignment('center');
+    sh.setFrozenRows(1);
+    sh.setColumnWidths(1, headers.length, 160);
+  }
+  return sh;
+}
+
+// ─── Order_Doctors sheet ──────────────────────────────────────────
+function _getOrderDoctorSheet(spreadsheetId) {
+  const ss = SpreadsheetApp.openById(spreadsheetId);
+  let sh = ss.getSheetByName('Order_Doctors');
+  if (!sh) {
+    sh = ss.insertSheet('Order_Doctors');
+    const headers = ['id', 'order_id', 'doctor_id', 'doctor_snapshot', 'role', 'added_by', 'added_at'];
+    sh.appendRow(headers);
+    sh.getRange(1, 1, 1, headers.length)
+      .setFontWeight('bold').setBackground('#0f172a')
+      .setFontColor('#ffffff').setHorizontalAlignment('center');
+    sh.setFrozenRows(1);
+    sh.setColumnWidths(1, headers.length, 160);
+  }
+  return sh;
+}
+
 // ─── Row → Object ─────────────────────────────────────────────────
 function _orderRowToObj(row) {
   return {
@@ -303,6 +343,24 @@ function createOrder(payload, token) {
     const paymentAmount   = payload.items.reduce(function(s, i) { return s + (Number(i.fee) || 0); }, 0);
     const paymentDiscount = Number(payload.payment_discount) || 0;
 
+    // ── PhilHealth calculation ────────────────────────────────────
+    const usePhilHealth     = payload.use_philhealth === true;
+    const philhealthPin     = String(payload.philhealth_pin     || '').trim();
+    const philhealthPackage = String(payload.philhealth_package || '').trim();
+    const remainingBefore   = Number(payload.philhealth_remaining) || 0;
+
+    var philhealthApplied = 0;
+    var patientCopay      = 0;
+
+    if (usePhilHealth && philhealthPin && remainingBefore > 0) {
+      // Sum fees of covered items only
+      const coveredTotal = payload.items.reduce(function(s, i) {
+        return s + (i.is_philhealth_covered ? Number(i.fee) || 0 : 0);
+      }, 0);
+      philhealthApplied = Math.min(coveredTotal, remainingBefore);
+      patientCopay      = Math.max(paymentAmount - paymentDiscount - philhealthApplied, 0);
+    }
+
     const orderSh = _getOrderSheet(ssId);
     orderSh.appendRow([
       orderId, orderNumber,
@@ -310,11 +368,11 @@ function createOrder(payload, token) {
       payload.patient_snapshot    || '',
       payload.referring_doctor_id || '',
       payload.doctor_snapshot     || '',
-      'DRAFT', '',                    // status, payment_method
+      'DRAFT', '',
       paymentAmount, paymentDiscount,
-      0, 0,                           // amount_paid, change
+      0, 0,
       payload.notes || '',
-      now,                            // order_date
+      now,
       session.full_name || session.username || '',
       now, now
     ]);
@@ -335,9 +393,59 @@ function createOrder(payload, token) {
       itemSh.getRange(itemSh.getLastRow() + 1, 1, itemRows.length, 16).setValues(itemRows);
     }
 
+    // ── Save Order_Doctors (primary + 2nd opinion) ────────────────
+    const doctors = payload.doctors || [];
+    if (doctors.length > 0) {
+      const docSh = _getOrderDoctorSheet(ssId);
+      const docRows = doctors.map(function(d) {
+        return [
+          'OD-' + Utilities.getUuid().substring(0, 8).toUpperCase(),
+          orderId,
+          d.doctor_id       || '',
+          d.doctor_snapshot || '',
+          d.role            || 'PRIMARY',
+          session.full_name || session.username || '',
+          now
+        ];
+      });
+      docSh.getRange(docSh.getLastRow() + 1, 1, docRows.length, 7).setValues(docRows);
+    }
+
+    // ── Create PhilHealth claim record if applicable ───────────────
+    var claimId = null;
+    if (usePhilHealth && philhealthPin && philhealthApplied > 0) {
+      claimId = 'PHC-' + Utilities.getUuid().substring(0, 8).toUpperCase();
+      const claimSh = _getPhilHealthClaimSheet(ssId);
+      claimSh.appendRow([
+        claimId,
+        orderId,
+        payload.patient_id,
+        payload.patient_snapshot || '',
+        philhealthPin,
+        philhealthPackage || 'OPAC',
+        remainingBefore,
+        philhealthApplied,
+        patientCopay,
+        'FOR_SUBMISSION',
+        now,   // claim_date
+        '', '', // submitted_at, approved_at
+        payload.philhealth_notes || '',
+        session.full_name || session.username || '',
+        now, now
+      ]);
+    }
+
     return {
       success: true,
-      data: { order_id: orderId, order_number: orderNumber, status: 'DRAFT', payment_amount: paymentAmount }
+      data: {
+        order_id:           orderId,
+        order_number:       orderNumber,
+        status:             'DRAFT',
+        payment_amount:     paymentAmount,
+        philhealth_applied: philhealthApplied,
+        patient_copay:      patientCopay,
+        claim_id:           claimId
+      }
     };
   } catch(e) {
     return { success: false, error: e.message };

@@ -360,6 +360,74 @@
       </div>
     </div>
 
+    <!-- PhilHealth Benefit -->
+    <div id="ph-section" class="hidden mb-5">
+      <div class="bg-green-50 border border-green-200 rounded-xl p-4 mb-3">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <div class="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
+              <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+              </svg>
+            </div>
+            <span class="text-xs font-semibold text-green-800">PhilHealth Member</span>
+            <span id="ph-pin-display" class="text-xs text-green-600 font-mono"></span>
+          </div>
+          <label class="flex items-center gap-2 cursor-pointer select-none">
+            <span class="text-xs text-slate-600 font-semibold">Apply benefit?</span>
+            <div class="relative">
+              <input type="checkbox" id="ph-apply-toggle" class="sr-only peer" onchange="phToggle()"/>
+              <div class="w-9 h-5 bg-slate-200 peer-checked:bg-green-500 rounded-full transition-colors"></div>
+              <div class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4"></div>
+            </div>
+          </label>
+        </div>
+
+        <div id="ph-details" class="hidden space-y-3">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="field-label">Remaining balance (₱)</label>
+              <input type="number" id="ph-remaining" min="0" max="1200" step="0.01"
+                placeholder="From PhilHealth portal" class="field-input" oninput="phRecalc()"/>
+              <p class="text-[11px] text-slate-400 mt-1">Enter from PhilHealth portal</p>
+            </div>
+            <div>
+              <label class="field-label">Benefit package</label>
+              <select id="ph-package" class="field-input">
+                <option value="OPAC">Outpatient (OPAC)</option>
+                <option value="Z-BENEFIT">Z-Benefit</option>
+                <option value="OTHER">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Covered items breakdown -->
+          <div id="ph-covered-wrap" class="hidden">
+            <p class="text-[11px] font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Covered tests</p>
+            <div id="ph-covered-list" class="space-y-1 mb-2"></div>
+            <div class="bg-white rounded-lg p-3 border border-green-200 space-y-1.5">
+              <div class="flex justify-between text-xs">
+                <span class="text-slate-500">Covered tests total</span>
+                <span id="ph-covered-total" class="font-semibold text-slate-700" style="font-family:'DM Mono',monospace">₱0.00</span>
+              </div>
+              <div class="flex justify-between text-xs">
+                <span class="text-green-600 font-semibold">PhilHealth pays</span>
+                <span id="ph-applied" class="font-bold text-green-600" style="font-family:'DM Mono',monospace">₱0.00</span>
+              </div>
+              <div class="flex justify-between text-xs border-t border-slate-100 pt-1.5">
+                <span class="text-slate-700 font-semibold">Patient pays</span>
+                <span id="ph-copay" class="font-bold text-blue-600" style="font-family:'DM Mono',monospace">₱0.00</span>
+              </div>
+            </div>
+          </div>
+
+          <div id="ph-no-covered" class="hidden text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+            None of the selected services are PhilHealth-covered. No benefit will be applied.
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Notes -->
     <div class="mb-5">
       <label class="field-label">Notes <span class="text-slate-300 font-normal normal-case">(optional)</span></label>
@@ -486,7 +554,7 @@
         if (res && res.success) allDiscounts = res.data || [];
       })
       .withFailureHandler(function(){})
-      .handleDiscountRequest('GET_DISCOUNTS_ALL', {}, _co_getToken());
+      .handleDiscountRequest('GET_DISCOUNTS', {}, _co_getToken());
   }
 
   // ── Step 1 — Patient search ───────────────────────────────────
@@ -728,6 +796,7 @@
           '<label for="chk-' + escHtml(key) + '" class="item-name" onclick="event.stopPropagation()">' +
             escHtml(s.lab_name) + ' <span class="text-[11px] text-slate-400">' + escHtml(s.lab_code) + '</span>' +
           '</label>' +
+          (s.is_philhealth_covered ? '<span style="font-size:10px;font-weight:700;background:#f0fdf4;color:#15803d;padding:1px 7px;border-radius:99px">PH</span>' : '') +
           '<span class="item-fee">₱' + fmt(s.default_fee) + '</span>' +
         '</div>';
       }).join('');
@@ -761,7 +830,20 @@
     var name = rowEl.dataset.name;
     var fee  = Number(rowEl.dataset.fee) || 0;
     if (selectedItems[key]) { delete selectedItems[key]; }
-    else { selectedItems[key] = { item_type: type, item_ref_id: ref, item_name_snapshot: name, fee: fee }; }
+    else {
+      var phCovered = false;
+      if (type === 'service') {
+        var svc = allServices.find(function(s){ return s.lab_id === ref; });
+        if (svc) phCovered = svc.is_philhealth_covered || false;
+      }
+      selectedItems[key] = {
+        item_type:             type,
+        item_ref_id:           ref,
+        item_name_snapshot:    name,
+        fee:                   fee,
+        is_philhealth_covered: phCovered
+      };
+    }
     var cb = document.getElementById('chk-' + key);
     if (cb) cb.checked = !!selectedItems[key];
     updateStep2Counter();
@@ -785,6 +867,7 @@
 
     document.getElementById('s3-avatar').textContent       = initials;
     document.getElementById('s3-patient-name').textContent = name;
+    phShowSection();
     document.getElementById('s3-items-summary').textContent =
       items.length + ' item(s) · ₱' + fmt(items.reduce(function(s,i){ return s+(Number(i.fee)||0); }, 0));
 
@@ -836,10 +919,75 @@
   function recalc() {
     var sub   = Object.values(selectedItems).reduce(function(s,i){ return s+(Number(i.fee)||0); }, 0);
     var disc  = Number(document.getElementById('f-discount').value) || 0;
-    var total = Math.max(sub - disc, 0);
+    var ph    = phGetApplied();
+    var total = Math.max(sub - disc - ph, 0);
     document.getElementById('b-subtotal').textContent = '₱' + fmt(sub);
     document.getElementById('b-discount').textContent = disc > 0 ? '-₱' + fmt(disc) : '-₱0.00';
     document.getElementById('b-total').textContent    = '₱' + fmt(total);
+  }
+
+  // ── PhilHealth helpers ────────────────────────────────────────
+  function phGetApplied() {
+    if (!document.getElementById('ph-apply-toggle').checked) return 0;
+    var remaining = Number(document.getElementById('ph-remaining').value) || 0;
+    var covered   = Object.values(selectedItems)
+      .filter(function(i) { return i.is_philhealth_covered; })
+      .reduce(function(s,i){ return s+(Number(i.fee)||0); }, 0);
+    return Math.min(covered, remaining);
+  }
+
+  function phToggle() {
+    var on = document.getElementById('ph-apply-toggle').checked;
+    document.getElementById('ph-details').classList.toggle('hidden', !on);
+    if (on) phRecalc();
+    else recalc();
+  }
+
+  function phRecalc() {
+    var items    = Object.values(selectedItems);
+    var covered  = items.filter(function(i){ return i.is_philhealth_covered; });
+    var covTotal = covered.reduce(function(s,i){ return s+(Number(i.fee)||0); }, 0);
+    var remaining = Number(document.getElementById('ph-remaining').value) || 0;
+    var applied   = Math.min(covTotal, remaining);
+
+    var wrap    = document.getElementById('ph-covered-wrap');
+    var noWrap  = document.getElementById('ph-no-covered');
+
+    if (covered.length === 0) {
+      wrap.classList.add('hidden');
+      noWrap.classList.remove('hidden');
+      document.getElementById('ph-applied').textContent = '₱0.00';
+      document.getElementById('ph-copay').textContent   = '₱0.00';
+    } else {
+      wrap.classList.remove('hidden');
+      noWrap.classList.add('hidden');
+      document.getElementById('ph-covered-list').innerHTML = covered.map(function(i) {
+        return '<div class="flex justify-between text-xs py-0.5">' +
+          '<span class="text-slate-600">' + escHtml(i.item_name_snapshot) + '</span>' +
+          '<span class="font-semibold text-slate-700" style="font-family:\'DM Mono\',monospace">₱' + fmt(i.fee) + '</span>' +
+          '</div>';
+      }).join('');
+      document.getElementById('ph-covered-total').textContent = '₱' + fmt(covTotal);
+      document.getElementById('ph-applied').textContent       = '₱' + fmt(applied);
+
+      var sub   = items.reduce(function(s,i){ return s+(Number(i.fee)||0); }, 0);
+      var disc  = Number(document.getElementById('f-discount').value) || 0;
+      var copay = Math.max(sub - disc - applied, 0);
+      document.getElementById('ph-copay').textContent = '₱' + fmt(copay);
+    }
+    recalc();
+  }
+
+  function phShowSection() {
+    if (selectedPatient && selectedPatient.is_philhealth_member) {
+      document.getElementById('ph-section').classList.remove('hidden');
+      document.getElementById('ph-pin-display').textContent =
+        selectedPatient.philhealth_pin ? '· ' + selectedPatient.philhealth_pin : '';
+    } else {
+      document.getElementById('ph-section').classList.add('hidden');
+      document.getElementById('ph-apply-toggle').checked = false;
+      document.getElementById('ph-details').classList.add('hidden');
+    }
   }
 
   // ── Save order ────────────────────────────────────────────────
@@ -848,12 +996,19 @@
     if (!selectedPatient) { showToast('No patient selected.', 'error'); return; }
     if (!items.length)    { showToast('No items selected.', 'error'); return; }
 
-    var drSel = document.getElementById('f-doctor');
-    var drOpt = drSel.options[drSel.selectedIndex];
-    var sub   = items.reduce(function(s,i){ return s+(Number(i.fee)||0); }, 0);
-    var disc  = Number(document.getElementById('f-discount').value) || 0;
-    var patName = selectedPatient.last_name + ', ' + selectedPatient.first_name +
-                  (selectedPatient.middle_name ? ' ' + selectedPatient.middle_name.charAt(0) + '.' : '');
+    var drSel       = document.getElementById('f-doctor');
+    var drOpt       = drSel.options[drSel.selectedIndex];
+    var sub         = items.reduce(function(s,i){ return s+(Number(i.fee)||0); }, 0);
+    var disc        = Number(document.getElementById('f-discount').value) || 0;
+    var phApply     = document.getElementById('ph-apply-toggle').checked;
+    var phRemaining = Number(document.getElementById('ph-remaining').value) || 0;
+    var drName      = (drSel.value && drOpt) ? (drOpt.getAttribute('data-name') || drOpt.text) : '';
+    var patName     = selectedPatient.last_name + ', ' + selectedPatient.first_name +
+                      (selectedPatient.middle_name ? ' ' + selectedPatient.middle_name.charAt(0) + '.' : '');
+    var doctors     = [];
+    if (drSel.value) {
+      doctors.push({ doctor_id: drSel.value, doctor_snapshot: drName, role: 'PRIMARY' });
+    }
 
     var btn = document.getElementById('save-btn');
     btn.disabled = true;
@@ -877,14 +1032,20 @@
         showToast(err.message, 'error');
       })
       .handleOrderRequest('CREATE_ORDER', {
-        patient_id:          selectedPatient.patient_id,
-        patient_snapshot:    patName,
-        referring_doctor_id: drSel.value || '',
-        doctor_snapshot:     (drSel.value && drOpt) ? (drOpt.getAttribute('data-name') || drOpt.text) : '',
-        payment_amount:      sub,
-        payment_discount:    disc,
-        notes:               document.getElementById('f-notes').value.trim(),
-        items:               items
+        patient_id:           selectedPatient.patient_id,
+        patient_snapshot:     patName,
+        referring_doctor_id:  drSel.value || '',
+        doctor_snapshot:      drName,
+        payment_amount:       sub,
+        payment_discount:     disc,
+        notes:                document.getElementById('f-notes').value.trim(),
+        items:                items,
+        doctors:              doctors,
+        use_philhealth:       phApply && selectedPatient.is_philhealth_member,
+        philhealth_pin:       selectedPatient.philhealth_pin || '',
+        philhealth_remaining: phRemaining,
+        philhealth_package:   phApply ? document.getElementById('ph-package').value : '',
+        philhealth_notes:     ''
       }, _co_getToken());
   }
 
