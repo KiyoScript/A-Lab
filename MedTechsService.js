@@ -398,8 +398,8 @@ function changeOwnMedTechPassword(payload, token) {
     if (!session)              return { success: false, error: 'Session expired.', expired: true };
     if (session.role !== 'medtech') return { success: false, error: 'Access denied.' };
 
-    if (!payload.current_password)
-      return { success: false, error: 'Current password is required.' };
+    if (!payload.new_password || String(payload.new_password).trim().length < 6)
+      return { success: false, error: 'New password must be at least 6 characters.' };
 
     const ssId = _mt_getBranchSsId(session.branch_id);
     if (!ssId) return { success: false, error: 'Branch spreadsheet not found.' };
@@ -410,7 +410,6 @@ function changeOwnMedTechPassword(payload, token) {
 
     for (var i = 1; i < data.length; i++) {
       if (String(data[i][0]).trim() === String(session.medtech_id).trim()) {
-        // Only verify current password if provided (not required on force-change flow)
         if (payload.current_password) {
           if (String(data[i][5]) !== _hashPassword(String(payload.current_password).trim()))
             return { success: false, error: 'Current password is incorrect.' };
