@@ -202,7 +202,7 @@
         document.getElementById('sidebar-avatar').src = avatarUrl;
         document.getElementById('header-avatar').src  = avatarUrl;
         document.getElementById('init-loading').classList.add('hidden');
-        setTimeout(_prefetchAllTabs, 2000);
+        setTimeout(_prefetchAllTabs, 3000);
       })
       .withFailureHandler(function(err) {
         document.getElementById('init-loading').innerHTML =
@@ -211,15 +211,12 @@
       .getAppInitData(alab_token);
 
     function _prefetchAllTabs() {
-      var tabs = ['Orders', 'Patients'];
-      tabs.forEach(function(pageName, idx) {
-        setTimeout(function() {
-          if (initializedTabs[pageName]) return;
-          initializedTabs[pageName] = true;
-          var initFn = 'init_' + pageName;
-          if (typeof window[initFn] === 'function') window[initFn]();
-        }, idx * 300);
-      });
+      setTimeout(function() {
+        if (!initializedTabs['Orders']) {
+          initializedTabs['Orders'] = true;
+          if (typeof window['init_Orders'] === 'function') window['init_Orders']();
+        }
+      }, 3000);
     }
 
     function switchTab(pageName) {

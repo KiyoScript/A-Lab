@@ -151,7 +151,7 @@ function _buildCurrentBranchMap() {
 // READ — all authenticated roles
 // Returns doctors enriched with their current branch assignment
 // ═══════════════════════════════════════════════════════════════
-function getDoctors(token) {
+function getDoctors(payload, token) {
   try {
     const session = _getSession(token);
     if (!session) return { success: false, error: 'Session expired.', expired: true };

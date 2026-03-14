@@ -62,7 +62,7 @@ function _labRowToObj(row) {
 // ═══════════════════════════════════════════════════════════════
 // READ — all roles
 // ═══════════════════════════════════════════════════════════════
-function getLabServices(token) {
+function getLabServices(payload, token) {
   try {
     const session = _getSession(token);
     if (!session) return { success: false, error: 'Session expired.', expired: true };

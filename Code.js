@@ -49,7 +49,7 @@ function getAppInitData(token) {
 function handleLabServiceRequest(action, payload, token) {
   if (!_getSession(token)) return { success: false, error: 'Session expired. Please log in again.', expired: true };
   switch (action) {
-    case 'GET_LAB_SERVICES':    return getLabServices(token);
+    case 'GET_LAB_SERVICES':    return getLabServices(payload, token);
     case 'CREATE_LAB_SERVICE':  return createLabService(payload, token);
     case 'UPDATE_LAB_SERVICE':  return updateLabService(payload, token);
     case 'DELETE_LAB_SERVICE':  return deleteLabService(payload.lab_id, token);
@@ -63,7 +63,7 @@ function handleBranchRequest(action, payload, token) {
   if (!session) return { success: false, error: 'Session expired. Please log in again.', expired: true };
 
   switch (action) {
-    case 'GET_BRANCHES':   return getBranches(token);
+    case 'GET_BRANCHES':   return getBranches(payload, token);
     case 'CREATE_BRANCH':  return session.role !== 'super_admin'
                             ? { success: false, error: 'Unauthorized. Only super admins can create branches.' }
                             : createBranch(payload);
@@ -106,7 +106,7 @@ function handlePatientRequest(action, payload, token) {
 function handlePackageRequest(action, payload, token) {
   if (!_getSession(token)) return { success: false, error: 'Session expired. Please log in again.', expired: true };
   switch (action) {
-    case 'GET_PACKAGES':              return getPackages(token);
+    case 'GET_PACKAGES':              return getPackages(payload, token);
     case 'CREATE_PACKAGE':            return createPackage(payload, token);
     case 'UPDATE_PACKAGE':            return updatePackage(payload, token);
     case 'DELETE_PACKAGE':            return deletePackage(payload.package_id, token);
@@ -156,7 +156,7 @@ function handleMedTechRequest(action, payload, token) {
 function handleDoctorRequest(action, payload, token) {
   if (!_getSession(token)) return { success: false, error: 'Session expired. Please log in again.', expired: true };
   switch (action) {
-    case 'GET_DOCTORS':             return getDoctors(token);
+    case 'GET_DOCTORS':             return getDoctors(payload, token);
     case 'CREATE_DOCTOR':           return createDoctor(payload, token);
     case 'UPDATE_DOCTOR':           return updateDoctor(payload, token);
     case 'DELETE_DOCTOR':           return deleteDoctor(payload.doctor_id, token);
@@ -252,10 +252,8 @@ function getPackagesInitData(token) {
   try {
     const session = getSession(token);
     if (!session || !session.data) return { success: false, expired: true };
-    // getPackages expects just (token) based on PackagesService.js line 92 signature
-    // But line 254 calls getPackages({}, token) which adds an extra arg
-    const packages = getPackages(token); 
-    const labs     = getLabServices(token);
+    const packages = getPackages({}, token);
+    const labs     = getLabServices({}, token);
     return { success: true, session: session.data, packages: packages, labs: labs };
   } catch(e) {
     return { success: false, error: e.message };
@@ -267,20 +265,8 @@ function getDiscountsInitData(token) {
   try {
     const session = getSession(token);
     if (!session || !session.data) return { success: false, expired: true };
-    const s = session.data;
-    const isSuperAdmin  = s.role === 'super_admin';
-    const isBranchAdmin = s.role === 'branch_admin';
-    
-    // getDiscountsAll is for viewing all
-    const discounts = (isSuperAdmin || isBranchAdmin)
-      ? getDiscountsAll(token)
-      : getDiscounts({}, token); // getDiscounts expects (payload, token) ? No, let's check.
-      
-    // Actually, let's just use getDiscountsAll if it works for everyone, or check the signature.
-    // DiscountsService.js: getDiscountsAll(token)
-    // DiscountsService.js: getDiscounts(payload, token) - wait, scanning file...
-    
-    return { success: true, session: s, discounts: discounts };
+    const discounts = getDiscountsAll(token);
+    return { success: true, session: session.data, discounts: discounts };
   } catch(e) {
     return { success: false, error: e.message };
   }

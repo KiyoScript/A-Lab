@@ -89,7 +89,7 @@ function _packageRowToObj(row) {
 // READ — all roles
 // Returns packages with lab_ids array and lab_count
 // ═══════════════════════════════════════════════════════════════
-function getPackages(token) {
+function getPackages(payload, token) {
   try {
     const session = _getSession(token);
     if (!session) return { success: false, error: 'Session expired.', expired: true };

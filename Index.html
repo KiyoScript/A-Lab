@@ -376,7 +376,7 @@
 
         // Hide overlay — Dashboard data is already loading behind it
         document.getElementById('init-loading').classList.add('hidden');
-        setTimeout(_prefetchAllTabs, 2000);
+        setTimeout(_prefetchAllTabs, 3000);
       })
       .withFailureHandler(function(err) {
         document.getElementById('init-loading').innerHTML =
@@ -385,35 +385,12 @@
       .getAppInitData(alab_token);   // ← single combined call
 
     function _prefetchAllTabs() {
-        var tabs = [
-          'Branches', 'Departments', 'LabServices',
-          'Packages', 'Discounts', 'Doctors',
-          'Patients', 'Admins', 'Orders', 'MedTechs'
-        ];
-        
-        // Sequential fetch using recursion to avoid overwhelming the server
-        var i = 0;
-        function next() {
-          if (i >= tabs.length) return;
-          var pageName = tabs[i++];
-          if (initializedTabs[pageName]) {
-            next(); // Skip if already initialized
-            return;
+        setTimeout(function() {
+          if (!initializedTabs['Orders']) {
+            initializedTabs['Orders'] = true;
+            if (typeof window['init_Orders'] === 'function') window['init_Orders']();
           }
-          
-          // Mark as initialized so switchTab won't re-trigger immediately
-          initializedTabs[pageName] = true;
-          
-          var initFn = 'init_' + pageName;
-          if (typeof window[initFn] === 'function') {
-            window[initFn]();
-          }
-          
-          // Wait 1.5s before next request
-          setTimeout(next, 1500); 
-        }
-        
-        next();
+        }, 3000);
       }
 
     // ── Nav helpers ───────────────────────────────────────────────
