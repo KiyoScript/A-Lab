@@ -221,8 +221,8 @@
       <input type="hidden" id="pt-f-patient-id"/>
       <input type="hidden" id="pt-f-branch-id"/>
 
-      <!-- Branch (super admin: select; branch admin: badge) -->
-      <div id="pt-branch-select-wrap">
+      <!-- Branch (super admin only: select) -->
+      <div id="pt-branch-select-wrap" class="hidden">
         <label class="block text-xs font-semibold text-slate-600 mb-1.5">Branch <span class="text-red-400">*</span></label>
         <select id="pt-f-branch-select" class="form-select"><option value="">Select branch…</option></select>
       </div>
