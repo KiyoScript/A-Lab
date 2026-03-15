@@ -185,6 +185,7 @@ function handleOrderRequest(action, payload, token) {
   switch (action) {
     case 'GET_ORDERS':        return getOrders(payload, token);
     case 'GET_ORDER_ITEMS':   return getOrderItems(payload, token);
+    case 'GET_ORDER_CLAIM':   return getOrderClaim(payload, token);
     case 'CREATE_ORDER':      return createOrder(payload, token);
     case 'CONFIRM_ORDER':     return confirmOrder(payload, token);
     case 'RECORD_PAYMENT':    return recordPayment(payload, token);

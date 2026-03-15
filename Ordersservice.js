@@ -292,8 +292,33 @@ function getOrders(payload, token) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 2. GET ORDER ITEMS
+// 1b. GET ORDER CLAIM — fetches PhilHealth claim for an order
 // ═══════════════════════════════════════════════════════════════
+function getOrderClaim(payload, token) {
+  try {
+    const session = _getSession(token);
+    if (!session) return { success: false, error: 'Session expired.', expired: true };
+    if (!_canAccessOrders(session.role)) return { success: false, error: 'Access denied.' };
+    if (!payload.order_id || !payload.branch_id)
+      return { success: false, error: 'order_id and branch_id are required.' };
+
+    const branchInfo = _ord_getBranchSsId(payload.branch_id);
+    if (!branchInfo) return { success: false, error: 'Branch not found.' };
+    const ssId = branchInfo.ssId;
+
+    const sh   = _getPhilHealthClaimSheet(ssId);
+    const data = sh.getDataRange().getValues();
+    const row  = data.slice(1).find(function(r) {
+      return r[0] !== '' && String(r[1]) === String(payload.order_id);
+    });
+
+    if (!row) return { success: true, data: null };
+    return { success: true, data: _claimRowToObj(row) };
+  } catch(e) {
+    return { success: false, error: e.message };
+  }
+}
+
 function getOrderItems(payload, token) {
   try {
     const session = _getSession(token);

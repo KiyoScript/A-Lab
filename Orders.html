@@ -579,7 +579,37 @@
           <div class="flex justify-between text-xs font-semibold text-emerald-600"><span>Change</span><span id="v-change">—</span></div>
         </div>
       </div>
-      <div><p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Notes</p><p id="v-notes" class="text-sm text-slate-600 italic">—</p></div>
+      <!-- PhilHealth Claim -->
+      <div id="v-philhealth-section" class="hidden">
+        <p class="section-divider">PhilHealth Benefit</p>
+        <div class="bg-green-50 border border-green-200 rounded-xl p-3 space-y-2">
+          <div class="flex items-center gap-2 mb-1">
+            <div class="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center">
+              <svg class="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+              </svg>
+            </div>
+            <span class="text-xs font-semibold text-green-800">PhilHealth Applied</span>
+            <span id="v-ph-package" class="text-xs text-green-600 font-mono"></span>
+            <span id="v-ph-status" class="badge text-[10px] px-2 py-0.5"></span>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="bg-white rounded-lg p-2 border border-green-100 text-center">
+              <p class="text-[10px] text-slate-400 mb-0.5">Balance Before</p>
+              <p id="v-ph-remaining" class="text-xs font-bold text-slate-700" style="font-family:'DM Mono',monospace">—</p>
+            </div>
+            <div class="bg-white rounded-lg p-2 border border-green-100 text-center">
+              <p class="text-[10px] text-slate-400 mb-0.5">PhilHealth Paid</p>
+              <p id="v-ph-applied" class="text-xs font-bold text-green-600" style="font-family:'DM Mono',monospace">—</p>
+            </div>
+            <div class="bg-white rounded-lg p-2 border border-green-100 text-center">
+              <p class="text-[10px] text-slate-400 mb-0.5">Patient Copay</p>
+              <p id="v-ph-copay-view" class="text-xs font-bold text-blue-600" style="font-family:'DM Mono',monospace">—</p>
+            </div>
+          </div>
+          <p class="text-[10px] text-slate-400">PIN: <span id="v-ph-pin" class="font-mono text-slate-600"></span></p>
+        </div>
+      </div>
     </div>
     <div id="v-footer" class="px-6 pb-6 flex flex-wrap gap-2 border-t border-slate-100 pt-4 sticky bottom-0 bg-white">
       <button onclick="closeViewModal()" class="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 min-w-[80px]">Close</button>
@@ -1434,6 +1464,8 @@
     document.getElementById('v-notes').textContent    = o.notes || '—';
     document.getElementById('v-items').innerHTML      = '<p class="text-xs text-slate-400 italic py-2">Loading items…</p>';
 
+    var _viewBranchId = branchId || o.branch_id;
+
     google.script.run
       .withSuccessHandler(function(res) {
         if (!res.success) { document.getElementById('v-items').innerHTML = '<p class="text-xs text-red-400">Failed to load items.</p>'; return; }
@@ -1442,7 +1474,21 @@
         _ord_renderFooterActions();
       })
       .withFailureHandler(function() { document.getElementById('v-items').innerHTML = '<p class="text-xs text-red-400">Error loading items.</p>'; })
-      .handleOrderRequest('GET_ORDER_ITEMS', { order_id: orderId, branch_id: branchId || o.branch_id }, _ord_getToken());
+      .handleOrderRequest('GET_ORDER_ITEMS', { order_id: orderId, branch_id: _viewBranchId }, _ord_getToken());
+
+    // Fetch PhilHealth claim if any
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (res && res.success && res.data) {
+          _ord_renderPhilHealthClaim(res.data);
+        } else {
+          document.getElementById('v-philhealth-section').classList.add('hidden');
+        }
+      })
+      .withFailureHandler(function() {
+        document.getElementById('v-philhealth-section').classList.add('hidden');
+      })
+      .handleOrderRequest('GET_ORDER_CLAIM', { order_id: orderId, branch_id: _viewBranchId }, _ord_getToken());
 
     document.getElementById('view-modal').classList.remove('hidden');
   }
@@ -1483,7 +1529,34 @@
     }).join('');
   }
 
-  function _ord_renderFooterActions() {
+  function _ord_renderPhilHealthClaim(claim) {
+    var sec = document.getElementById('v-philhealth-section');
+    if (!claim) { sec.classList.add('hidden'); return; }
+    sec.classList.remove('hidden');
+
+    var statusColors = {
+      FOR_SUBMISSION: 'badge-FOR_SUBMISSION',
+      SUBMITTED:      'badge-SUBMITTED',
+      APPROVED:       'badge-APPROVED',
+      REJECTED:       'badge-REJECTED'
+    };
+    var statusLabels = {
+      FOR_SUBMISSION: 'For Submission',
+      SUBMITTED:      'Submitted',
+      APPROVED:       'Approved',
+      REJECTED:       'Rejected'
+    };
+
+    document.getElementById('v-ph-package').textContent    = '· ' + (claim.benefit_package || '');
+    document.getElementById('v-ph-pin').textContent        = claim.philhealth_pin || '—';
+    document.getElementById('v-ph-remaining').textContent  = '₱' + _ord_fmt(claim.remaining_before);
+    document.getElementById('v-ph-applied').textContent    = '₱' + _ord_fmt(claim.benefit_used);
+    document.getElementById('v-ph-copay-view').textContent = '₱' + _ord_fmt(claim.patient_copay);
+
+    var statusBadge = document.getElementById('v-ph-status');
+    statusBadge.className   = 'badge text-[10px] px-2 py-0.5 ' + (statusColors[claim.status] || '');
+    statusBadge.textContent = statusLabels[claim.status] || claim.status;
+  }
     var footer = document.getElementById('v-footer');
     footer.querySelectorAll('.dyn-btn').forEach(function(b){ b.remove(); });
     if (!_ord_isTech && !_ord_isBranchAdmin) return;
@@ -1502,7 +1575,7 @@
           : '<span class="dyn-btn text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-xl font-semibold flex-1 text-center">Verify all results to release</span>';
       }
     }
-    if (_ord_isBranchAdmin && o.status==='DRAFT')
+    if (_ord_isBranchAdmin && o.status==='DRAFT') {
       frag += '<button class="dyn-btn act-btn act-red" onclick="doDeleteOrder()">Delete Draft</button>';
     if (frag) footer.insertAdjacentHTML('beforeend', frag);
   }
@@ -1510,6 +1583,8 @@
   function closeViewModal() {
     document.getElementById('view-modal').classList.add('hidden');
     _ord_viewingOrder = null; _ord_viewingItems = [];
+    var phSec = document.getElementById('v-philhealth-section');
+    if (phSec) phSec.classList.add('hidden');
   }
 
   function doConfirmOrder() {
