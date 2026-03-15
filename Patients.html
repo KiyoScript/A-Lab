@@ -585,9 +585,7 @@ function init_Patients() {
       if (isEdit) sel.value = branchId;
     } else {
       document.getElementById('pt-branch-select-wrap').classList.add('hidden');
-      document.getElementById('pt-branch-badge-wrap').classList.remove('hidden');
-      var myBranch = _pat_allBranches.find(function(b) { return b.branch_id === _pat_currentSession.branch_id; });
-      document.getElementById('pt-branch-badge-label').textContent = myBranch ? myBranch.branch_name : (_pat_currentSession.branch_name || '—');
+      document.getElementById('pt-branch-badge-wrap').classList.add('hidden');
       document.getElementById('pt-f-branch-id').value = _pat_currentSession.branch_id;
     }
 
