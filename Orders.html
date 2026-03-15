@@ -1529,7 +1529,7 @@
     }).join('');
   }
 
-  function _ord_renderPhilHealthClaim(claim) {
+function _ord_renderPhilHealthClaim(claim) {
     var sec = document.getElementById('v-philhealth-section');
     if (!claim) { sec.classList.add('hidden'); return; }
     sec.classList.remove('hidden');
@@ -1557,6 +1557,8 @@
     statusBadge.className   = 'badge text-[10px] px-2 py-0.5 ' + (statusColors[claim.status] || '');
     statusBadge.textContent = statusLabels[claim.status] || claim.status;
   }
+
+  function _ord_renderFooterActions() {
     var footer = document.getElementById('v-footer');
     footer.querySelectorAll('.dyn-btn').forEach(function(b){ b.remove(); });
     if (!_ord_isTech && !_ord_isBranchAdmin) return;
@@ -1577,6 +1579,7 @@
     }
     if (_ord_isBranchAdmin && o.status==='DRAFT') {
       frag += '<button class="dyn-btn act-btn act-red" onclick="doDeleteOrder()">Delete Draft</button>';
+    }
     if (frag) footer.insertAdjacentHTML('beforeend', frag);
   }
 
