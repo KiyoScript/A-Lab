@@ -413,11 +413,6 @@
           <div id="ws3-items-list" class="space-y-1.5 max-h-40 overflow-y-auto"></div>
         </div>
 
-        <div id="w-auto-disc-wrap" class="mb-4 hidden">
-          <p class="section-divider">Patient Discounts</p>
-          <div id="w-auto-disc-list" class="flex flex-wrap gap-2"></div>
-        </div>
-
         <div class="mb-4">
           <label class="field-label">Referring Doctor</label>
           <select id="w-doctor" class="field-input">
@@ -490,9 +485,14 @@
         </div>
 
         <div class="mb-4">
-          <label class="field-label">Discount Amount (₱)</label>
-          <input id="w-discount" type="number" min="0" step="0.01" placeholder="0.00" oninput="wRecalc()" class="field-input"/>
-          <p class="text-[11px] text-slate-400 mt-1">Auto-applied from patient's assigned discounts. You can override.</p>
+          <label class="field-label">Discounts</label>
+          <select id="w-discount-select" onchange="wAddDiscount()" class="field-input mb-2">
+            <option value="">— Select a discount to apply —</option>
+          </select>
+          <div id="w-discount-tags" class="flex flex-wrap gap-2 mb-2"></div>
+          <div class="flex justify-between text-xs text-slate-400">
+            <span>Total discount: <span id="w-discount-total" class="font-semibold text-slate-600">₱0.00</span></span>
+          </div>
         </div>
 
         <div class="bg-slate-50 rounded-xl p-4 border border-slate-100 mb-4">
@@ -691,7 +691,8 @@
   var _ord_wAllServices     = [];
   var _ord_wAllPackages     = [];
   var _ord_wAllDiscounts    = [];
-  var _ord_wSelectedItems   = {};
+  var _ord_wSelectedItems     = {};
+  var _ord_wSelectedDiscounts = {};
   var _ord_wEnrollOpen      = false;
   var _ord_wDataLoaded      = false;
 
@@ -865,15 +866,15 @@
   // ══════════════════════════════════════════════════════════════
 
   function openWizard() {
-    _ord_wCurrentStep     = 1;
-    _ord_wSelectedPatient = null;
-    _ord_wSelectedItems   = {};
-    _ord_wEnrollOpen      = false;
+    _ord_wCurrentStep       = 1;
+    _ord_wSelectedPatient   = null;
+    _ord_wSelectedItems     = {};
+    _ord_wSelectedDiscounts = {};
+    _ord_wEnrollOpen        = false;
 
     _ord_wSetStep(1);
     document.getElementById('w-patient-search').value = '';
     document.getElementById('w-item-search').value    = '';
-    document.getElementById('w-discount').value       = '';
     document.getElementById('w-notes').value          = '';
     document.getElementById('wstep1-next').disabled   = true;
     document.getElementById('w-patient-chip').classList.add('hidden');
@@ -1200,36 +1201,78 @@
         '<span class="text-xs font-semibold text-blue-600" style="font-family:\'DM Mono\',monospace">₱' + _ord_fmt(i.fee) + '</span></div>';
     }).join('');
 
-    var discIds   = _ord_wSelectedPatient.discount_ids || [];
-    var totalDisc = 0, discHtml = '';
+    // Reset and populate discount dropdown
+    _ord_wSelectedDiscounts = {};
+    var sel = document.getElementById('w-discount-select');
+    sel.innerHTML = '<option value="">— Select a discount to apply —</option>';
+    _ord_wAllDiscounts.filter(function(d){ return d.is_active; }).forEach(function(d) {
+      var valLabel = d.discount_type === 'percentage' ? d.value + '%' : '₱' + _ord_fmt(d.value);
+      sel.innerHTML += '<option value="' + _ord_escHtml(d.discount_id) + '">' + _ord_escHtml(d.discount_name) + ' (' + valLabel + ')</option>';
+    });
+
+    // Auto-apply patient's assigned discounts
+    var discIds = _ord_wSelectedPatient.discount_ids || [];
     if (discIds.length && _ord_wAllDiscounts.length) {
       discIds.forEach(function(did) {
         var d = _ord_wAllDiscounts.find(function(x){ return x.discount_id === did; });
         if (!d || !d.is_active) return;
-        var amt = d.discount_type==='percentage' ? subtotal*(Number(d.value)/100) : Number(d.value);
-        totalDisc += amt;
-        discHtml += '<span class="disc-badge">' + _ord_escHtml(d.discount_name) + ' · ' +
-          (d.discount_type==='percentage' ? d.value+'%' : '₱'+_ord_fmt(d.value)) + '</span>';
+        _ord_wSelectedDiscounts[did] = d;
       });
     }
-    if (discHtml) {
-      document.getElementById('w-auto-disc-wrap').classList.remove('hidden');
-      document.getElementById('w-auto-disc-list').innerHTML = discHtml;
-    } else {
-      document.getElementById('w-auto-disc-wrap').classList.add('hidden');
-    }
-    document.getElementById('w-discount').value = totalDisc > 0 ? totalDisc.toFixed(2) : '';
+    wRenderDiscountTags();
     wRecalc();
   }
 
   function wRecalc() {
     var sub   = Object.values(_ord_wSelectedItems).reduce(function(s,i){ return s+(Number(i.fee)||0); }, 0);
-    var disc  = Number(document.getElementById('w-discount').value) || 0;
+    var disc  = wCalcTotalDiscount(sub);
     var ph    = wPhGetApplied();
     var total = Math.max(sub - disc - ph, 0);
     document.getElementById('wb-subtotal').textContent = '₱' + _ord_fmt(sub);
     document.getElementById('wb-discount').textContent = disc > 0 ? '-₱' + _ord_fmt(disc) : '-₱0.00';
     document.getElementById('wb-total').textContent    = '₱' + _ord_fmt(total);
+  }
+
+  function wCalcTotalDiscount(subtotal) {
+    return Object.values(_ord_wSelectedDiscounts).reduce(function(s, d) {
+      var amt = d.discount_type === 'percentage'
+        ? subtotal * (Number(d.value) / 100)
+        : Number(d.value);
+      return s + amt;
+    }, 0);
+  }
+
+  function wAddDiscount() {
+    var sel = document.getElementById('w-discount-select');
+    var did = sel.value;
+    if (!did) return;
+    var d = _ord_wAllDiscounts.find(function(x){ return x.discount_id === did; });
+    if (!d) return;
+    _ord_wSelectedDiscounts[did] = d;
+    sel.value = '';
+    wRenderDiscountTags();
+    wRecalc();
+  }
+
+  function wRemoveDiscount(did) {
+    delete _ord_wSelectedDiscounts[did];
+    wRenderDiscountTags();
+    wRecalc();
+  }
+
+  function wRenderDiscountTags() {
+    var sub  = Object.values(_ord_wSelectedItems).reduce(function(s,i){ return s+(Number(i.fee)||0); }, 0);
+    var tags = document.getElementById('w-discount-tags');
+    var total = 0;
+    tags.innerHTML = Object.values(_ord_wSelectedDiscounts).map(function(d) {
+      var amt = d.discount_type === 'percentage' ? sub * (Number(d.value)/100) : Number(d.value);
+      total += amt;
+      var valLabel = d.discount_type === 'percentage' ? d.value + '%' : '₱' + _ord_fmt(d.value);
+      return '<span class="disc-badge">' + _ord_escHtml(d.discount_name) + ' · ' + valLabel +
+        ' <button onclick="wRemoveDiscount(\'' + _ord_escHtml(d.discount_id) + '\')" style="margin-left:4px;font-size:11px;color:#92400e;background:none;border:none;cursor:pointer;padding:0">✕</button>' +
+        '</span>';
+    }).join('');
+    document.getElementById('w-discount-total').textContent = '₱' + _ord_fmt(total);
   }
 
   function wPhGetApplied() {
@@ -1271,8 +1314,8 @@
       }).join('');
       document.getElementById('w-ph-covered-total').textContent = '₱' + _ord_fmt(covTotal);
       document.getElementById('w-ph-applied').textContent       = '₱' + _ord_fmt(applied);
-      var sub   = items.reduce(function(s,i){ return s+(Number(i.fee)||0); }, 0);
-      var disc  = Number(document.getElementById('w-discount').value) || 0;
+      var sub  = items.reduce(function(s,i){ return s+(Number(i.fee)||0); }, 0);
+      var disc = wCalcTotalDiscount(sub);
       document.getElementById('w-ph-copay').textContent = '₱' + _ord_fmt(Math.max(sub - disc - applied, 0));
     }
     wRecalc();
@@ -1299,7 +1342,7 @@
     var drSel   = document.getElementById('w-doctor');
     var drOpt   = drSel.options[drSel.selectedIndex];
     var sub     = items.reduce(function(s,i){ return s+(Number(i.fee)||0); }, 0);
-    var disc    = Number(document.getElementById('w-discount').value) || 0;
+    var disc    = wCalcTotalDiscount(sub);
     var patName = _ord_wSelectedPatient.last_name + ', ' + _ord_wSelectedPatient.first_name +
                   (_ord_wSelectedPatient.middle_name ? ' ' + _ord_wSelectedPatient.middle_name.charAt(0) + '.' : '');
 

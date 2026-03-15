@@ -398,6 +398,8 @@ function changeOwnMedTechPassword(payload, token) {
     if (!session)              return { success: false, error: 'Session expired.', expired: true };
     if (session.role !== 'medtech') return { success: false, error: 'Access denied.' };
 
+    if (!session.medtech_id) return { success: false, error: 'Session missing medtech_id: ' + JSON.stringify(session) };
+
     if (!payload.new_password || String(payload.new_password).trim().length < 6)
       return { success: false, error: 'New password must be at least 6 characters.' };
 

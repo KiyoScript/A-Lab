@@ -330,18 +330,16 @@
       <div id="s3-items-list" class="space-y-1.5 max-h-40 overflow-y-auto"></div>
     </div>
 
-    <!-- Auto-applied discounts -->
-    <div id="auto-disc-wrap" class="mb-4 hidden">
-      <p class="section-label">Patient Discounts</p>
-      <div id="auto-disc-list" class="flex flex-wrap gap-2"></div>
-    </div>
-
-    <!-- Discount field -->
+    <!-- Discount selector -->
     <div class="mb-4">
-      <label class="field-label">Discount Amount (₱)</label>
-      <input id="f-discount" type="number" min="0" step="0.01" placeholder="0.00"
-        oninput="recalc()" class="field-input"/>
-      <p class="text-[11px] text-slate-400 mt-1">Auto-applied from patient's assigned discounts. You can override.</p>
+      <label class="field-label">Discounts</label>
+      <select id="f-discount-select" onchange="addDiscount()" class="field-input mb-2">
+        <option value="">— Select a discount to apply —</option>
+      </select>
+      <div id="f-discount-tags" class="flex flex-wrap gap-2 mb-2"></div>
+      <div class="flex justify-between text-xs text-slate-400">
+        <span>Total discount: <span id="f-discount-total" class="font-semibold text-slate-600">₱0.00</span></span>
+      </div>
     </div>
 
     <!-- Payment summary -->
@@ -471,7 +469,8 @@
   var allServices     = [];
   var allPackages     = [];
   var allDiscounts    = [];
-  var selectedItems   = {};
+  var selectedItems     = {};
+  var selectedDiscounts = {};
 
   function init_CreateOrder() {
     // Reset state each time the tab is opened
@@ -885,45 +884,79 @@
     }).join('');
 
     // Auto-apply patient discounts
-    var discIds  = selectedPatient.discount_ids || [];
-    var subtotal = items.reduce(function(s,i){ return s+(Number(i.fee)||0); }, 0);
-    var totalDisc = 0;
-    var discHtml  = '';
+    // Populate discount dropdown with all active discounts
+    selectedDiscounts = {};
+    var sel = document.getElementById('f-discount-select');
+    sel.innerHTML = '<option value="">— Select a discount to apply —</option>';
+    allDiscounts.filter(function(d){ return d.is_active; }).forEach(function(d) {
+      var valLabel = d.discount_type === 'percentage' ? d.value + '%' : '₱' + fmt(d.value);
+      sel.innerHTML += '<option value="' + escHtml(d.discount_id) + '">' + escHtml(d.discount_name) + ' (' + valLabel + ')</option>';
+    });
 
+    // Auto-apply patient's assigned discounts
+    var subtotal = items.reduce(function(s,i){ return s+(Number(i.fee)||0); }, 0);
+    var discIds  = selectedPatient.discount_ids || [];
     if (discIds.length && allDiscounts.length) {
       discIds.forEach(function(did) {
         var d = allDiscounts.find(function(x){ return x.discount_id === did; });
         if (!d || !d.is_active) return;
-        var amt = d.discount_type === 'percentage'
-          ? subtotal * (Number(d.value) / 100)
-          : Number(d.value);
-        totalDisc += amt;
-        discHtml += '<span class="disc-badge">' +
-          escHtml(d.discount_name) + ' · ' +
-          (d.discount_type === 'percentage' ? d.value + '%' : '₱' + fmt(d.value)) +
-        '</span>';
+        selectedDiscounts[did] = d;
       });
     }
-
-    if (discHtml) {
-      document.getElementById('auto-disc-wrap').classList.remove('hidden');
-      document.getElementById('auto-disc-list').innerHTML = discHtml;
-    } else {
-      document.getElementById('auto-disc-wrap').classList.add('hidden');
-    }
-
-    document.getElementById('f-discount').value = totalDisc > 0 ? totalDisc.toFixed(2) : '';
+    renderDiscountTags();
     recalc();
   }
 
   function recalc() {
-    var sub   = Object.values(selectedItems).reduce(function(s,i){ return s+(Number(i.fee)||0); }, 0);
-    var disc  = Number(document.getElementById('f-discount').value) || 0;
-    var ph    = phGetApplied();
+    var sub  = Object.values(selectedItems).reduce(function(s,i){ return s+(Number(i.fee)||0); }, 0);
+    var disc = calcTotalDiscount(sub);
+    var ph   = phGetApplied();
     var total = Math.max(sub - disc - ph, 0);
     document.getElementById('b-subtotal').textContent = '₱' + fmt(sub);
     document.getElementById('b-discount').textContent = disc > 0 ? '-₱' + fmt(disc) : '-₱0.00';
     document.getElementById('b-total').textContent    = '₱' + fmt(total);
+  }
+
+  function calcTotalDiscount(subtotal) {
+    return Object.values(selectedDiscounts).reduce(function(s, d) {
+      var amt = d.discount_type === 'percentage'
+        ? (subtotal || Object.values(selectedItems).reduce(function(s,i){ return s+(Number(i.fee)||0); }, 0)) * (Number(d.value) / 100)
+        : Number(d.value);
+      return s + amt;
+    }, 0);
+  }
+
+  function addDiscount() {
+    var sel = document.getElementById('f-discount-select');
+    var did = sel.value;
+    if (!did) return;
+    var d = allDiscounts.find(function(x){ return x.discount_id === did; });
+    if (!d) return;
+    selectedDiscounts[did] = d;
+    sel.value = '';
+    renderDiscountTags();
+    recalc();
+  }
+
+  function removeDiscount(did) {
+    delete selectedDiscounts[did];
+    renderDiscountTags();
+    recalc();
+  }
+
+  function renderDiscountTags() {
+    var sub  = Object.values(selectedItems).reduce(function(s,i){ return s+(Number(i.fee)||0); }, 0);
+    var tags = document.getElementById('f-discount-tags');
+    var total = 0;
+    tags.innerHTML = Object.values(selectedDiscounts).map(function(d) {
+      var amt = d.discount_type === 'percentage' ? sub * (Number(d.value)/100) : Number(d.value);
+      total += amt;
+      var valLabel = d.discount_type === 'percentage' ? d.value + '%' : '₱' + fmt(d.value);
+      return '<span class="disc-badge">' + escHtml(d.discount_name) + ' · ' + valLabel +
+        ' <button onclick="removeDiscount(\'' + escHtml(d.discount_id) + '\')" style="margin-left:4px;font-size:11px;color:#92400e;background:none;border:none;cursor:pointer;padding:0">✕</button>' +
+        '</span>';
+    }).join('');
+    document.getElementById('f-discount-total').textContent = '₱' + fmt(total);
   }
 
   // ── PhilHealth helpers ────────────────────────────────────────
@@ -971,7 +1004,8 @@
       document.getElementById('ph-applied').textContent       = '₱' + fmt(applied);
 
       var sub   = items.reduce(function(s,i){ return s+(Number(i.fee)||0); }, 0);
-      var disc  = Number(document.getElementById('f-discount').value) || 0;
+      var sub   = items.reduce(function(s,i){ return s+(Number(i.fee)||0); }, 0);
+    var disc  = calcTotalDiscount(sub);
       var copay = Math.max(sub - disc - applied, 0);
       document.getElementById('ph-copay').textContent = '₱' + fmt(copay);
     }
